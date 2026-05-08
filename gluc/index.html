@@ -1,0 +1,2524 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<script>
+/* Suppress Babel in-browser transformer warning from artifact viewer */
+(function(){
+  var _w=console.warn;
+  console.warn=function(){
+    var m=arguments[0];
+    if(typeof m==='string'&&(m.indexOf('Babel')!==-1||m.indexOf('babel')!==-1)){return;}
+    _w.apply(console,arguments);
+  };
+  /* Also patch after any dynamic load */
+  var _err=console.error;
+  console.error=function(){
+    var m=arguments[0];
+    if(typeof m==='string'&&m.indexOf('Babel')!==-1){return;}
+    _err.apply(console,arguments);
+  };
+})();
+</script>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+<title>GLUC — Grande Loge Unie du Congo</title>
+<style>
+
+*{box-sizing:border-box;margin:0;padding:0;}
+body{background:#f0f2f5;color:#111;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;font-size:14px;min-height:100vh;}
+button,input,select,textarea{font-family:inherit;}
+input,select,textarea{width:100%;padding:9px 12px;background:#fff;border:1.5px solid #ddd;border-radius:7px;color:#111;font-size:13px;outline:none;box-sizing:border-box;transition:border .2s;}
+input:focus,select:focus{border-color:#c9a227;box-shadow:0 0 0 3px rgba(201,162,39,.1);}
+input::placeholder,textarea::placeholder{color:#aaa;}
+select option{background:#fff;color:#111;}
+textarea{min-height:60px;resize:vertical;}
+::-webkit-scrollbar{width:5px;height:5px;}
+::-webkit-scrollbar-thumb{background:#ccc;border-radius:4px;}
+.hdr{background:#111;border-bottom:3px solid #c9a227;padding:10px 18px;display:flex;align-items:center;gap:10px;flex-wrap:wrap;position:sticky;top:0;z-index:50;box-shadow:0 2px 12px rgba(0,0,0,.4);}
+.hdr-logo{width:34px;height:34px;border-radius:50%;background:#c9a227;display:flex;align-items:center;justify-content:center;font-size:17px;flex-shrink:0;overflow:hidden;}
+.hdr-logo img{width:100%;height:100%;object-fit:cover;border-radius:50%;}
+.hdr-gluc{color:#c9a227;font-size:15px;font-weight:900;letter-spacing:2px;line-height:1;}
+.hdr-sub{color:#666;font-size:10px;letter-spacing:.5px;}
+.hdr-sep{color:#333;font-size:18px;}
+.tabbar{background:#1a1a1a;border-bottom:1px solid #333;padding:0 18px;display:flex;overflow-x:auto;gap:0;}
+.tab{padding:10px 14px;background:none;border:none;border-bottom:2.5px solid transparent;color:#888;font-size:13px;cursor:pointer;white-space:nowrap;transition:color .15s;font-weight:500;margin-bottom:-1px;}
+.tab.on{color:#c9a227;border-bottom-color:#c9a227;font-weight:800;}
+.tab .bdg{background:#e53935;color:#fff;border-radius:10px;font-size:10px;font-weight:700;padding:1px 5px;margin-left:4px;}
+.cont{padding:20px;max-width:1080px;margin:0 auto;}
+.sec{color:#111;font-size:15px;font-weight:900;margin-bottom:14px;letter-spacing:.2px;}
+.g2{display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:12px;margin-bottom:14px;}
+.g3{display:grid;grid-template-columns:repeat(auto-fill,minmax(145px,1fr));gap:10px;margin-bottom:14px;}
+.g4{display:grid;grid-template-columns:repeat(auto-fill,minmax(180px,1fr));gap:10px;}
+.card{background:#fff;border:1.5px solid #e5e5e5;border-radius:12px;padding:15px;box-shadow:0 1px 4px rgba(0,0,0,.05);}
+.cardx{cursor:pointer;transition:all .18s;}
+.cardx:hover{border-color:#c9a227;transform:translateY(-2px);box-shadow:0 4px 14px rgba(0,0,0,.1);}
+.sc{background:#fff;border:1.5px solid #e5e5e5;border-radius:12px;padding:14px 16px;box-shadow:0 1px 3px rgba(0,0,0,.04);}
+.sc-l{color:#666;font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.6px;margin-bottom:6px;}
+.sc-v{font-size:21px;font-weight:900;color:#111;}
+.mini{background:#f5f5f5;border-radius:8px;padding:8px 10px;}
+.mini-l{color:#666;font-size:10px;font-weight:700;text-transform:uppercase;}
+.mini-v{font-size:18px;font-weight:900;margin-top:2px;color:#111;}
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:5px;padding:8px 15px;border-radius:8px;font-size:13px;font-weight:700;border:none;cursor:pointer;transition:opacity .15s,transform .1s;white-space:nowrap;}
+.btn:hover{opacity:.84;}
+.btn:active{transform:scale(.97);}
+.gold{background:#c9a227;color:#fff;}
+.outline{background:#fff;color:#111;border:2px solid #111;}
+.ghost{background:#f0f2f5;color:#111;border:1.5px solid #ddd;}
+.ok{background:#111;color:#fff;}
+.dng{background:#fff;color:#c0392b;border:2px solid #c0392b;}
+.inf{background:#f0f2f5;color:#111;border:1.5px solid #bbb;}
+.warn-btn{background:#f5f5f5;color:#111;border:1.5px solid #ccc;}
+.sm{padding:5px 10px;font-size:12px;}
+.lg{padding:11px 20px;font-size:14px;}
+.full{width:100%;}
+.chip{display:inline-flex;align-items:center;padding:2px 9px;border-radius:20px;font-size:11px;font-weight:700;white-space:nowrap;margin:1px 2px;border:1.5px solid;}
+.cg{background:#fff8e1;color:#5a3e00;border-color:#c9a227;}
+.cb{background:#e3f2fd;color:#0d47a1;border-color:#90caf9;}
+.cgr{background:#f5f5f5;color:#444;border-color:#bbb;}
+.cgreen{background:#e8f5e9;color:#1b5e20;border-color:#81c784;}
+.cred{background:#ffebee;color:#b71c1c;border-color:#ef9a9a;}
+.cor{background:#fff8e1;color:#5a3e00;border-color:#f9d97a;}
+.cpur{background:#f3e5f5;color:#4a148c;border-color:#ce93d8;}
+.cteal{background:#e0f7fa;color:#006064;border-color:#80deea;}
+.cteal2{background:#111;color:#c9a227;border-color:#c9a227;}
+.tw{overflow-x:auto;}
+table{width:100%;border-collapse:collapse;}
+th{padding:9px 11px;text-align:left;color:#fff;font-size:10px;font-weight:900;text-transform:uppercase;letter-spacing:.5px;border-bottom:none;background:#111;}
+td{padding:9px 11px;border-bottom:1px solid #eee;font-size:13px;vertical-align:middle;color:#111;}
+tr:hover td{background:#fafafa;}
+.alert{border-radius:10px;padding:13px 15px;margin-bottom:12px;}
+.a-ok{background:#e8f5e9;border:2px solid #81c784;color:#1b5e20;}
+.a-w{background:#fff8e1;border:2px solid #c9a227;}
+.a-e{background:#ffebee;border:2px solid #ef9a9a;}
+.a-i{background:#f5f5f5;border:2px solid #ccc;color:#333;}
+.a-t{font-weight:900;margin-bottom:9px;}
+.a-w .a-t{color:#5a3e00;}
+.a-e .a-t{color:#b71c1c;}
+.arow{display:flex;align-items:center;gap:8px;padding:8px 0;border-bottom:1px solid rgba(0,0,0,.05);flex-wrap:wrap;}
+.ocard{background:#fff;border:1.5px solid #e5e5e5;border-radius:10px;padding:12px;display:flex;flex-direction:column;gap:6px;box-shadow:0 1px 3px rgba(0,0,0,.04);}
+.ocard.occ{border-color:#c9a227;border-width:2px;}
+.ot{color:#111;font-size:10px;font-weight:900;line-height:1.4;text-transform:uppercase;letter-spacing:.3px;}
+.on2{color:#111;font-size:13px;font-weight:700;}
+.ovac{color:#bbb;font-size:12px;font-style:italic;}
+.oact{display:flex;gap:5px;flex-wrap:wrap;margin-top:2px;}
+.ovl{position:fixed;inset:0;background:rgba(0,0,0,.65);display:flex;align-items:flex-start;justify-content:center;z-index:9999;overflow-y:auto;padding:24px 12px;}
+.mbox{background:#fff;border:2px solid #c9a227;border-radius:14px;padding:24px;width:100%;max-width:520px;box-shadow:0 20px 60px rgba(0,0,0,.25);}
+.mhdr{display:flex;justify-content:space-between;align-items:center;margin-bottom:18px;}
+.mtit{color:#111;font-size:16px;font-weight:900;}
+.mcls{background:none;border:none;color:#999;font-size:22px;cursor:pointer;line-height:1;padding:0;}
+.mact{display:flex;gap:10px;margin-top:12px;}
+.fg{margin-bottom:11px;}
+.fl{display:block;color:#555;font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.5px;margin-bottom:4px;}
+.frow{display:grid;grid-template-columns:1fr 1fr;gap:10px;}
+.prev{background:#f5f5f5;border-radius:8px;padding:10px 12px;margin-bottom:11px;display:flex;align-items:center;gap:10px;border:1.5px solid #ddd;}
+.ava{width:34px;height:34px;border-radius:50%;background:#111;display:flex;align-items:center;justify-content:center;color:#fff;font-weight:900;font-size:12px;flex-shrink:0;}
+.lpg{min-height:100vh;display:flex;align-items:center;justify-content:center;padding:16px;background:#111;}
+.lbox{background:#fff;border:2px solid #c9a227;border-radius:18px;padding:36px;width:100%;max-width:400px;box-shadow:0 30px 80px rgba(0,0,0,.5);}
+.llogo{width:70px;height:70px;border-radius:50%;background:#111;display:flex;align-items:center;justify-content:center;margin:0 auto 14px;font-size:30px;color:#c9a227;overflow:hidden;border:3px solid #c9a227;}
+.llogo img{width:100%;height:100%;object-fit:cover;border-radius:50%;}
+.ltit{color:#111;font-size:22px;font-weight:900;letter-spacing:3px;text-align:center;}
+.lsub{color:#888;font-size:12px;margin:5px 0 28px;letter-spacing:1px;text-align:center;}
+.lerr{background:#ffebee;border:1.5px solid #ef9a9a;border-radius:8px;padding:8px 12px;color:#b71c1c;font-size:12px;margin-bottom:11px;display:none;}
+.pwr{position:relative;}
+.pwe{position:absolute;right:10px;top:50%;transform:translateY(-50%);background:none;border:none;color:#999;font-size:14px;cursor:pointer;padding:0;}
+.div{border-top:1.5px solid #eee;margin:20px 0 14px;}
+.dg{display:grid;grid-template-columns:1fr 1fr;gap:6px;}
+.db{background:#f5f5f5;border:1.5px solid #e5e5e5;border-radius:8px;padding:8px 10px;color:#555;font-size:11px;text-align:left;cursor:pointer;transition:border .2s;}
+.db:hover{border-color:#c9a227;}
+.dm{color:#111;font-weight:900;display:block;margin-bottom:2px;}
+.apg{min-height:100vh;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:20px;background:#111;}
+.acard{background:#fff;border:2px solid #333;border-radius:12px;padding:16px 18px;width:100%;max-width:340px;cursor:pointer;transition:all .2s;margin-bottom:10px;}
+.acard:hover{border-color:#c9a227;transform:translateY(-2px);box-shadow:0 8px 24px rgba(0,0,0,.3);}
+.lbar{background:#fff;border-bottom:1.5px solid #eee;padding:10px 18px;display:flex;align-items:center;gap:12px;flex-wrap:wrap;}
+.lnum{width:34px;height:34px;border-radius:7px;background:#111;display:flex;align-items:center;justify-content:center;color:#c9a227;font-weight:900;font-size:11px;flex-shrink:0;}
+.cap-card{background:#fff;border:1.5px solid #e5e5e5;border-radius:11px;padding:15px;margin-bottom:11px;box-shadow:0 1px 4px rgba(0,0,0,.04);}
+.cap-card.retard{border-left:5px solid #c0392b;}
+.cap-card.attente{border-left:5px solid #c9a227;}
+.cap-card.paye{border-left:5px solid #27ae60;}
+.pbar{height:7px;border-radius:4px;background:#eee;margin-top:7px;overflow:hidden;}
+.pfill{height:100%;border-radius:4px;transition:width .4s;}
+.av-item{background:#f5f5f5;border:1.5px solid #e5e5e5;border-radius:6px;padding:6px 10px;margin-top:4px;display:flex;justify-content:space-between;align-items:center;font-size:12px;}
+.doc-row{display:flex;align-items:center;gap:10px;padding:8px 0;border-bottom:1px solid #f0f0f0;}
+.doc-status{width:20px;height:20px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:900;flex-shrink:0;}
+.doc-ok{background:#111;color:#fff;}
+.doc-no{background:#eee;color:#aaa;border:1.5px solid #ccc;}
+.perm-row{display:flex;align-items:center;padding:9px 12px;border-bottom:1px solid #f0f0f0;gap:10px;}
+.perm-row:hover{background:#fafafa;}
+.toggle{width:38px;height:20px;border-radius:10px;background:#ddd;border:none;cursor:pointer;position:relative;transition:background .2s;flex-shrink:0;}
+.toggle.on{background:#111;}
+.toggle::after{content:'';width:16px;height:16px;border-radius:50%;background:#fff;position:absolute;top:2px;left:2px;transition:left .2s;}
+.toggle.on::after{left:20px;}
+/* Mon espace frère */
+.me-page{padding:20px;max-width:700px;margin:0 auto;}
+.me-banner{background:#111;border-radius:14px;padding:22px;margin-bottom:20px;display:flex;align-items:center;gap:16px;}
+.me-ava{width:52px;height:52px;border-radius:50%;background:#c9a227;display:flex;align-items:center;justify-content:center;color:#111;font-weight:900;font-size:20px;flex-shrink:0;}
+.prog-hdr{display:grid;grid-template-columns:90px 70px 90px 1fr 1fr;background:#111;color:#fff;border-radius:8px 8px 0 0;}
+.prog-hdr div,.prog-row2 div{padding:9px 11px;font-size:11px;}
+.prog-hdr div{font-weight:700;font-size:10px;text-transform:uppercase;letter-spacing:.4px;}
+.prog-row2{display:grid;grid-template-columns:90px 70px 90px 1fr 1fr;border-bottom:1px solid #f0f0f0;}
+.prog-row2:hover{background:#fafafa;}
+.prog-instr-hdr{display:grid;grid-template-columns:90px 70px 1fr 1fr;background:#111;color:#fff;border-radius:8px 8px 0 0;}
+.prog-instr-row{display:grid;grid-template-columns:90px 70px 1fr 1fr;border-bottom:1px solid #f0f0f0;}
+.prog-instr-hdr div{padding:9px 11px;font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.4px;}
+.prog-instr-row div{padding:9px 11px;font-size:12px;}
+@media print{.hdr,.tabbar,.lbar,.no-print{display:none!important;}.cont{padding:0;max-width:100%;}}
+
+</style>
+</head>
+<body>
+<div id="app"></div>
+<script type="text/javascript">
+
+
+
+
+
+
+
+
+
+
+'use strict';
+var APP={};window.APP=APP;
+var GRADES=['Apprenti','Compagnon','Maitre'];
+var TODAY=new Date('2026-04-20');
+var MFR=['Janvier','Février','Mars','Avril','Mai','Juin','Juillet','Août','Septembre','Octobre','Novembre','Décembre'];
+var DEF_OFFS=['VM','1er Surveillant','2ème Surveillant','Secrétaire','Orateur','Expert','Maître de Cérémonie','Hospitalier','Trésorier','Couvreur','Maître de Banquet','Maître Colonne Harmonie','Député','Député Adjoint'];
+var LOGO=null;
+
+// ── DROITS PAR DÉFAUT ──
+var DEFAULT_PERMS={
+  loge:{
+    createMembre:{label:'Créer un frère',roles:['VM','Officier']},
+    editMembre:{label:'Modifier un frère',roles:['VM','Officier']},
+    radierMembre:{label:'Radier un frère',roles:['VM']},
+    promouvoir:{label:'Promouvoir un frère',roles:['VM']},
+    editCapitations:{label:'Gérer les capitations',roles:['VM','Officier']},
+    editAgenda:{label:'Gérer l\'agenda',roles:['VM','Officier']},
+    editOfficiers:{label:'Gérer les officiers',roles:['VM']},
+    viewFinances:{label:'Voir les finances',roles:['VM']},
+    viewRapport:{label:'Voir le rapport',roles:['VM']},
+    addVisiteur:{label:'Ajouter un visiteur',roles:['VM','Officier']},
+    viewMembres:{label:'Voir les membres',roles:['VM','Officier','Frère']},
+  },
+  obedience:{
+    validateDossier:{label:'Valider les dossiers',roles:['Grand Secrétaire','Grand Maître']},
+    validateAffil:{label:'Valider les affiliations',roles:['Grand Secrétaire','Grand Maître']},
+    createLoge:{label:'Créer une loge',roles:['Grand Maître']},
+    editGrandOff:{label:'Gérer les Grands Officiers',roles:['Grand Maître']},
+    viewAdmin:{label:'Administration obédience',roles:['Grand Maître','Grand Secrétaire','Grand Trésorier']},
+    manageRights:{label:'Gérer les droits',roles:['Grand Maître']},
+    viewAffiliations:{label:'Voir les affiliations',roles:['Grand Maître','Grand Secrétaire']},
+  }
+};
+
+function mkOffs(){return DEF_OFFS.map(function(t,i){return{id:'off_'+(i+1),titre:t,mid:null,perm:true};});}
+function moAt(ds){var d=new Date(ds);return(TODAY.getFullYear()-d.getFullYear())*12+(TODAY.getMonth()-d.getMonth());}
+function isPropGrade(m){return m.grade!=='Maitre'&&moAt(m.dateGrade)>=12;}
+function isCapOK(m,lid){var c=D.caps.find(function(c){return c.mid===m.id&&c.lid===lid;});if(!c)return false;if(c.st==='Payé')return true;var sd=getSolde(m.id,lid);return sd.solde<=0;}
+function nxtG(g){var i=GRADES.indexOf(g);return i<2?GRADES[i+1]:null;}
+function gLbl(g){return g==='Maitre'?'Maître':g;}
+function tdStr(){return new Date().toISOString().split('T')[0];}
+function uid(){return 'i'+Date.now()+Math.random().toString(36).slice(2,5);}
+function nxtMat(ms){var ns=ms.map(function(m){var r=m.matricule.match(/\d+/);return r?+r[0]:0;});return'F-'+String(Math.max.apply(null,[0].concat(ns))+1).padStart(3,'0');}
+function nxtLNum(ls){return String(Math.max.apply(null,[0].concat(ls.map(function(l){return+l.numero;})))+1).padStart(3,'0');}
+function nxtLId(ls){return'L'+String(Math.max.apply(null,[0].concat(ls.map(function(l){return+l.id.replace('L','');})))+1).padStart(3,'0');}
+function fmt(n){return Number(n).toLocaleString('fr-FR');}
+function sumA(arr,fn){return arr.reduce(function(s,x){return s+(fn?fn(x):x);},0);}
+
+function getAvances(mid,lid){if(!D.avances)D.avances=[];return D.avances.filter(function(a){return a.mid===mid&&a.lid===lid;});}
+function getSolde(mid,lid){
+  var cap=D.caps.find(function(c){return c.mid===mid&&c.lid===lid;});
+  if(!cap)return{du:0,verse:0,solde:0,pct:0};
+  var av=getAvances(mid,lid);var verse=sumA(av,function(a){return a.mnt;});
+  if(cap.st==='Payé')return{du:cap.mnt,verse:cap.mnt,solde:0,pct:100};
+  var solde=Math.max(0,cap.mnt-verse);
+  return{du:cap.mnt,verse:verse,solde:solde,pct:Math.min(100,Math.round(verse/cap.mnt*100))};
+}
+
+function getAssiduite(mid,lid){
+  var loge=gLoge(lid);if(!loge)return{total:0,present:0,pct:0};
+  var total=loge.agenda.length;if(!total)return{total:0,present:0,pct:0};
+  var pres=(D.presences||[]).filter(function(p){return p.mid===mid&&p.lid===lid&&p.present;}).length;
+  return{total:total,present:pres,pct:total?Math.round(pres/total*100):0};
+}
+
+// ── PERMISSIONS ──
+function hasPerm(permKey,scope){
+  var user=S.user;if(!user)return false;
+  if(user.role==='Grand Maître')return true;
+  var pobj=(scope==='obedience'?DEFAULT_PERMS.obedience:DEFAULT_PERMS.loge)[permKey];
+  if(!pobj)return false;
+  var roles=D.customPerms&&D.customPerms[scope]&&D.customPerms[scope][permKey]?D.customPerms[scope][permKey]:pobj.roles;
+  return roles.indexOf(user.role)!==-1;
+}
+function isSuperAdmin(){return S.user&&S.user.role==='Super Admin';}
+function isGO(){return S.user&&(S.user.role==='Grand Maître'||S.user.role==='Super Admin'||D.grandOff.some(function(g){return g.mid===S.user.id;}));}
+function isGS(){return S.user&&(S.user.role==='Grand Maître'||D.grandOff.some(function(g){return g.titre==='Grand Secrétaire'&&g.mid===S.user.id;}));}
+function isLO(lid){
+  if(!S.user)return false;
+  if(isGO()||isSuperAdmin())return true;
+  // Check if assigned as any officer in this loge
+  var loge=gLoge(lid);if(!loge)return false;
+  return loge.officiers.some(function(o){return o.mid===S.user.id;});
+}
+function isVM(lid){
+  if(!S.user)return false;
+  if(isGO()||isSuperAdmin())return true;
+  var loge=gLoge(lid);if(!loge)return false;
+  return loge.officiers.some(function(o){return o.mid===S.user.id&&(o.titre==='VM'||o.titre==='Vénérable Maîtresse');});
+}
+function _userIsOfficer(u){
+  if(!u)return false;
+  return D.loges.some(function(l){
+    return l.officiers.some(function(o){return o.mid===u.id;});
+  });
+}
+function isFrereSimple(){
+  if(!S.user)return false;
+  var restrictedRoles=['Frère'];
+  return restrictedRoles.indexOf(S.user.role)!==-1&&S.user.role!=='VM'&&S.user.role!=='Officier';
+}
+function isMaitre(){return S.user&&S.user.grade==='Maitre';}
+
+// ── DATA ──
+function buildData(){
+  var o1=mkOffs();o1[0].mid='F001';o1[3].mid='F002';
+  var o2=mkOffs();o2[0].mid='F004';o2[8].mid='F005';
+  return{
+    name:'Grande Loge Unie du Congo',acronym:'GLUC',siege:'Brazzaville',fondation:'1995',
+    tauxCap:50000,tauxLoge:200000,
+    grandOff:[
+      {id:'go1',titre:'Grand Maître',mid:'ADM'},{id:'go2',titre:'Grand Secrétaire',mid:'GS1'},
+      {id:'go3',titre:'Grand Orateur',mid:null},{id:'go4',titre:'Grand Trésorier',mid:null},
+      {id:'go5',titre:'Grand Expert',mid:null},{id:'go6',titre:'Grand Hospitalier',mid:null},
+      {id:'go7',titre:'Grand MC',mid:null},{id:'go8',titre:'Grand Couvreur',mid:null},
+    ],
+    loges:[
+      {id:'L001',numero:'001',nom:"Lumière d'Orient",ville:'Brazzaville',statut:'active',
+       agenda:[
+         {id:'ag1',titre:'Tenue ordinaire',date:'2026-04-25',heure:'19h00',type:'Tenue',planche:'La Fraternité universelle',presentateur:'Jean Mukulu'},
+         {id:'ag2',titre:'Initiation Apprenti',date:'2026-05-10',heure:'18h00',type:'Cérémonie',planche:'',presentateur:''},
+         {id:'ag3',titre:'Tenue ordinaire',date:'2026-06-13',heure:'19h00',type:'Tenue',planche:"L'initiation et ses symboles",presentateur:'Paul Kipoi'},
+       ],
+       instruction:[
+         {id:'in1',titre:"Tenue d'instruction",date:'2026-04-11',heure:'17h30',planche:'Les Outils du 1er degré',presentateur:'Jean Mukulu'},
+       ],
+       officiers:o1},
+      {id:'L002',numero:'002',nom:'Étoile du Congo',ville:'Pointe-Noire',statut:'active',
+       agenda:[
+         {id:'ag4',titre:'Tenue solennelle',date:'2026-04-28',heure:'19h30',type:'Tenue',planche:'La Lumière en Maçonnerie',presentateur:'Sophie Mbala'},
+         {id:'ag5',titre:'Passage Compagnon',date:'2026-05-15',heure:'18h30',type:'Cérémonie',planche:'',presentateur:''},
+         {id:'ag6',titre:'Tenue ordinaire',date:'2026-06-20',heure:'19h00',type:'Tenue',planche:'Le Rôle du Compagnon',presentateur:'Albert Zola'},
+       ],
+       instruction:[{id:'in2',titre:"Tenue d'instruction",date:'2026-04-14',heure:'17h00',planche:'Les Colonnes du Temple',presentateur:'Sophie Mbala'}],
+       officiers:o2},
+    ],
+    membres:[
+      {id:'ADM',matricule:'GLUC-00',nom:'Grand Maître GLUC',grade:'Maitre',dateGrade:'2010-01-01',logeId:null,role:'Grand Maître',pwd:'admin2026',statut:'actif',tel:'',email:'gm@gluc.cg',affiliation:null},
+      {id:'GS1',matricule:'GLUC-GS',nom:'Grand Secrétaire GLUC',grade:'Maitre',dateGrade:'2012-01-01',logeId:null,role:'Grand Secrétaire',pwd:'gs2026',statut:'actif',tel:'',email:'gs@gluc.cg',affiliation:null},
+      {id:'F001',matricule:'F-001',nom:'Jean Mukulu',grade:'Maitre',dateGrade:'2020-01-15',logeId:'L001',role:'VM',pwd:'vm1234',statut:'actif',tel:'+242001001',email:'jean@example.com',affiliation:null},
+      {id:'F002',matricule:'F-002',nom:'Paul Kipoi',grade:'Compagnon',dateGrade:'2024-06-20',logeId:'L001',role:'Officier',pwd:'off1234',statut:'actif',tel:'+242001002',email:'paul@example.com',affiliation:null},
+      {id:'F003',matricule:'F-003',nom:'Marc Yamba',grade:'Apprenti',dateGrade:'2025-03-10',logeId:'L001',role:'Frère',pwd:'1234',statut:'actif',tel:'+242001003',email:'marc@example.com',affiliation:null},
+      {id:'F004',matricule:'F-004',nom:'Sophie Mbala',grade:'Maitre',dateGrade:'2019-05-20',logeId:'L002',role:'VM',pwd:'vm4321',statut:'actif',tel:'+242001004',email:'sophie@example.com',affiliation:null},
+      {id:'F005',matricule:'F-005',nom:'Albert Zola',grade:'Compagnon',dateGrade:'2024-09-01',logeId:'L002',role:'Officier',pwd:'1234',statut:'actif',tel:'+242001005',email:'albert@example.com',affiliation:null},
+      {id:'F006',matricule:'F-006',nom:'Jean Busanda',grade:'Apprenti',dateGrade:'2025-01-15',logeId:'L002',role:'Frère',pwd:'1234',statut:'actif',tel:'+242001006',email:'jean.b@example.com',affiliation:null},
+    ],
+    caps:[
+      {id:'c1',mid:'F001',lid:'L001',annee:2026,mnt:50000,st:'Payé',date:'2026-01-15'},
+      {id:'c2',mid:'F002',lid:'L001',annee:2026,mnt:50000,st:'En attente',date:null},
+      {id:'c3',mid:'F003',lid:'L001',annee:2026,mnt:50000,st:'Retard',date:null},
+      {id:'c4',mid:'F004',lid:'L002',annee:2026,mnt:50000,st:'Payé',date:'2026-02-01'},
+      {id:'c5',mid:'F005',lid:'L002',annee:2026,mnt:50000,st:'Retard',date:null},
+      {id:'c6',mid:'F006',lid:'L002',annee:2026,mnt:50000,st:'En attente',date:null},
+    ],
+    avances:[{id:'av1',mid:'F002',lid:'L001',mnt:20000,note:'1er versement',date:'2026-03-10'}],
+    versements:[
+      {id:'v1',lid:'L001',annee:2026,mnt:200000,st:'Payé',date:'2026-02-15',desc:'Capitation annuelle 2026'},
+      {id:'v2',lid:'L002',annee:2026,mnt:200000,st:'En attente',date:null,desc:'Capitation annuelle 2026'},
+    ],
+    visiteurs:[{id:'vi1',lid:'L001',nom:'Charles Lumongo',loge:'Étoile du Nil',grade:'Maitre',motif:'Visite fraternelle',date:'2026-04-15'}],
+    dossiersPending:[
+      {id:'dp1',lid:'L001',nom:'Robert Mabala',tel:'+242009001',email:'r.mabala@example.com',grade:'Apprenti',
+       docs:{extrait:true,casier:true,nationalite:false},note:'En attente du certificat de nationalité',date:'2026-04-01',st:'Incomplet'},
+      {id:'dp2',lid:'L002',nom:'Alice Nzanga',tel:'+242009002',email:'a.nzanga@example.com',grade:'Apprenti',
+       docs:{extrait:true,casier:true,nationalite:true},note:'Dossier complet',date:'2026-04-10',st:'Complet'},
+    ],
+    affiliationsPending:[
+      {id:'ap1',lid:'L001',nom:'Pierre Loutou',tel:'+242009003',email:'p.loutou@example.com',grade:'Compagnon',
+       logeOrigin:"Loge Étoile d'Afrique",obOrigin:'Grande Loge du Gabon',dateAffil:'2026-04-05',st:'En attente',note:''},
+    ],
+    presences:[
+      {id:'pr1',mid:'F001',lid:'L001',evtId:'ag1',present:true},
+      {id:'pr2',mid:'F002',lid:'L001',evtId:'ag1',present:true},
+      {id:'pr3',mid:'F003',lid:'L001',evtId:'ag1',present:false},
+      {id:'pr4',mid:'F001',lid:'L001',evtId:'ag2',present:true},
+      {id:'pr5',mid:'F002',lid:'L001',evtId:'ag2',present:false},
+      {id:'pr6',mid:'F003',lid:'L001',evtId:'ag2',present:true},
+    ],
+    notifLog:[],
+    smsLog:[],
+    superAdmin:{id:'SADM',matricule:'SADM-01',nom:'Super Administrateur',role:'Super Admin',pwd:'superadmin2026',email:'admin@gluc.cg'},
+    obInfo:{name:'Grande Loge Unie du Congo',acronym:'GLUC',siege:'Brazzaville',ville:'Brazzaville',fondation:'1995',adresse:'Avenue de la Paix, Brazzaville',patente:'PAT-GLUC-2026',tel:'+242 06 000 0000',email:'contact@gluc.cg',description:'Obédience maçonnique de la République du Congo',welcomeMsg:'À la Gloire du Grand Architecte de l\'Univers. Frère {nom}, nous vous souhaitons la bienvenue dans l\'espace de travail de la Grande Loge Unie du Congo.',scrollMsg:'Prochain Suprême Conseil — 15 Août 2026 · Rappel cotisations 2026 ouvertes · Bienvenue aux nouveaux Frères initiés'},
+    grandeLogeTenues:[
+      {id:'gl1',titre:'Tenue de Grande Loge Ordinaire',date:'2026-06-01',heure:'10h00',type:'Grande Loge',lieu:'Temple GLUC Brazzaville',compteRendu:null,participants:[]},
+      {id:'gl2',titre:'Tenue Blanche Ouverte',date:'2026-09-20',heure:'15h00',type:'Tenue Blanche',lieu:'Hôtel Olympique, Pointe-Noire',compteRendu:null,participants:[]},
+    ],
+    documents:[
+      {id:'doc1',titre:'Règlement Général GLUC',type:'Règlement',grade:'Tous',date:'2026-01-01',url:null,contenu:'Règlement général de la Grande Loge Unie du Congo - Version 2026'},
+      {id:'doc2',titre:'Planche d\'exemple - 1er degré',type:'Planche',grade:'Apprenti',date:'2026-02-15',url:null,contenu:''},
+      {id:'doc3',titre:'Rituel du Compagnon',type:'Rituel',grade:'Compagnon',date:'2026-02-15',url:null,contenu:''},
+    ],
+    troncVeuve:[],
+    reintegrationPending:[],
+    radiationPending:[],
+    logoObedience:null,
+    customWelcome:true,
+    secretQuestions:{
+      Apprenti:{q:'Où les apprentis francs-maçons ont-ils coutume de gagner leurs salaires ?',a:'boaz',variants:['à la colonne boaz','colonne boaz','boaz']},
+      Compagnon:{q:'Où les compagnons francs-maçons ont-ils coutume de gagner leurs salaires ?',a:'jakin',variants:['à la colonne jakin','colonne jakin','jakin']},
+      Maitre:{q:'Qui a tué le Maître Hiram ?',a:'les trois mauvais compagnons',variants:['trois mauvais compagnons','les 3 mauvais compagnons','trois compagnons','hiram abia']},
+    },
+
+    smsConfig:{provider:'demo',user:'',apiKey:'',mode:'demo'},
+    customPerms:null,
+  };
+}
+
+var D=buildData();
+var S={user:null,view:'login',lid:null,tab:'membres',modal:null,mdata:{}};
+
+function G(id){return document.getElementById(id);}
+function gMbr(id){return D.membres.find(function(m){return m.id===id;});}
+function gLoge(id){return D.loges.find(function(l){return l.id===id;});}
+function lMbrs(lid){return D.membres.filter(function(m){return m.logeId===lid&&m.statut==='actif';});}
+function lCaps(lid){return D.caps.filter(function(c){return c.lid===lid;});}
+
+function ch(t,c){return'<span class="chip '+c+'">'+t+'</span>';}
+function gCh(g){return g==='Maitre'?ch('Maître','cg'):g==='Compagnon'?ch(g,'cb'):ch(g,'cgr');}
+function sCh(s){return s==='Payé'?ch(s,'cgreen'):s==='En attente'?ch(s,'cor'):ch(s,'cred');}
+function tCh(t){return t==='Tenue'?ch(t,'cg'):t==='Cérémonie'?ch(t,'cb'):t==='Agapes'?ch(t,'cgreen'):t==="Tenue d'instruction"?ch(t,'cteal'):ch(t,'cpur');}
+function rCh(r){return r==='Grand Maître'||r==='Grand Secrétaire'?ch(r,'cteal2'):r==='VM'?ch(r,'cor'):r==='Officier'?ch(r,'cb'):ch(r,'cgr');}
+function dossierBadge(st){return st==='Validé'?ch('Validé ✓','cgreen'):st==='Complet'?ch('Complet','cor'):st==='Rejeté'?ch('Rejeté','cred'):ch('Incomplet','cgr');}
+function afBadge(st){return st==='Confirmé'?ch('Affilié ✓','cgreen'):ch('En attente','cor');}
+
+
+// ── SECRET QUESTION ──
+var S_PENDING_USER = null; // user awaiting secret question
+
+function checkSecretAnswer(ans){
+  var u = S_PENDING_USER; if(!u) return false;
+  var grade = u.grade||'Maitre';
+  var sq = D.secretQuestions[grade];
+  if(!sq) return true; // no question for this grade
+  var normalized = ans.toLowerCase().trim().replace(/[àáâ]/g,'a').replace(/[éèêë]/g,'e').replace(/[îï]/g,'i').replace(/[ôö]/g,'o').replace(/[ùûü]/g,'u');
+  var variants = sq.variants.concat([sq.a]);
+  return variants.some(function(v){
+    var nv = v.toLowerCase().trim().replace(/[àáâ]/g,'a').replace(/[éèêë]/g,'e').replace(/[îï]/g,'i').replace(/[ôö]/g,'o').replace(/[ùûü]/g,'u');
+    return normalized === nv || normalized.indexOf(nv) !== -1 || nv.indexOf(normalized) !== -1;
+  });
+}
+
+APP.submitSecretAnswer = function(){
+  var ans = G('sqAnswer') ? G('sqAnswer').value : '';
+  if(!checkSecretAnswer(ans)){
+    var el = G('sqErr'); if(el) el.style.display='block'; return;
+  }
+  S_PENDING_USER = null;
+  var u = S.user;
+  // Show welcome modal then proceed
+  S.pendingWelcome = true;
+  if(u.role==='Grand Maître'||u.role==='Grand Secrétaire'||u.role==='Super Admin'||isGO()){S.view='obedience';S.tab='programmes';}
+  else if(isFrereSimple()&&!_userIsOfficer(u)){S.view='monEspace';}
+  else{S.view='atelierSelect';}
+  R();
+};
+
+function vSecretQuestion(){
+  var u = S_PENDING_USER; if(!u) return vLogin();
+  var grade = u.grade||'Maitre';
+  var sq = D.secretQuestions[grade];
+  if(!sq){ APP.submitSecretAnswer(); return vLogin(); }
+  return '<div class="lpg"><div class="lbox">'
+    +'<div class="llogo">'+(LOGO||D.logoObedience?'<img src="'+(LOGO||D.logoObedience)+'" style="width:68px;height:68px;object-fit:cover;border-radius:50%;"/>':'<span style="font-size:30px;color:#c9a227">⬡</span>')+'</div>'
+    +'<div class="ltit">Question de Sécurité</div>'
+    +'<div class="lsub">'+gLbl(grade)+'</div>'
+    +'<div style="background:#f5f5f5;border:1.5px solid #ddd;border-radius:10px;padding:14px;margin-bottom:18px;font-size:14px;font-weight:600;color:#111;line-height:1.5">'+sq.q+'</div>'
+    +'<div class="fg"><label class="fl">Votre réponse</label>'
+    +'<input id="sqAnswer" placeholder="Répondez ici..." autocomplete="off" onkeydown="if(event.key===\'Enter\')APP.submitSecretAnswer()"/></div>'
+    +'<div id="sqErr" style="display:none" class="lerr">Réponse incorrecte. Veuillez réessayer.</div>'
+    +'<button class="btn gold lg full" onclick="APP.submitSecretAnswer()">Valider</button>'
+    +'<div style="margin-top:10px;text-align:center"><button class="btn ghost sm" onclick="APP.backToLogin()">← Retour</button></div>'
+    +'</div></div>';
+}
+
+APP.backToLogin = function(){
+  S_PENDING_USER = null; S.user = null; S.view = 'login'; R();
+};
+
+function renderWelcomeModal(){
+  var u=S.user;
+  var msg=(D.obInfo.welcomeMsg||'Bienvenue Frère {nom} !').replace('{nom}',u?u.nom:'');
+  return '<div id="welcomeOvl" class="ovl" onclick="G(\'welcomeOvl\').remove()" style="align-items:center">'
+    +'<div class="mbox" style="max-width:460px;text-align:center">'
+    +'<div style="font-size:36px;margin-bottom:10px">⬡</div>'
+    +'<div style="font-size:18px;font-weight:900;color:#c9a227;margin-bottom:12px">À la Gloire du G∴A∴D∴L\'U∴</div>'
+    +'<div style="font-size:14px;color:#111;line-height:1.7;margin-bottom:16px">'+msg+'</div>'
+    +'<div id="scrollBanner" style="background:#111;color:#c9a227;padding:8px 14px;border-radius:7px;font-size:12px;font-weight:600;overflow:hidden;white-space:nowrap;margin-bottom:16px">'+D.obInfo.scrollMsg+'</div>'
+    +'<button class="btn gold full" onclick="G(\'welcomeOvl\').remove()">Entrer au Temple</button>'
+    +'</div></div>';
+}
+
+// ── FUNCTION CUMULATION CHECK ──
+function canHoldOffice(mid, titre, loge){
+  var current = loge.officiers.filter(function(o){return o.mid===mid&&o.id!==titre;});
+  if(!current.length) return true;
+  // Secrétaire can also be Député or Député Adjoint
+  var curTitles = current.map(function(o){return o.titre;});
+  var newIsDeputé = titre.indexOf('Député')!==-1;
+  var hasSecretaire = curTitles.indexOf('Secrétaire')!==-1;
+  if(hasSecretaire && newIsDeputé) return true;
+  var newIsSecretaire = titre==='Secrétaire';
+  var hasDeputé = curTitles.some(function(t){return t.indexOf('Député')!==-1;});
+  if(newIsSecretaire && hasDeputé) return true;
+  return false;
+}
+
+// ── GRANDE LOGE TENUES ──
+function tGrandeLoge(){
+  var h='<div style="display:flex;align-items:center;margin-bottom:18px">'
+    +'<div class="sec" style="margin:0">Tenues de Grande Loge</div><div style="flex:1"></div>'
+    +(isGO()||isSuperAdmin()?'<button class="btn gold" onclick="APP.openMod(\'newGrandeLoge\',{})">+ Créer une tenue<\/button>':'')
+    +'</div>';
+  if(!D.grandeLogeTenues.length)return h+'<div style="color:#aaa;text-align:center;padding:20px">Aucune tenue de Grande Loge programmée.</div>';
+  D.grandeLogeTenues.forEach(function(t){
+    h+='<div class="card" style="margin-bottom:14px">'
+      +'<div style="display:flex;align-items:flex-start;gap:14px;flex-wrap:wrap">'
+      +'<div style="flex:1">'
+      +'<div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-bottom:8px">'
+      +'<span style="font-weight:900;font-size:15px">'+t.titre+'</span>'
+      +(t.type==='Tenue Blanche'?ch('Tenue Blanche','cteal2'):ch('Grande Loge','cg'))
+      +'</div>'
+      +'<div style="font-size:13px;color:#555;margin-bottom:4px">📅 '+t.date+' à '+t.heure+'</div>'
+      +'<div style="font-size:13px;color:#555;margin-bottom:8px">📍 '+t.lieu+'</div>'
+      +(t.compteRendu?'<div class="alert a-ok" style="padding:8px 12px;font-size:12px">📄 Compte rendu disponible — <button class="btn ok sm" onclick="alert(\'Compte rendu : \'+D.grandeLogeTenues.find(function(x){return x.id===\''+t.id+'\';}).compteRendu)">Consulter</button></div>':'<div style="font-size:12px;color:#aaa;font-style:italic">Aucun compte rendu attaché</div>')
+      +'</div>'
+      +'<div style="display:flex;flex-direction:column;gap:6px">'
+      +(isGO()||isSuperAdmin()?'<button class="btn outline sm" onclick="APP.openMod(\'attachCR\',{id:\''+t.id+'\'})">📎 Attacher CR<\/button>':'')
+      +'</div></div></div>';
+  });
+  return h;
+}
+APP.createGrandeLoge=function(){
+  var t=G('mTitre').value.trim(),d=G('mDate').value;if(!t||!d)return;
+  D.grandeLogeTenues.push({id:uid(),titre:t,date:d,heure:G('mHeure')?G('mHeure').value:'',type:G('mTypeGL')?G('mTypeGL').value:'Grande Loge',lieu:G('mLieu')?G('mLieu').value.trim():'',compteRendu:null,participants:[]});
+  APP.closeMod();
+};
+APP.saveCR=function(id){
+  var t=D.grandeLogeTenues.find(function(x){return x.id===id;});
+  if(t&&G('crText'))t.compteRendu=G('crText').value.trim();
+  APP.closeMod();
+};
+
+// ── DOCUMENTS ──
+function tDocuments(scope,lid){
+  var docs=D.documents;
+  var userGrade=S.user?S.user.grade||'Maitre':'Apprenti';
+  var gradeOrder={Apprenti:0,Compagnon:1,Maitre:2};
+  var accessible=docs.filter(function(doc){
+    if(doc.grade==='Tous')return true;
+    return (gradeOrder[userGrade]||0)>=(gradeOrder[doc.grade]||0);
+  });
+  var canAdd=isGO()||isSuperAdmin()||(lid&&isLO(lid));
+  var h='<div style="display:flex;align-items:center;margin-bottom:18px">'
+    +'<div class="sec" style="margin:0">Documents</div><div style="flex:1"></div>'
+    +(canAdd?'<button class="btn gold" onclick="APP.openMod(\'newDoc\',{lid:\''+lid+'\'})">+ Ajouter<\/button>':'')
+    +'</div>';
+  // Type filter
+  var types=['Tous','Règlement','Planche','Rituel','Compte rendu','Note','Autre'];
+  h+='<div style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:14px">'
+    +types.map(function(t){return'<button class="btn ghost sm" onclick="APP.filterDocs(\''+t+'\')" id="docFilter_'+t.replace(' ','_')+'">'+t+'</button>';}).join('')
+    +'</div>';
+  h+='<div id="docList">';
+  ['Règlement','Planche','Rituel','Compte rendu','Note','Autre'].forEach(function(type){
+    var filtered=accessible.filter(function(d){return d.type===type;});
+    if(!filtered.length)return;
+    h+='<div style="font-size:13px;font-weight:900;text-transform:uppercase;letter-spacing:.4px;color:#555;margin:14px 0 8px">'+type+'s</div>';
+    filtered.forEach(function(doc){
+      h+='<div class="card" style="display:flex;align-items:center;gap:12px;margin-bottom:8px">'
+        +'<div style="font-size:24px">📄</div>'
+        +'<div style="flex:1"><div style="font-weight:700;font-size:13px">'+doc.titre+'</div>'
+        +'<div style="font-size:11px;color:#888;margin-top:2px">'+doc.type+' · '+ch('Grade : '+doc.grade,'cgr')+' · '+doc.date+'</div>'
+        +(doc.contenu?'<div style="font-size:12px;color:#555;margin-top:4px;font-style:italic">'+doc.contenu.substring(0,100)+(doc.contenu.length>100?'...':'')+'</div>':'')
+        +'</div>'
+        +'<button class="btn outline sm" onclick="APP.viewDoc(\''+doc.id+'\')">Consulter</button>'
+        +'</div>';
+    });
+  });
+  h+='</div>';
+  return h;
+}
+APP.filterDocs=function(type){};
+APP.viewDoc=function(id){
+  var doc=D.documents.find(function(x){return x.id===id;});
+  if(!doc)return;
+  if(doc.url){window.open(doc.url,'_blank');return;}
+  var w=window.open('','_blank','width=800,height:600');
+  w.document.write('<!DOCTYPE htm'+'l><html><head><meta charset="UTF-8"><title>'+doc.titre+'</title>'
+    +'<style>body{font-family:Georgia,serif;padding:30px;max-width:700px;margin:0 auto;color:#111;}h1{border-bottom:2px solid #c9a227;padding-bottom:10px;}pre{white-space:pre-wrap;font-family:inherit;line-height:1.7;}<'+'/'+'style></head><body>'
+    +'<h1>'+doc.titre+'</h1>'
+    +'<p style="color:#888;font-size:13px">Type : '+doc.type+' · Grade : '+doc.grade+' · Date : '+doc.date+'</p>'
+    +'<hr style="border:1px solid #eee;margin:16px 0">'
+    +'<pre>'+(doc.contenu||'Aucun contenu disponible.')+'</pre>'
+    +'<'+'/'+'body><'+'/'+'html>');
+  w.document.close();
+};
+APP.saveDoc=function(){
+  var t=G('docTitre').value.trim();if(!t)return;
+  D.documents.push({id:uid(),titre:t,type:G('docType').value,grade:G('docGrade').value,date:tdStr(),url:null,contenu:G('docContenu')?G('docContenu').value.trim():''});
+  APP.closeMod();
+};
+
+// ── TRONC DE LA VEUVE ──
+function lTroncVeuve(loge,off){
+  var tv=D.troncVeuve.filter(function(t){return t.lid===loge.id;});
+  var recettes=tv.filter(function(t){return t.type==='Recette';}).reduce(function(s,t){return s+t.mnt;},0);
+  var depenses=tv.filter(function(t){return t.type==='Dépense';}).reduce(function(s,t){return s+t.mnt;},0);
+  var solde=recettes-depenses;
+  var canSee=isVM(loge.id)||loge.officiers.some(function(o){return(o.titre==='Trésorier'||o.titre==='Hospitalier')&&o.mid===S.user.id;});
+  if(!canSee)return'<div class="alert a-e">Accès réservé au VM, Trésorier et Hospitalier.</div>';
+  var h='<div style="display:flex;align-items:center;margin-bottom:16px">'
+    +'<div class="sec" style="margin:0">Tronc de la Veuve</div><div style="flex:1"></div>'
+    +(off?'<button class="btn gold" onclick="APP.openMod(\'newTronc\',{lid:\''+loge.id+'\'})">+ Entrée<\/button>':'')
+    +' <button class="btn outline" onclick="APP.exportTronc(\''+loge.id+'\')">📄 Exporter PDF</button>'
+    +'</div>'
+    +'<div class="g3" style="margin-bottom:18px">'
+    +'<div class="sc"><div class="sc-l">Recettes</div><div class="sc-v" style="color:#1b5e20">'+fmt(recettes)+' F</div></div>'
+    +'<div class="sc"><div class="sc-l">Dépenses</div><div class="sc-v" style="color:#b71c1c">'+fmt(depenses)+' F</div></div>'
+    +'<div class="sc"><div class="sc-l">Solde</div><div class="sc-v" style="color:'+(solde>=0?'#1b5e20':'#b71c1c')+'">'+fmt(solde)+' F</div></div>'
+    +'</div>';
+  if(!tv.length)return h+'<div style="color:#aaa;text-align:center;padding:16px">Aucune opération enregistrée.</div>';
+  h+='<div class="tw"><table><thead><tr><th>Date</th><th>Type</th><th>Description</th><th>Montant</th><th>Solde cumulé</th></tr></thead><tbody>';
+  var cumul=0;
+  tv.forEach(function(t){
+    cumul+=(t.type==='Recette'?t.mnt:-t.mnt);
+    h+='<tr><td style="color:#888;font-size:12px">'+t.date+'</td>'
+      +'<td>'+ch(t.type,t.type==='Recette'?'cgreen':'cred')+'</td>'
+      +'<td>'+t.desc+'</td>'
+      +'<td style="font-weight:700;color:'+(t.type==='Recette'?'#1b5e20':'#b71c1c')+'">'+fmt(t.mnt)+' F</td>'
+      +'<td style="font-weight:700;color:'+(cumul>=0?'#1b5e20':'#b71c1c')+'">'+fmt(cumul)+' F</td></tr>';
+  });
+  return h+'</tbody></table></div>';
+}
+APP.saveTronc=function(lid){
+  var mnt=parseInt(G('trMnt').value)||0;if(mnt<=0)return;
+  if(!D.troncVeuve)D.troncVeuve=[];
+  D.troncVeuve.push({id:uid(),lid:lid,type:G('trType').value,mnt:mnt,desc:G('trDesc').value.trim(),date:G('trDate').value});
+  APP.closeMod();
+};
+APP.exportTronc=function(lid){
+  var loge=gLoge(lid);if(!loge)return;
+  var tv=D.troncVeuve.filter(function(t){return t.lid===lid;});
+  var recettes=tv.filter(function(t){return t.type==='Recette';}).reduce(function(s,t){return s+t.mnt;},0);
+  var depenses=tv.filter(function(t){return t.type==='Dépense';}).reduce(function(s,t){return s+t.mnt;},0);
+  var w=window.open('','_blank','width=700,height:600');
+  var rows=tv.map(function(t,i){var cumul=0;tv.slice(0,i+1).forEach(function(x){cumul+=(x.type==='Recette'?x.mnt:-x.mnt);});return'<tr><td>'+t.date+'</td><td>'+t.type+'</td><td>'+t.desc+'</td><td>'+fmt(t.mnt)+'</td><td>'+fmt(cumul)+'</td></tr>';}).join('');
+  w.document.write('<!DOCTYPE htm'+'l><html><head><meta charset="UTF-8"><title>Tronc de la Veuve — '+loge.nom+'</title>'
+    +'<style>body{font-family:Georgia,serif;padding:24px;max-width:700px;margin:0 auto;}h1{border-bottom:2px solid #c9a227;padding-bottom:8px;}table{width:100%;border-collapse:collapse;}th{background:#111;color:#fff;padding:7px 10px;font-size:11px;}td{padding:7px 10px;border-bottom:1px solid #eee;font-size:12px;}<'+'/'+'style></head><body>'
+    +'<h1>Tronc de la Veuve — Loge N°'+loge.numero+' '+loge.nom+'</h1>'
+    +'<p>Recettes : <strong>'+fmt(recettes)+'</strong> · Dépenses : <strong>'+fmt(depenses)+'</strong> · Solde : <strong>'+fmt(recettes-depenses)+'</strong></p>'
+    +'<table><thead><tr><th>Date</th><th>Type</th><th>Description</th><th>Montant</th><th>Solde cumulé</th></tr></thead><tbody>'+rows+'</tbody></table>'
+    +'<div style="margin-top:16px;text-align:center"><button onclick="window.print()" style="background:#111;color:#fff;border:none;padding:9px 20px;border-radius:6px;cursor:pointer">🖨 PDF</button></div>'
+    +'<'+'/'+'body><'+'/'+'html>');
+  w.document.close();
+};
+
+// ── PARAMÈTRES LOGE ──
+function lParams(loge,off){
+  if(!off)return'<div class="alert a-e">Accès réservé aux officiers.</div>';
+  return'<div class="sec">⚙ Paramètres de la Loge</div>'
+    +'<div style="display:grid;grid-template-columns:1fr 1fr;gap:18px">'
+    +'<div>'
+    +'<div style="font-size:14px;font-weight:900;margin-bottom:12px">Logo de la loge</div>'
+    +'<div class="card" style="text-align:center;margin-bottom:16px">'
+    +(loge.logo?'<img src="'+loge.logo+'" style="width:80px;height:80px;border-radius:50%;border:3px solid #c9a227;margin-bottom:10px"/><br>':'<div style="width:80px;height:80px;border-radius:50%;background:#f5f5f5;border:2px dashed #ccc;display:flex;align-items:center;justify-content:center;margin:0 auto 10px;font-size:28px">⬡</div>')
+    +'<label class="btn outline sm" style="cursor:pointer;display:inline-flex;align-items:center;gap:6px">📷 Changer le logo'
+    +'<input type="file" accept="image/*" style="display:none" onchange="APP.loadLogeLogo(this,\''+loge.id+'\')"/></label>'
+    +'</div>'
+    +'<div style="font-size:14px;font-weight:900;margin-bottom:12px">Informations</div>'
+    +'<div class="card">'
+    +'<div class="fg"><label class="fl">Email</label><input id="logeEmail" value="'+(loge.email||'')+'" onchange="APP.saveLogeInfo(\''+loge.id+'\',\'email\',this.value)"/></div>'
+    +'<div class="fg"><label class="fl">Taux de capitation (FCFA)</label><input id="logeCap" type="number" value="'+(loge.tauxCap||D.tauxCap)+'" onchange="APP.saveLogeInfo(\''+loge.id+'\',\'tauxCap\',parseInt(this.value))"/></div>'
+    +'</div></div>'
+    +'</div>';
+}
+APP.loadLogeLogo=function(inp,lid){
+  var file=inp.files[0];if(!file)return;
+  var r=new FileReader();r.onload=function(e){var l=gLoge(lid);if(l)l.logo=e.target.result;R();};r.readAsDataURL(file);
+};
+APP.saveLogeInfo=function(lid,key,val){var l=gLoge(lid);if(l)l[key]=val;};
+
+// ── PARAMÈTRES OBÉDIENCE ──
+function tParamsOb(){
+  var h='<div style="display:flex;align-items:center;margin-bottom:18px">'
+    +'<div class="sec" style="margin:0">⚙ Paramètres de l\'Obédience</div></div>'
+    +'<div style="display:grid;grid-template-columns:1fr 1fr;gap:18px">'
+    // Left: Infos
+    +'<div>'
+    +'<div style="font-size:14px;font-weight:900;margin-bottom:12px">Informations générales</div>'
+    +'<div class="card" style="margin-bottom:14px">'
+    +['name','acronym','siege','ville','adresse','fondation','patente','tel','email','description'].map(function(k){
+      var labels={name:'Nom',acronym:'Acronyme',siege:'Siège',ville:'Ville',adresse:'Adresse',fondation:'Fondée en',patente:'Patente',tel:'Téléphone',email:'Email',description:'Description'};
+      return'<div class="fg"><label class="fl">'+labels[k]+'</label>'
+        +'<input id="obInfo_'+k+'" value="'+(D.obInfo[k]||'')+'" onchange="APP.saveObInfo(\''+k+'\',this.value)"/></div>';
+    }).join('')
+    +'</div>'
+    // Logo
+    +'<div style="font-size:14px;font-weight:900;margin-bottom:12px">Logo de l\'Obédience</div>'
+    +'<div class="card" style="margin-bottom:14px;text-align:center">'
+    +(D.logoObedience?'<img src="'+D.logoObedience+'" style="width:80px;height:80px;border-radius:50%;border:3px solid #c9a227;margin-bottom:10px"/><br>':'<div style="width:80px;height:80px;border-radius:50%;background:#f5f5f5;border:2px dashed #ccc;display:flex;align-items:center;justify-content:center;margin:0 auto 10px;font-size:28px">⬡</div>')
+    +'<label class="btn outline sm" style="cursor:pointer;display:inline-flex;align-items:center;gap:6px">📷 Changer le logo<input type="file" accept="image/*" style="display:none" onchange="APP.loadLogoOb(this)"/></label>'
+    +'</div>'
+    +'</div>'
+    // Right: Welcome + Droits
+    +'<div>'
+    +'<div style="font-size:14px;font-weight:900;margin-bottom:12px">Message de bienvenue</div>'
+    +'<div class="card" style="margin-bottom:14px">'
+    +'<div class="fg"><label class="fl">Texte de bienvenue (utilisez {nom} pour le nom du frère)</label>'
+    +'<textarea id="obWelcomeMsg" rows="4" style="min-height:90px">'+D.obInfo.welcomeMsg+'</textarea></div>'
+    +'<div class="fg"><label class="fl">Bandeau défilant</label>'
+    +'<input id="obScrollMsg" value="'+D.obInfo.scrollMsg+'"/></div>'
+    +'<button class="btn gold sm" onclick="APP.saveWelcomeMsg()">Enregistrer</button>'
+    +'</div>'
+    +'<div style="font-size:14px;font-weight:900;margin-bottom:12px">Compte Super Admin</div>'
+    +'<div class="card" style="margin-bottom:14px">'
+    +'<div style="font-size:13px;margin-bottom:8px">Matricule : <strong>'+D.superAdmin.matricule+'</strong> · Email : <strong>'+D.superAdmin.email+'</strong></div>'
+    +(isSuperAdmin()?'<button class="btn outline sm" onclick="APP.openMod(\'editSuperAdmin\',{})">Modifier Super Admin</button>':'<div style="color:#aaa;font-size:12px">Accès Super Admin uniquement</div>')
+    +'</div>'
+    +'</div></div>'
+    // Droits globaux
+    +'<div style="font-size:14px;font-weight:900;margin:16px 0 12px">Droits & Permissions</div>'
+    +tParams();
+  return h;
+}
+APP.saveObInfo=function(key,val){D.obInfo[key]=val;};
+APP.saveWelcomeMsg=function(){
+  D.obInfo.welcomeMsg=G('obWelcomeMsg')?G('obWelcomeMsg').value:'';
+  D.obInfo.scrollMsg=G('obScrollMsg')?G('obScrollMsg').value:'';
+  alert('Paramètres sauvegardés.');
+};
+APP.loadLogoOb=function(inp){var file=inp.files[0];if(!file)return;var r=new FileReader();r.onload=function(e){D.logoObedience=e.target.result;LOGO=e.target.result;R();};r.readAsDataURL(file);};
+
+APP.saveSuperAdmin=function(){
+  D.superAdmin.matricule=G('saNom').value.trim()||D.superAdmin.matricule;
+  if(G('saPwd').value.length>=4)D.superAdmin.pwd=G('saPwd').value;
+  D.superAdmin.email=G('saEmail').value.trim();
+  APP.closeMod();
+};
+
+// ── PASSWORD CHANGE ──
+APP.doChangePwd=function(){
+  var old=G('pwOld').value,nw=G('pwNew').value,cf=G('pwConf').value;
+  var m=D.membres.find(function(x){return x.id===S.user.id;});
+  if(!m||m.pwd!==old){var e=G('pwErr');if(e){e.textContent='Mot de passe actuel incorrect.';e.style.display='block';}return;}
+  if(nw.length<4){var e=G('pwErr');if(e){e.textContent='Minimum 4 caractères.';e.style.display='block';}return;}
+  if(nw!==cf){var e=G('pwErr');if(e){e.textContent='Les mots de passe ne correspondent pas.';e.style.display='block';}return;}
+  m.pwd=nw;S.user.pwd=nw;
+  APP.closeMod();alert('Mot de passe modifié avec succès.');
+};
+
+APP.viewPlanche=function(evtId,lid){
+  var loge=gLoge(lid);if(!loge)return;
+  var ev=loge.agenda.find(function(x){return x.id===evtId;});
+  if(!ev)return;
+  var w=window.open('','_blank','width=700,height:600');
+  w.document.write('<!DOCTYPE htm'+'l><html><head><meta charset="UTF-8"><title>'+ev.titre+'</title>'
+    +'<style>body{font-family:Georgia,serif;padding:24px;max-width:700px;margin:0 auto;}h1{border-bottom:2px solid #c9a227;padding-bottom:8px;font-size:18px;}h2{font-size:14px;font-weight:700;margin:16px 0 8px;color:#555;}pre{white-space:pre-wrap;font-family:inherit;line-height:1.7;background:#f9f9f9;padding:12px;border-radius:8px;}<'+'/'+'style></head><body>'
+    +'<h1>'+ev.titre+' — '+ev.date+' à '+ev.heure+'</h1>'
+    +'<p>Planche : <strong>'+(ev.planche||'Non définie')+'</strong> — Présentateur : <strong>'+(ev.presentateur||'—')+'</strong></p>'
+    +(ev.plancheTracee?'<h2>Planche Tracée</h2><pre>'+ev.plancheTracee+'</pre>':'')
+    +(ev.compteRendu?'<h2>Compte Rendu</h2><pre>'+ev.compteRendu+'</pre>':'')
+    +'<div style="margin-top:14px;text-align:center"><button onclick="window.print()" style="background:#111;color:#fff;border:none;padding:9px 20px;border-radius:6px;cursor:pointer">🖨 Imprimer</button></div>'
+    +'<'+'/'+'body><'+'/'+'html>');
+  w.document.close();
+};
+
+// ── PASSWORD CHANGE ──
+APP.doChangePwd=function(){
+  var old=G('pwOld').value,nw=G('pwNew').value,cf=G('pwConf').value;
+  var m=D.membres.find(function(x){return x.id===S.user.id;});
+  if(!m||m.pwd!==old){var e=G('pwErr');if(e){e.textContent='Mot de passe actuel incorrect.';e.style.display='block';}return;}
+  if(nw.length<4){var e=G('pwErr');if(e){e.textContent='Minimum 4 caractères.';e.style.display='block';}return;}
+  if(nw!==cf){var e=G('pwErr');if(e){e.textContent='Les mots de passe ne correspondent pas.';e.style.display='block';}return;}
+  m.pwd=nw;S.user.pwd=nw;
+  APP.closeMod();alert('Mot de passe modifié avec succès.');
+};
+
+// ─── NOTIFICATION SYSTEM (Point 16) ───────────────────────────────────
+var notifSchedule=[];
+
+function tNotifications(){
+  var retards=D.caps.filter(function(c){return c.st==='Retard'||c.st==='En attente';});
+  var nonAssidus=D.membres.filter(function(m){
+    if(!m.logeId||m.statut!=='actif')return false;
+    var ass=getAssiduite(m.id,m.logeId);return ass.pct<50&&ass.total>0;
+  });
+  var h='<div class="sec">Centre de Notifications</div>'
+    +'<div class="g3" style="margin-bottom:18px">'
+    +'<div class="sc"><div class="sc-l">En retard</div><div class="sc-v" style="color:#b71c1c">'+retards.length+'</div></div>'
+    +'<div class="sc"><div class="sc-l">Non assidus</div><div class="sc-v" style="color:#5a3e00">'+nonAssidus.length+'</div></div>'
+    +'<div class="sc"><div class="sc-l">Notifs envoyées</div><div class="sc-v">'+D.notifLog.length+'</div></div>'
+    +'</div>'
+    +'<div style="display:flex;gap:10px;flex-wrap:wrap;margin-bottom:18px">'
+    +'<button class="btn gold" onclick="APP.openMod(\'massNotif\',{})">📧 Envoi en masse</button>'
+    +'<button class="btn outline" onclick="APP.openMod(\'planifNotif\',{})">📅 Planifier un envoi</button>'
+    +'<button class="btn ok" onclick="APP.autoRelanceAll()">⚡ Relance automatique maintenant</button>'
+    +'</div>'
+    +'<div style="font-size:14px;font-weight:900;margin-bottom:12px">Retards de capitation</div>'
+    +'<div class="tw"><table><thead><tr><th>Frère</th><th>Loge</th><th>Montant</th><th>Email</th><th>Tél</th><th>Relances</th><th>Action</th></tr></thead><tbody>';
+  retards.forEach(function(c){
+    var m=gMbr(c.mid),l=gLoge(c.lid);
+    var nb=D.notifLog.filter(function(n){return n.mid===c.mid;}).length;
+    h+='<tr><td style="font-weight:700">'+(m?m.nom:'—')+'</td><td>'+(l?l.nom:'—')+'</td>'
+      +'<td style="font-weight:700">'+fmt(c.mnt)+' F</td>'
+      +'<td style="font-size:12px;color:#888">'+(m&&m.email?m.email:'—')+'</td>'
+      +'<td style="font-size:12px;color:#888">'+(m&&m.tel?m.tel:'—')+'</td>'
+      +'<td><span style="font-weight:700">'+nb+'</span></td>'
+      +'<td><button class="btn inf sm" onclick="APP.openMod(\'notif\',{mid:\''+(m?m.id:'')+'\'})">Relancer</button></td></tr>';
+  });
+  h+='</tbody></table></div>'
+    +'<div style="font-size:14px;font-weight:900;margin:18px 0 12px">Non-Assiduité</div>'
+    +'<div class="tw"><table><thead><tr><th>Frère</th><th>Loge</th><th>Taux</th><th>Email</th><th>Action</th></tr></thead><tbody>';
+  nonAssidus.forEach(function(m){
+    var l=gLoge(m.logeId);var ass=getAssiduite(m.id,m.logeId);
+    h+='<tr><td style="font-weight:700">'+m.nom+'</td><td>'+(l?l.nom:'—')+'</td>'
+      +'<td style="font-weight:700;color:#b71c1c">'+ass.pct+'%</td>'
+      +'<td style="font-size:12px;color:#888">'+(m.email||'—')+'</td>'
+      +'<td><button class="btn inf sm" onclick="APP.openMod(\'notifAssid\',{mid:\''+m.id+'\'})">Notifier</button></td></tr>';
+  });
+  h+='</tbody></table></div>';
+  if(notifSchedule.length){
+    h+='<div style="font-size:14px;font-weight:900;margin:18px 0 12px">Envois planifiés ('+notifSchedule.length+')</div>'
+      +'<div class="card">';
+    notifSchedule.forEach(function(s,i){
+      h+='<div class="arow"><span style="font-weight:700">'+s.date+' à '+s.heure+'</span>'
+        +'<span style="color:#888">→ '+s.dest+'</span><span style="font-size:12px;color:#555">'+s.msg.substring(0,60)+'...</span>'
+        +'<button class="btn dng sm" onclick="notifSchedule.splice('+i+',1);APP.render()">✕</button></div>';
+    });
+    h+='</div>';
+  }
+  return h;
+}
+
+
+APP.sendMassNotif=function(){
+  var target=G('massTarget').value,canal=G('massCanal').value,msg=G('massMsg').value.trim();
+  if(!msg)return;
+  var targets=[];
+  if(target==='retards')targets=D.caps.filter(function(c){return c.st==='Retard';}).map(function(c){return gMbr(c.mid);}).filter(Boolean);
+  else if(target==='attente')targets=D.caps.filter(function(c){return c.st==='En attente';}).map(function(c){return gMbr(c.mid);}).filter(Boolean);
+  else if(target==='all')targets=D.membres.filter(function(m){return m.logeId&&m.statut==='actif';});
+  else if(target==='nonassidus')targets=D.membres.filter(function(m){if(!m.logeId||m.statut!=='actif')return false;var a=getAssiduite(m.id,m.logeId);return a.pct<50&&a.total>0;});
+  targets.forEach(function(m){
+    var personalMsg=msg.replace('{nom}',m.nom).replace('{loge}',gLoge(m.logeId)?gLoge(m.logeId).nom:'');
+    D.notifLog.push({id:uid(),mid:m.id,canal:canal,msg:personalMsg,date:tdStr(),dest:canal==='email'?(m.email||'—'):(m.tel||'—'),st:'Simulé'});
+  });
+  alert(targets.length+' notification(s) '+canal+' simulée(s) envoyée(s).\n(Mode démo — configurez API pour envoi réel)');
+  APP.closeMod();
+};
+
+APP.planifierNotif=function(){
+  var d=G('planDate').value,h=G('planHeure').value,msg=G('planMsg').value.trim();
+  if(!d||!msg)return;
+  notifSchedule.push({id:uid(),date:d,heure:h,target:G('planTarget').value,canal:G('planCanal').value,msg:msg,st:'Planifié'});
+  alert('Envoi planifié pour le '+d+' à '+h);APP.closeMod();
+};
+APP.autoRelanceAll=function(){
+  var retards=D.caps.filter(function(c){return c.st==='Retard';});
+  var nonAssidus=D.membres.filter(function(m){if(!m.logeId||m.statut!=='actif')return false;var a=getAssiduite(m.id,m.logeId);return a.pct<50&&a.total>0;});
+  var total=0;
+  retards.forEach(function(c){var m=gMbr(c.mid);if(m){D.notifLog.push({id:uid(),mid:m.id,canal:'email',msg:'Relance automatique : cotisation en retard',date:tdStr(),dest:m.email||'—',st:'Auto'});total++;}});
+  nonAssidus.forEach(function(m){D.notifLog.push({id:uid(),mid:m.id,canal:'email',msg:'Relance automatique : assiduité insuffisante',date:tdStr(),dest:m.email||'—',st:'Auto'});total++;});
+  alert('Relance automatique : '+total+' notifications simulées envoyées.');R();
+};
+
+
+// ─── RAPPORT GLOBAL OBÉDIENCE (Point 7) ──────────────────────────────
+function tRapportGlobal(){
+  var h='<div style="display:flex;align-items:center;margin-bottom:18px">'
+    +'<div class="sec" style="margin:0">Rapport Général — Toutes les Loges</div><div style="flex:1"></div>'
+    +'<button class="btn gold" onclick="APP.printRapportGlobal()">📄 Imprimer / PDF</button>'
+    +'</div>';
+  D.loges.forEach(function(l){
+    var ms=lMbrs(l.id),caps=lCaps(l.id);
+    var paid=sumA(caps.filter(function(c){return c.st==='Payé';}),function(c){return c.mnt;});
+    var tot=sumA(caps,function(c){return c.mnt;});
+    var pct=tot?Math.round(paid/tot*100):0;
+    var offN=l.officiers.filter(function(o){return o.mid;}).length;
+    var tenues=l.agenda.filter(function(e){return e.type==='Tenue'||e.type==='Cérémonie';}).length;
+    var props=ms.filter(isPropGrade).length;
+    var vers=D.versements.find(function(v){return v.lid===l.id;});
+    h+='<div class="card" style="margin-bottom:14px">'
+      +'<div style="display:flex;align-items:center;gap:14px;margin-bottom:12px">'
+      +'<div class="lnum" style="flex-shrink:0">N°'+l.numero+'</div>'
+      +'<div><div style="font-weight:900;font-size:15px">'+l.nom+'</div>'
+      +'<div style="color:#888;font-size:12px">📍 '+l.ville+(l.email?' · '+l.email:'')+'</div></div>'
+      +(l.logo?'<img src="'+l.logo+'" style="width:36px;height:36px;border-radius:50%;margin-left:auto"/>':'')
+      +'</div>'
+      +'<div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(110px,1fr));gap:8px;margin-bottom:10px">'
+      +[['Frères actifs',ms.length],['Tenues',tenues],['Officiers',offN+'/14'],['Capitations',pct+'%'],['Proposables',props]].map(function(x){
+        return'<div class="mini"><div class="mini-l">'+x[0]+'</div><div class="mini-v" style="font-size:15px">'+x[1]+'</div></div>';}).join('')
+      +'</div>'
+      +'<div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap;font-size:13px">'
+      +'Versement GLUC : '+(vers?sCh(vers.st)+'<span style="color:#888;margin-left:6px">'+fmt(vers.mnt)+' FCFA</span>':'<span style="color:#aaa">Non défini</span>')
+      +'<button class="btn outline sm" style="margin-left:auto" onclick="APP.printRapport(\''+l.id+'\')">Rapport détaillé</button>'
+      +'</div></div>';
+  });
+  return h;
+}
+APP.printRapportGlobal=function(){
+  var w=window.open('','_blank','width=900,height=700');
+  var rows=D.loges.map(function(l){
+    var ms=lMbrs(l.id),caps=lCaps(l.id);
+    var paid=sumA(caps.filter(function(c){return c.st==='Payé';}),function(c){return c.mnt;});
+    var tot=sumA(caps,function(c){return c.mnt;});
+    var pct=tot?Math.round(paid/tot*100):0;
+    var vers=D.versements.find(function(v){return v.lid===l.id;});
+    return'<tr><td>N°'+l.numero+'</td><td>'+l.nom+'</td><td>'+l.ville+'</td>'
+      +'<td>'+ms.length+'</td>'
+      +'<td>'+l.agenda.filter(function(e){return e.type==='Tenue'||e.type==='Cérémonie';}).length+'</td>'
+      +'<td>'+pct+'%</td>'
+      +'<td>'+(vers?vers.st:'—')+'</td></tr>';
+  }).join('');
+  w.document.write('<!DOCTYPE htm'+'l><html><head><meta charset="UTF-8"><title>Rapport GLUC</title>'
+    +'<style>body{font-family:Georgia,serif;padding:24px;max-width:900px;margin:0 auto;}h1{border-bottom:2px solid #c9a227;padding-bottom:8px;}table{width:100%;border-collapse:collapse;font-size:12px;}th{background:#111;color:#fff;padding:7px 10px;text-align:left;}td{padding:7px 10px;border-bottom:1px solid #eee;}@media print{button{display:none!important;}}<'+'/style></head><body>'
+    +'<h1>Rapport Général — Grande Loge Unie du Congo</h1>'
+    +'<p style="color:#888;font-size:12px">Généré le '+tdStr()+' · '+D.loges.length+' loges actives · '+D.membres.filter(function(m){return m.logeId&&m.statut==='actif';}).length+' frères</p>'
+    +'<table><thead><tr><th>N°</th><th>Loge</th><th>Ville</th><th>Frères</th><th>Tenues</th><th>Capitations</th><th>Versement GLUC</th></tr></thead><tbody>'+rows+'</tbody></table>'
+    +'<div style="text-align:center;margin-top:16px"><button onclick="window.print()" style="background:#111;color:#fff;border:none;padding:9px 20px;border-radius:6px;cursor:pointer">🖨 PDF</button></div>'
+    +'<'+'/body><'+'/html>');
+  w.document.close();
+};
+
+// ─── RAPPORT HOSPITALIER (Point 11) ──────────────────────────────────
+function lRapportHospitalier(loge){
+  var isHospitalier=loge.officiers.some(function(o){return o.titre==='Hospitalier'&&o.mid===S.user.id;});
+  var isTreso=loge.officiers.some(function(o){return o.titre==='Trésorier'&&o.mid===S.user.id;});
+  if(!isVM(loge.id)&&!isHospitalier&&!isTreso)
+    return'<div class="alert a-e">Accès réservé au VM, Trésorier et Hospitalier.</div>';
+  var tv=D.troncVeuve.filter(function(t){return t.lid===loge.id;});
+  var recettes=tv.filter(function(t){return t.type==='Recette';}).reduce(function(s,t){return s+t.mnt;},0);
+  var depenses=tv.filter(function(t){return t.type==='Dépense';}).reduce(function(s,t){return s+t.mnt;},0);
+  var h='<div style="display:flex;align-items:center;margin-bottom:16px">'
+    +'<div class="sec" style="margin:0">Rapport Hospitalier</div><div style="flex:1"></div>'
+    +'<button class="btn gold" onclick="APP.exportTronc(\''+loge.id+'\')">📄 PDF Tronc Veuve</button>'
+    +'</div>'
+    +'<div class="g3" style="margin-bottom:18px">'
+    +'<div class="sc"><div class="sc-l">Tronc — Recettes</div><div class="sc-v" style="color:#1b5e20">'+fmt(recettes)+' F</div></div>'
+    +'<div class="sc"><div class="sc-l">Tronc — Dépenses</div><div class="sc-v" style="color:#b71c1c">'+fmt(depenses)+' F</div></div>'
+    +'<div class="sc"><div class="sc-l">Solde Tronc</div><div class="sc-v" style="color:'+(recettes-depenses>=0?'#1b5e20':'#b71c1c')+'">'+fmt(recettes-depenses)+' F</div></div>'
+    +'</div>'
+    +'<div class="alert a-i" style="margin-bottom:14px">Ce rapport compile la situation du Tronc de la Veuve et les actions de l\'Hospitalier.</div>'
+    +lTroncVeuve(loge,true);
+  return h;
+}
+
+// canAddTenue & canAddInstruction now in ROLE_SYSTEM above
+
+APP.saveAvanceLoge=function(vid){
+  var mnt=parseInt(G('avLMnt').value)||0;if(mnt<=0)return;
+  var v=D.versements.find(function(x){return x.id===vid;});if(!v)return;
+  if(!v.avances)v.avances=[];
+  v.avances.push({id:uid(),mnt:mnt,note:G('avLNote')?G('avLNote').value.trim():'',date:tdStr()});
+  var total=sumA(v.avances,function(a){return a.mnt;});
+  if(total>=v.mnt){v.st='Payé';v.date=tdStr();}
+  APP.closeMod();
+};
+
+APP.viewPlancheBtn=function(btn){
+  var eid=btn.getAttribute('data-e'),lid=btn.getAttribute('data-l');
+  APP.viewPlanche(eid,lid);
+};
+// ══════════════════════════════════════════════════════════════════
+// SYSTÈME DE RÔLES DYNAMIQUES — accès selon poste d'officier
+// ══════════════════════════════════════════════════════════════════
+
+// Hiérarchie des postes → niveau d'accès
+var OFFICER_ACCESS = {
+  'VM':               {level:10, label:'Vénérable Maître'},
+  'Vénérable Maîtresse':{level:10, label:'Vénérable Maîtresse'},
+  '1er Surveillant':  {level:7,  label:'1er Surveillant'},
+  '2ème Surveillant': {level:6,  label:'2ème Surveillant'},
+  'Secrétaire':       {level:8,  label:'Secrétaire'},
+  'Orateur':          {level:5,  label:'Orateur'},
+  'Expert':           {level:5,  label:'Expert'},
+  'Trésorier':        {level:7,  label:'Trésorier'},
+  'Hospitalier':      {level:5,  label:'Hospitalier'},
+  'Maître de Cérémonie':{level:4,label:'Maître de Cérémonie'},
+  'Couvreur':         {level:3,  label:'Couvreur'},
+  'Maître de Banquet':{level:3,  label:'Maître de Banquet'},
+  'Maître Colonne Harmonie':{level:3,label:'Maître Colonne Harmonie'},
+  'Député':           {level:6,  label:'Député'},
+  'Député Adjoint':   {level:5,  label:'Député Adjoint'},
+};
+
+// Permissions par poste d'officier
+var OFFICER_PERMS = {
+  'VM':               ['programme','instruction','membres','officiers','assiduites','visiteurs','documents','finances','capitations','tronc','hospitalier','alertes','rapport','paramsLoge'],
+  'Vénérable Maîtresse':['programme','instruction','membres','officiers','assiduites','visiteurs','documents','finances','capitations','tronc','hospitalier','alertes','rapport','paramsLoge'],
+  'Secrétaire':       ['programme','instruction','membres','assiduites','visiteurs','documents','rapport_instruction'],
+  '1er Surveillant':  ['programme','instruction','assiduites','documents'],
+  '2ème Surveillant': ['programme','instruction','assiduites','documents'],
+  'Trésorier':        ['programme','membres','assiduites','finances','capitations','tronc','rapport_tresorerie'],
+  'Hospitalier':      ['programme','membres','assiduites','tronc','hospitalier'],
+  'Orateur':          ['programme','membres','assiduites','documents'],
+  'Expert':           ['programme','membres','assiduites','documents'],
+  'Député':           ['programme','membres','assiduites'],
+  'Député Adjoint':   ['programme','membres','assiduites'],
+  'Maître de Cérémonie':['programme','membres','assiduites'],
+  'Couvreur':         ['programme','membres','assiduites','visiteurs'],
+  'Maître de Banquet':['programme','membres','assiduites'],
+  'Maître Colonne Harmonie':['programme','membres','assiduites'],
+  'default':          ['programme','assiduites'],
+};
+
+// Retourne le poste de l'utilisateur courant dans une loge
+function getUserPost(lid){
+  if(!S.user||!lid)return null;
+  var loge=gLoge(lid);if(!loge)return null;
+  var off=loge.officiers.find(function(o){return o.mid===S.user.id;});
+  return off?off.titre:null;
+}
+
+// Vérifie si l'utilisateur a accès à un onglet donné dans la loge
+function canAccessTab(lid, tabId){
+  if(isGO()||isSuperAdmin())return true;
+  var post=getUserPost(lid);
+  if(!post)return false;
+  var perms=OFFICER_PERMS[post]||OFFICER_PERMS['default'];
+  return perms.indexOf(tabId)!==-1;
+}
+
+// Niveau d'accès global dans la loge
+function getAccessLevel(lid){
+  if(isGO()||isSuperAdmin())return 99;
+  var post=getUserPost(lid);
+  if(!post)return 0;
+  return (OFFICER_ACCESS[post]||{level:1}).level;
+}
+
+// Vérifie si l'officier peut créer des tenues ordinaires (VM + Secrétaire)
+function canAddTenue(lid){
+  if(isGO()||isSuperAdmin())return true;
+  var post=getUserPost(lid);
+  return post==='VM'||post==='Vénérable Maîtresse'||post==='Secrétaire';
+}
+
+// Vérifie si l'officier peut créer des tenues d'instruction (1er/2ème Surveillant + VM)
+function canAddInstruction(lid){
+  if(isGO()||isSuperAdmin())return true;
+  var post=getUserPost(lid);
+  return post==='VM'||post==='Vénérable Maîtresse'||post==='1er Surveillant'||post==='2ème Surveillant';
+}
+
+// Vérifie si l'utilisateur peut voir les rapports
+function canSeeRapport(lid){
+  if(isGO()||isSuperAdmin())return true;
+  var post=getUserPost(lid);
+  return post==='VM'||post==='Vénérable Maîtresse';
+}
+
+// Vérifie si trésorerie accessible
+function canSeeTresorerie(loge){
+  if(!loge)return false;
+  if(isVM(loge.id))return true;
+  var post=getUserPost(loge.id);
+  return post==='Trésorier';
+}
+
+// Dashboard card info for connected officer
+function getOfficerDashboard(lid){
+  var post=getUserPost(lid);if(!post)return null;
+  var info=OFFICER_ACCESS[post];if(!info)return null;
+  return{post:post,level:info.level,label:info.label,perms:OFFICER_PERMS[post]||OFFICER_PERMS['default']};
+}
+
+// ══════════════════════════════════════════════════════════════════════════
+// PERSISTANCE LOCALSTORAGE — données conservées entre les sessions
+// ══════════════════════════════════════════════════════════════════════════
+var LS_KEY = 'gluc_data';
+var LS_LOGO = 'gluc_logo';
+var LS_LOGE_LOGOS = 'gluc_loge_logos';
+
+function saveState() {
+  try {
+    // Save main data (exclude functions)
+    var toSave = JSON.parse(JSON.stringify(D));
+    localStorage.setItem(LS_KEY, JSON.stringify(toSave));
+    if(LOGO) localStorage.setItem(LS_LOGO, LOGO);
+    else localStorage.removeItem(LS_LOGO);
+    // Save loge logos separately (may be large base64)
+    var logeLogos = {};
+    D.loges.forEach(function(l){ if(l.logo) logeLogos[l.id]=l.logo; });
+    localStorage.setItem(LS_LOGE_LOGOS, JSON.stringify(logeLogos));
+  } catch(e) {
+    console.warn('LocalStorage save failed:', e.message);
+  }
+}
+
+function loadState() {
+  try {
+    var raw = localStorage.getItem(LS_KEY);
+    if(raw) {
+      var parsed = JSON.parse(raw);
+      // Deep merge: keep structure from buildData() for new fields
+      var fresh = buildData();
+      D = Object.assign(fresh, parsed);
+      // Restore nested arrays properly
+      if(parsed.membres)     D.membres     = parsed.membres;
+      if(parsed.loges)       D.loges       = parsed.loges;
+      if(parsed.caps)        D.caps        = parsed.caps;
+      if(parsed.avances)     D.avances     = parsed.avances;
+      if(parsed.versements)  D.versements  = parsed.versements;
+      if(parsed.visiteurs)   D.visiteurs   = parsed.visiteurs;
+      if(parsed.presences)   D.presences   = parsed.presences;
+      if(parsed.dossiersPending)    D.dossiersPending    = parsed.dossiersPending;
+      if(parsed.affiliationsPending) D.affiliationsPending = parsed.affiliationsPending;
+      if(parsed.radiationPending)   D.radiationPending   = parsed.radiationPending;
+      if(parsed.reintegrationPending) D.reintegrationPending = parsed.reintegrationPending;
+      if(parsed.notifLog)    D.notifLog    = parsed.notifLog;
+      if(parsed.smsLog)      D.smsLog      = parsed.smsLog;
+      if(parsed.grandeLogeTenues) D.grandeLogeTenues = parsed.grandeLogeTenues;
+      if(parsed.documents)   D.documents   = parsed.documents;
+      if(parsed.troncVeuve)  D.troncVeuve  = parsed.troncVeuve;
+      if(parsed.obInfo)      D.obInfo      = parsed.obInfo;
+      if(parsed.superAdmin)  D.superAdmin  = parsed.superAdmin;
+      if(parsed.customPerms) D.customPerms = parsed.customPerms;
+      if(parsed.smsConfig)   D.smsConfig   = parsed.smsConfig;
+      if(parsed.logoObedience) D.logoObedience = parsed.logoObedience;
+    }
+    // Restore logos
+    var savedLogo = localStorage.getItem(LS_LOGO);
+    if(savedLogo) LOGO = savedLogo;
+    if(D.logoObedience && !LOGO) LOGO = D.logoObedience;
+    // Restore loge logos
+    var logeLogosRaw = localStorage.getItem(LS_LOGE_LOGOS);
+    if(logeLogosRaw) {
+      var ll = JSON.parse(logeLogosRaw);
+      D.loges.forEach(function(l){ if(ll[l.id]) l.logo = ll[l.id]; });
+    }
+  } catch(e) {
+    console.warn('LocalStorage load failed:', e.message);
+    D = buildData();
+  }
+}
+
+function resetState() {
+  if(!confirm('Réinitialiser toutes les données ? Cette action est irréversible.')) return;
+  localStorage.removeItem(LS_KEY);
+  localStorage.removeItem(LS_LOGO);
+  localStorage.removeItem(LS_LOGE_LOGOS);
+  LOGO = null;
+  D = buildData();
+  S.user = null; S.view = 'login'; S.lid = null;
+  R();
+}
+
+// Auto-save: hook into render
+var _originalRender = null;
+function initAutoSave() {
+  _originalRender = APP.render;
+  APP.render = function() {
+    _originalRender.apply(this, arguments);
+    saveState();
+  };
+  // Load on startup
+  loadState();
+}
+
+APP.render=function(){
+  var h='';
+  if(S.view==='login')h=vLogin();
+  else if(S.view==='secretQ')h=vSecretQuestion();
+  else if(S.view==='atelierSelect')h=vAtelier();
+  else if(S.view==='monEspace')h=vMonEspace();
+  else if(S.view==='obedience')h=vObedience();
+  else if(S.view==='loge')h=vLoge();
+  else if(S.view==='secretQ')h=vSecretQuestion();
+  // Append welcome modal if pending
+  if(S.pendingWelcome&&S.view!=='login'&&S.view!=='secretQ'){
+    h+=renderWelcomeModal();
+    S.pendingWelcome=false;
+  }
+  G('app').innerHTML=h;
+};
+var R=APP.render;
+
+function logoImg(sz){
+  var src=null;
+  if(S.view==='loge'&&S.lid){var cl=gLoge(S.lid);if(cl&&cl.logo)src=cl.logo;}
+  if(!src)src=LOGO||D.logoObedience||null;
+  if(src)return'<img src="'+src+'" style="width:'+sz+'px;height:'+sz+'px;object-fit:cover;border-radius:50%;"/>';
+  return'<span style="font-size:'+(sz*0.5)+'px;color:#c9a227">⬡</span>';
+}
+
+function hdr(){
+  var cl=gLoge(S.lid),bc='';
+  if(S.view==='loge'&&cl){
+    bc='<span class="hdr-sep">›</span><button class="btn ghost sm" onclick="APP.goOb(\'loges\')">Loges<\/button>'
+      +'<span class="hdr-sep">›</span><span style="color:#fff;font-size:13px;font-weight:700">N°'+cl.numero+' — '+cl.nom+'</span>';
+  }
+  if(S.view==='monEspace')bc='<span class="hdr-sep">›</span><span style="color:#c9a227;font-size:13px;font-weight:700">Mon Espace</span>';
+  return'<div class="hdr"><div class="hdr-logo">'+logoImg(34)+'</div>'
+    +'<div><div class="hdr-gluc">GLUC</div><div class="hdr-sub">Grande Loge Unie du Congo</div></div>'
+    +bc+'<div style="flex:1"></div>'
+    +'<div style="text-align:right;margin-right:10px">'
+    +'<div style="color:#fff;font-size:13px;font-weight:700">'+S.user.nom+'</div>'
+    +'<div style="margin-top:2px">'+rCh(S.user.role)+'<span style="color:#666;font-size:10px;margin-left:4px">'+S.user.matricule+'</span></div>'
+    +'</div>'
+    +(S.view!=='atelierSelect'&&S.view!=='monEspace'?'<button class="btn ghost sm" onclick="APP.changeAtelier()">Ateliers<\/button>':'')
+    +'<button class="btn ghost sm" onclick="APP.openMod("changePwd",{})">🔑<\/button>'
+    +'<button class="btn ghost sm" onclick="APP.logout()">Déconnexion<\/button>'+(!S.user||!isSuperAdmin()?'':'<button class="btn dng sm" onclick="resetState()" title="Reset données">🔄</button>')
+    +'</div>';
+}
+
+function tbr(tabs){
+  return'<div class="tabbar">'+tabs.filter(function(t){return!t.restricted;}).map(function(t){
+    return'<button class="tab'+(S.tab===t.id?' on':'')+'" onclick="APP.setTab(\''+t.id+'\')">'
+      +t.lbl+(t.badge&&t.badge!==''?'<span class="bdg">'+t.badge+'</span>':'')+'</button>';
+  }).join('')+'</div>';
+}
+function modH(){if(!S.modal)return'';var f=MODS[S.modal];if(!f)return'';return'<div class="ovl" onclick="if(event.target===this)APP.closeMod()"><div class="mbox">'+f(S.mdata)+'</div></div>';}
+function mhdr(t){return'<div class="mhdr"><div class="mtit">'+t+'</div><button class="mcls" onclick="APP.closeMod()">✕</button></div>';}
+function mnote(t,c){return'<div class="alert a-'+(c||'i')+'" style="margin-bottom:11px;font-size:12px">'+t+'</div>';}
+
+// ── LOGIN ──
+function vLogin(){
+  var logo=LOGO?'<img src="'+LOGO+'" style="width:70px;height:70px;object-fit:cover;border-radius:50%;"/>':logoImg(70);
+  var rows=[['GLUC-00','admin2026','Grand Maître'],['GLUC-GS','gs2026','Grand Secrétaire'],
+    ['F-001','vm1234','VM — Lumière'],['F-004','vm4321','VM — Étoile'],
+    ['F-002','off1234','Officier'],['F-003','1234','Apprenti']];
+  var demos=rows.map(function(x){
+    return'<button class="db" onclick="G(\'lM\').value=\''+x[0]+'\';G(\'lP\').value=\''+x[1]+'\'">'
+      +'<span class="dm">'+x[0]+'</span>'+x[2]+'</button>';
+  }).join('');
+  return'<div class="lpg"><div class="lbox">'
+    +'<div class="llogo">'+logo+'</div>'
+    +'<div class="ltit">GLUC</div><div class="lsub">Grande Loge Unie du Congo</div>'
+    +'<div class="fg"><label class="fl">Matricule</label>'
+    +'<input id="lM" placeholder="Ex: F-001 ou GLUC-00" autocomplete="off" onkeydown="if(event.key===\'Enter\')G(\'lP\').focus()"/></div>'
+    +'<div class="fg"><label class="fl">Mot de passe</label>'
+    +'<div class="pwr"><input id="lP" type="password" placeholder="••••••" onkeydown="if(event.key===\'Enter\')APP.doLogin()"/>'
+    +'<button class="pwe" onclick="APP.togglePw()">👁</button></div></div>'
+    +'<div id="lE" class="lerr">Matricule ou mot de passe incorrect.</div>'
+    +'<button class="btn gold lg full" onclick="APP.doLogin()" style="margin-bottom:8px">Se connecter</button>'
+    +'<div class="div"></div>'
+    +'<div style="color:#aaa;font-size:10px;text-align:center;margin-bottom:10px;font-weight:700;text-transform:uppercase">Comptes démo</div>'
+    +'<div class="dg">'+demos+'</div>'
+    +'</div></div>';
+}
+APP.doLogin=function(){
+  var mat=G('lM').value.trim(),pwd=G('lP').value;
+  // Super Admin check
+  if(mat===D.superAdmin.matricule&&pwd===D.superAdmin.pwd){
+    S.user={id:'SADM',matricule:mat,nom:D.superAdmin.nom,role:'Super Admin',grade:'Maitre',logeId:null,pwd:pwd,statut:'actif',email:D.superAdmin.email};
+    G('lE').style.display='none';S.view='obedience';S.tab='programmes';R();return;
+  }
+  var u=D.membres.find(function(m){return m.matricule===mat&&m.pwd===pwd;});
+  if(!u){G('lE').style.display='block';return;}
+  G('lE').style.display='none';
+  S.user=u;
+  // Check if secret question needed
+  var grade=u.grade||'Maitre';
+  var sq=D.secretQuestions[grade];
+  if(sq&&u.role!=='Grand Maître'&&u.role!=='Super Admin'){
+    S_PENDING_USER=u;S.user=u;S.view='secretQ';R();return;
+  }
+  if(u.role==='Grand Maître'||isGO()||isGS()){S.view='obedience';S.tab='programmes';}
+  else if(isFrereSimple()){S.view='monEspace';}
+  else{S.view='atelierSelect';}
+  S.pendingWelcome=true;
+  R();
+};
+APP.togglePw=function(){var i=G('lP');i.type=i.type==='password'?'text':'password';};
+APP.logout=function(){S.user=null;S.view='login';S.lid=null;S.tab='membres';R();};
+APP.changeAtelier=function(){S.view='atelierSelect';R();};
+APP.setTab=function(t){S.tab=t;R();};
+APP.goOb=function(tab){S.view='obedience';S.tab=tab||'programmes';R();};
+APP.loadLogo=function(inp){var file=inp.files[0];if(!file)return;var r=new FileReader();r.onload=function(e){LOGO=e.target.result;R();};r.readAsDataURL(file);};
+
+// ── MON ESPACE (Apprenti/Compagnon) ──
+function vMonEspace(){
+  var u=S.user;
+  var loge=gLoge(u.logeId);
+  var cap=loge?D.caps.find(function(c){return c.mid===u.id&&c.lid===loge.id;}):null;
+  var sd=loge?getSolde(u.id,loge.id):{du:0,verse:0,solde:0,pct:0};
+  var ass=loge?getAssiduite(u.id,loge.id):{total:0,present:0,pct:0};
+  var h=hdr()+'<div class="me-page">';
+  // Bannière
+  h+='<div class="me-banner">'
+    +'<div class="me-ava">'+u.nom[0]+'</div>'
+    +'<div><div style="color:#c9a227;font-size:18px;font-weight:900">'+u.nom+'</div>'
+    +'<div style="color:#888;font-size:13px;margin-top:3px">'+gLbl(u.grade)+'</div>'
+    +(loge?'<div style="color:#888;font-size:12px;margin-top:2px">Loge N°'+loge.numero+' — '+loge.nom+'</div>':'')
+    +'</div></div>';
+  // Stats perso
+  var userPostMe=loge?getUserPost(loge.id):null;
+  var accessLvlMe=loge?getAccessLevel(loge.id):0;
+  h+='<div class="g3" style="margin-bottom:20px">'
+    +'<div class="sc"><div class="sc-l">Mon grade</div><div class="sc-v">'+gLbl(u.grade)+'</div></div>'
+    +'<div class="sc"><div class="sc-l">Depuis</div><div class="sc-v" style="font-size:16px">'+moAt(u.dateGrade)+' mois</div></div>'
+    +'<div class="sc"><div class="sc-l">Assiduité</div><div class="sc-v" style="color:'+(ass.pct>=70?'#1b5e20':ass.pct>=40?'#5a3e00':'#b71c1c')+'">'+ass.pct+'%</div>'
+    +'<div style="font-size:11px;color:#888;margin-top:3px">'+ass.present+'/'+ass.total+' tenues</div></div>'
+    +(userPostMe?'<div class="sc" style="border-color:#c9a227;border-width:2px"><div class="sc-l">Mon Poste</div><div class="sc-v" style="font-size:14px;color:#c9a227">'+userPostMe+'</div><div style="font-size:11px;color:#888;margin-top:3px">Niveau '+accessLvlMe+'/10</div></div>':'')
+    +'</div>';
+  // If officer, redirect to loge dashboard  
+  if(userPostMe&&accessLvlMe>=3&&loge&&S.view==='monEspace'){
+    h+='<div class="alert a-i" style="margin-bottom:16px;display:flex;align-items:center;gap:12px">'
+      +'<div><strong>Vous êtes '+userPostMe+'</strong> de la loge '+loge.nom+'.<br><span style="font-size:12px">Votre tableau de bord adapté est disponible dans votre atelier.</span></div>'
+      +'<button class="btn gold sm" onclick="APP.enterLoge(\''+loge.id+'\')">Accéder à mon tableau de bord</button>'
+      +'</div>';
+  }
+  // Cotisation
+  h+='<div class="sec">Ma Cotisation</div>';
+  if(cap){
+    var bCls=cap.st==='Payé'?'paye':cap.st==='Retard'?'retard':'attente';
+    var pfB=sd.pct>=100?'#27ae60':sd.pct>=50?'#c9a227':'#c0392b';
+    h+='<div class="cap-card '+bCls+'">'
+      +'<div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px">'
+      +'<div><div style="font-weight:700">Capitation 2026</div>'
+      +'<div style="font-size:12px;color:#666;margin-top:2px">Montant dû : <strong>'+fmt(cap.mnt)+' FCFA</strong></div></div>'
+      +sCh(cap.st)+'</div>'
+      +'<div style="margin-top:10px">'
+      +'<div style="display:flex;justify-content:space-between;font-size:11px;color:#555;margin-bottom:4px">'
+      +'<span>Versé : <strong>'+fmt(sd.verse)+' FCFA</strong></span>'
+      +'<span>Solde : <strong style="color:'+(sd.solde<=0?'#1b5e20':'#b71c1c')+'">'+fmt(sd.solde)+' FCFA</strong></span>'
+      +'<span><strong>'+sd.pct+'%</strong></span></div>'
+      +'<div class="pbar"><div class="pfill" style="width:'+sd.pct+'%;background:'+pfB+'"></div></div></div>'
+      +(cap.st!=='Payé'?'<div class="alert a-w" style="margin-top:10px;font-size:12px;padding:9px 12px">Pour régler votre cotisation, contactez le Trésorier ou le Secrétaire de votre loge.</div>':'')
+      +'</div>';
+  }else{h+='<div style="color:#aaa;padding:12px">Aucune cotisation enregistrée.</div>';}
+  // Programme
+  if(loge){
+    h+='<div class="sec" style="margin-top:20px">Programme des Tenues — '+loge.nom+'</div>';
+    // Visibility by grade
+    var gradeOrd={Apprenti:0,Compagnon:1,Maitre:2};
+    var myGradeOrd=gradeOrd[S.user.grade]||0;
+    var evts=loge.agenda.slice().sort(function(a,b){return a.date.localeCompare(b.date);}).filter(function(e){
+      // Apprentis see Tenue + Agapes, Compagnons see those + Cérémonie, Maîtres see all
+      if(e.type==='Tenue'||e.type==='Agapes')return true;
+      if(e.type==='Cérémonie')return myGradeOrd>=1;
+      return myGradeOrd>=2;
+    });
+    if(evts.length){
+      h+='<div style="border:1.5px solid #e5e5e5;border-radius:10px;overflow:hidden;margin-bottom:16px">'
+        +'<div class="prog-hdr"><div>Date</div><div>Heure</div><div>Type</div><div>Thème</div><div>Présentateur</div></div>';
+      evts.forEach(function(ev){
+        h+='<div class="prog-row2"><div style="font-weight:700">'+ev.date+'</div><div style="color:#888">'+ev.heure+'</div><div>'+tCh(ev.type||'Tenue')+'</div><div>'+(ev.planche||'—')+'</div><div>'+(ev.presentateur||'—')+'</div></div>';
+      });
+      h+='</div>';
+    }
+    if(loge.instruction&&loge.instruction.length){
+      h+='<div class="sec" style="font-size:14px">Tenues d\'Instruction</div>'
+        +'<div style="border:1.5px solid #e5e5e5;border-radius:10px;overflow:hidden;margin-bottom:16px">'
+        +'<div class="prog-instr-hdr"><div>Date</div><div>Heure</div><div>Thème</div><div>Présentateur</div></div>';
+      loge.instruction.forEach(function(ev){
+        h+='<div class="prog-instr-row"><div style="font-weight:700">'+ev.date+'</div><div style="color:#888">'+ev.heure+'</div><div>'+(ev.planche||'—')+'</div><div>'+(ev.presentateur||'—')+'</div></div>';
+      });
+      h+='</div>';
+    }
+  }
+  // Other loges programs
+  var otherLoges=D.loges.filter(function(l){return l.statut==='active'&&l.id!==(S.user.logeId);});
+  if(otherLoges.length){
+    h+='<div class="sec" style="margin-top:20px">Programmes des autres Ateliers</div>';
+    otherLoges.forEach(function(ol){
+      var otEvts=ol.agenda.slice().sort(function(a,b){return a.date.localeCompare(b.date);}).filter(function(e){
+        if(e.type==='Tenue'||e.type==='Agapes')return true;
+        if(e.type==='Cérémonie')return myGradeOrd>=1;
+        return myGradeOrd>=2;
+      });
+      if(!otEvts.length)return;
+      h+='<div style="margin-bottom:18px"><div style="font-weight:700;font-size:13px;margin-bottom:8px">⬡ N°'+ol.numero+' — '+ol.nom+' ('+ol.ville+')</div>';
+      h+='<div style="border:1.5px solid #e5e5e5;border-radius:9px;overflow:hidden">'
+        +'<div style="display:grid;grid-template-columns:90px 70px 1fr;background:#111;"><div style="padding:8px 11px;color:#fff;font-size:10px;font-weight:700;text-transform:uppercase">Date</div><div style="padding:8px 11px;color:#fff;font-size:10px;font-weight:700;text-transform:uppercase">Heure</div><div style="padding:8px 11px;color:#fff;font-size:10px;font-weight:700;text-transform:uppercase">Tenue</div></div>';
+      otEvts.slice(0,5).forEach(function(e){
+        h+='<div style="display:grid;grid-template-columns:90px 70px 1fr;border-top:1px solid #f0f0f0"><div style="padding:8px 11px;font-size:12px;font-weight:700">'+e.date+'</div><div style="padding:8px 11px;font-size:12px;color:#666">'+e.heure+'</div><div style="padding:8px 11px;font-size:12px">'+e.titre+'</div></div>';
+      });
+      h+='</div></div>';
+    });
+  }
+  // Infos obédience
+  h+='<div class="sec" style="margin-top:6px">Grande Loge Unie du Congo</div>'
+    +'<div class="g3" style="margin-bottom:8px">'
+    +[['Siège',D.siege],['Acronyme',D.acronym],['Fondée en',D.fondation]].map(function(x){
+      return'<div class="sc"><div class="sc-l">'+x[0]+'</div><div class="sc-v" style="font-size:16px">'+x[1]+'</div></div>';}).join('')
+    +'</div>';
+  return h+'</div>'+modH();
+}
+
+// ── ATELIER SELECT ──
+function vAtelier(){
+  var cards='';
+  D.loges.filter(function(l){return l.statut==='active';}).forEach(function(l){
+    var ms=lMbrs(l.id),canEnter=isGO()||S.user.logeId===l.id;
+    var next=l.agenda.slice().sort(function(a,b){return a.date.localeCompare(b.date);}).find(function(e){return e.date>='2026-04-20';});
+    cards+='<div class="acard" onclick="'+(canEnter?'APP.enterLoge(\''+l.id+'\')':'')+'" style="'+(canEnter?'':'opacity:.4;cursor:default;')+'">'
+      +'<div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:10px">'
+      +'<div><div style="color:#c9a227;font-weight:900;font-size:14px">⬡ Loge N°'+l.numero+'</div>'
+      +'<div style="color:#111;font-weight:700;font-size:15px;margin-top:2px">'+l.nom+'</div>'
+      +'<div style="color:#888;font-size:12px;margin-top:2px">📍 '+l.ville+'</div></div>'
+      +ch(ms.length+' frères','cgreen')+'</div>'
+      +(next?'<div style="background:#f5f5f5;border-radius:7px;padding:6px 10px;font-size:12px;font-weight:600">Prochaine tenue : '+next.date+'</div>':'')
+      +'</div>';
+  });
+  var obBtn=(isGO()||isGS())?'<div style="margin-top:10px;text-align:center"><button class="btn gold" onclick="APP.goOb(\'programmes\')">→ Obédience GLUC<\/button></div>':'';
+  return hdr()+'<div class="apg">'
+    +'<div style="text-align:center;margin-bottom:26px"><div style="color:#c9a227;font-size:20px;font-weight:900;margin-bottom:5px">Choisir votre Atelier</div>'
+    +'<div style="color:#aaa;font-size:13px">Sélectionnez la loge dans laquelle travailler</div></div>'
+    +cards+obBtn+'</div>';
+}
+APP.enterLoge=function(lid){S.lid=lid;S.view='loge';S.tab='programme';R();};
+
+// ── OBEDIENCE ──
+function vObedience(){
+  var pend=D.dossiersPending.filter(function(d){return d.st==='Complet';}).length;
+  var aff=D.affiliationsPending.filter(function(a){return a.st==='En attente';}).length;
+  var aP=D.membres.filter(function(m){return m.logeId&&isPropGrade(m);});
+  var aR=D.caps.filter(function(c){return c.st==='Retard';});
+  var an=aP.length+aR.length+pend+aff;
+  var tabs=[
+    {id:'programmes',lbl:'Programmes'},
+    {id:'loges',lbl:'Loges ('+D.loges.length+')',restricted:!isGO()&&!isSuperAdmin()},
+    {id:'dossiers',lbl:'Dossiers',badge:pend||''},
+    {id:'affiliations',lbl:'Affiliations',badge:aff||''},
+    {id:'grandeloge',lbl:'Grande Loge'},
+    {id:'rapportglobal',lbl:'Rapport Global'},
+    {id:'infos',lbl:'Informations'},
+    {id:'grand_off',lbl:'Grands Officiers'},
+    {id:'documents',lbl:'Documents'},
+    {id:'notifications',lbl:'Notifications'},
+  ];
+  if(hasPerm('viewAdmin','obedience')||isGO())tabs.push({id:'admin',lbl:'Administration'});
+  if(hasPerm('manageRights','obedience')||isSuperAdmin())tabs.push({id:'paramsob',lbl:'⚙ Paramètres'});
+  tabs.push({id:'alertes_ob',lbl:'Alertes',badge:an||''});
+  var c='';
+  if(S.tab==='programmes')c=tProg();
+  else if(S.tab==='loges')c=tLoges();
+  else if(S.tab==='dossiers')c=tDossiers();
+  else if(S.tab==='affiliations')c=tAffiliations();
+  else if(S.tab==='infos')c=tInfos();
+  else if(S.tab==='grand_off')c=tGrandOff();
+  else if(S.tab==='grandeloge')c=tGrandeLoge();
+  else if(S.tab==='rapportglobal')c=tRapportGlobal();
+  else if(S.tab==='documents')c=tDocuments('obedience',null);
+  else if(S.tab==='admin')c=tAdmin();
+  else if(S.tab==='paramsob')c=tParamsOb();
+  else if(S.tab==='notifications')c=tNotifications();
+  else if(S.tab==='alertes_ob')c=tAlertsOb(aP,aR,pend,aff);
+  return hdr()+tbr(tabs)+'<div class="cont">'+c+'</div>'+modH();
+}
+
+function buildProgTable(evts,isInstr){
+  if(!evts.length)return'<div style="color:#aaa;font-size:13px;font-style:italic;padding:10px 0">Aucune tenue programmée.</div>';
+  var cols=isInstr?'90px 70px 1fr 1fr':'90px 70px 90px 1fr 1fr';
+  var byMonth={};
+  evts.forEach(function(ev){var d=new Date(ev.date);var k=d.getFullYear()+'-'+String(d.getMonth()).padStart(2,'0');if(!byMonth[k])byMonth[k]={label:MFR[d.getMonth()]+' '+d.getFullYear(),evts:[]};byMonth[k].evts.push(ev);});
+  var h='<div style="border:1.5px solid #e5e5e5;border-radius:10px;overflow:hidden;margin-bottom:14px">'
+    +'<div style="display:grid;grid-template-columns:'+cols+';background:#111;">'
+    +['Date','Heure',!isInstr?'Type':null,'Thème / Planche','Présentateur'].filter(Boolean).map(function(t){return'<div style="padding:8px 11px;font-size:10px;font-weight:700;color:#fff;text-transform:uppercase;letter-spacing:.4px">'+t+'</div>';}).join('')
+    +'</div>';
+  Object.keys(byMonth).sort().forEach(function(k){
+    var mo=byMonth[k];
+    h+='<div style="background:#fff8e1;border-top:1px solid #f0f0f0;padding:7px 13px;font-weight:900;color:#5a3e00;font-size:12px;border-left:4px solid #c9a227;">📅 '+mo.label+'</div>';
+    mo.evts.forEach(function(ev){
+      var pl=ev.planche?ev.planche:'<span style="color:#bbb;font-style:italic">Non défini</span>';
+      var pr=ev.presentateur?ev.presentateur:'<span style="color:#bbb">—</span>';
+      var hasCR=(ev.compteRendu&&ev.compteRendu.length>0)||(ev.plancheTracee&&ev.plancheTracee.length>0);
+      h+='<div style="display:grid;grid-template-columns:'+cols+(isVM(S.lid)?(' auto'):'')+(hasCR?' auto':'')+(isVM(S.lid)||hasCR?'':'')+';border-top:1px solid #f5f5f5;">'
+        +'<div style="padding:9px 11px;font-size:13px;font-weight:700">'+ev.date+'</div>'
+        +'<div style="padding:9px 11px;font-size:12px;color:#666">'+ev.heure+'</div>'
+        +(!isInstr?'<div style="padding:9px 11px">'+tCh(ev.type||'Tenue')+'</div>':'')
+        +'<div style="padding:9px 11px;font-size:13px">'+pl+'</div>'
+        +'<div style="padding:9px 11px;font-size:13px">'+pr+'</div>'
+        +(hasCR?'<div style="padding:9px 11px"><button class="btn ok sm" onclick="APP.viewPlancheBtn(this)" data-e="'+ev.id+'" data-l="'+S.lid+'">📄 CR<\/button><\/div>':'')
+        +'</div>';
+    });
+  });
+  return h+'</div>';
+}
+
+function tProg(){
+  var h='<div style="display:flex;align-items:center;gap:10px;margin-bottom:18px"><div class="sec" style="margin:0">Programmes des Tenues</div>'+ch('Toutes les loges','cb')+'</div>';
+  D.loges.filter(function(l){return l.statut==='active';}).forEach(function(l){
+    var evts=l.agenda.slice().sort(function(a,b){return a.date.localeCompare(b.date);});
+    var tCount=evts.filter(function(e){return e.type==='Tenue'||e.type==='Cérémonie';}).length;
+    h+='<div style="margin-bottom:26px">'
+      +'<div style="display:flex;align-items:center;gap:10px;margin-bottom:11px;flex-wrap:wrap">'
+      +'<div style="background:#fff;border:2px solid #111;border-radius:8px;padding:6px 12px;display:inline-flex;align-items:center;gap:8px">'
+      +'<span style="color:#c9a227;font-weight:900">⬡ N°'+l.numero+'</span>'
+      +'<span style="color:#111;font-weight:700">'+l.nom+'</span>'
+      +'<span style="color:#888;font-size:12px">· '+l.ville+'</span></div>'
+      +ch(tCount+' tenue(s)',tCount>=3?'cgreen':'cred')
+      +(isLO(l.id)?'<button class="btn outline sm" onclick="APP.openMod(\'newEvt\',{lid:\''+l.id+'\'})">+ Tenue<\/button>':'')
+      +'</div>'+buildProgTable(evts,false)+'</div>';
+  });
+  return h;
+}
+
+function tLoges(){
+  var h='<div style="display:flex;align-items:center;margin-bottom:18px">'
+    +'<div class="sec" style="margin:0">Loges de la GLUC</div><div style="flex:1"></div>'
+    +(hasPerm('createLoge','obedience')?'<button class="btn gold" onclick="APP.openMod(\'newLoge\',{})">+ Nouvelle Loge<\/button>':'')
+    +'</div><div class="g2">';
+  D.loges.forEach(function(l){
+    var ms=lMbrs(l.id);
+    var paid=D.caps.filter(function(c){return c.lid===l.id&&c.st==='Payé';}).length;
+    var pct=ms.length?Math.round(paid/ms.length*100):0;
+    var next=l.agenda.slice().sort(function(a,b){return a.date.localeCompare(b.date);}).find(function(e){return e.date>='2026-04-20';});
+    h+='<div class="card cardx" onclick="APP.enterLoge(\''+l.id+'\')">'
+      +'<div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:10px">'
+      +'<div><div style="font-weight:900;font-size:14px">Loge N°'+l.numero+'</div>'
+      +'<div style="font-weight:700;font-size:15px;margin-top:2px">'+l.nom+'</div>'
+      +'<div style="color:#888;font-size:12px;margin-top:2px">📍 '+l.ville+'</div></div>'
+      +ch(l.statut,l.statut==='active'?'cgreen':'cred')+'</div>'
+      +'<div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:10px">'
+      +'<div class="mini"><div class="mini-l">Membres</div><div class="mini-v">'+ms.length+'</div></div>'
+      +'<div class="mini"><div class="mini-l">Capitations</div><div class="mini-v" style="color:'+(pct===100?'#1b5e20':pct>60?'#5a3e00':'#b71c1c')+'">'+pct+'%</div></div>'
+      +'</div>'
+      +(next?'<div style="background:#f5f5f5;border-radius:7px;padding:6px 10px;font-size:12px;font-weight:600">Prochaine tenue : '+next.date+'</div>':'')
+      +'</div>';
+  });
+  return h+'</div>';
+}
+
+function docItem(ok,label){
+  return'<div class="doc-row">'
+    +'<div class="doc-status '+(ok?'doc-ok':'doc-no')+'">'+(ok?'✓':'?')+'</div>'
+    +'<span style="font-size:13px;font-weight:'+(ok?'700':'400')+';color:'+(ok?'#111':'#aaa')+'">'+label+'</span>'
+    +(ok?'':ch('Manquant','cred'))
+    +'</div>';
+}
+
+function tDossiers(){
+  var all=D.dossiersPending;
+  var h='<div class="sec">Dossiers en attente de validation</div>'
+    +'<div class="alert a-i" style="margin-bottom:16px">Le Grand Secrétaire examine les dossiers des postulants. Un dossier complet (3 documents) peut être validé pour créer le frère dans la loge.</div>';
+  if(!all.length)return h+'<div style="color:#aaa;text-align:center;padding:24px">Aucun dossier en attente.</div>';
+  all.forEach(function(dos){
+    var l=gLoge(dos.lid);
+    var docsOK=dos.docs.extrait&&dos.docs.casier&&dos.docs.nationalite;
+    h+='<div class="card" style="margin-bottom:14px">'
+      +'<div style="display:flex;align-items:flex-start;gap:14px;flex-wrap:wrap">'
+      +'<div style="flex:1">'
+      +'<div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-bottom:8px">'
+      +'<div style="font-weight:900;font-size:15px">'+dos.nom+'</div>'
+      +gCh(dos.grade)+dossierBadge(dos.st)
+      +'<span style="color:#888;font-size:12px">'+(l?l.nom:'—')+' · Soumis le '+dos.date+'</span>'
+      +'</div>'
+      +'<div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:0;margin-bottom:8px">'
+      +docItem(dos.docs.extrait,'Extrait d\'acte de naissance')
+      +docItem(dos.docs.casier,'Casier judiciaire')
+      +docItem(dos.docs.nationalite,'Certificat de nationalité')
+      +'</div>'
+      +(dos.note?'<div style="font-size:12px;color:#888;font-style:italic">Note : '+dos.note+'</div>':'')
+      +'</div>'
+      +'<div style="display:flex;flex-direction:column;gap:6px">'
+      +(docsOK&&isGS()?'<button class="btn ok sm" onclick="APP.validerDossier(\''+dos.id+'\')">✓ Valider & Créer le frère<\/button>':'')
+      +(isGS()?'<button class="btn dng sm" onclick="APP.rejeterDossier(\''+dos.id+'\')">Rejeter<\/button>':'')
+      +(isGS()?'<button class="btn outline sm" onclick="APP.openMod(\'editDossier\',{id:\''+dos.id+'\'})">Modifier docs<\/button>':'')
+      +'</div></div></div>';
+  });
+  // Radiation requests
+  if(D.radiationPending&&D.radiationPending.length&&isGS()){
+    h+='<div style="margin-top:22px"><div class="sec" style="font-size:14px">Demandes de Radiation</div>';
+    D.radiationPending.forEach(function(req){
+      var m=gMbr(req.mid);
+      h+='<div class="card" style="margin-bottom:10px;display:flex;align-items:center;gap:12px;flex-wrap:wrap">'
+        +'<div style="flex:1"><div style="font-weight:700">'+(m?m.nom:'—')+'</div>'
+        +'<div style="font-size:12px;color:#888">Demande du '+req.date+' · '+req.motif+'</div></div>'
+        +ch(req.st,'cor')
+        +'<button class="btn ok sm" onclick="APP.validerRadiation("+req.id+")">Valider radiation</button>'
+        +' <button class="btn dng sm" onclick="APP.rejeterRadiation("+req.id+")">Rejeter</button>'
+        +'</div>';
+    });
+    h+='</div>';
+  }
+  // Reintegration requests
+  if(D.reintegrationPending&&D.reintegrationPending.length&&isGS()){
+    h+='<div style="margin-top:22px"><div class="sec" style="font-size:14px">Demandes de Réintégration</div>';
+    D.reintegrationPending.forEach(function(req){
+      var m=gMbr(req.mid);var cap=m?D.caps.find(function(c){return c.mid===m.id;}):{st:'?'};
+      h+='<div class="card" style="margin-bottom:10px;display:flex;align-items:center;gap:12px;flex-wrap:wrap">'
+        +'<div style="flex:1"><div style="font-weight:700">'+(m?m.nom:'—')+'</div>'
+        +'<div style="font-size:12px;color:#888">Demande du '+req.date+'</div>'
+        +(cap?'<div style="margin-top:4px">Cotisation : '+sCh(cap.st)+'</div>':'')
+        +'</div>'
+        +ch(req.st,'cor')
+        +(cap&&cap.st==='Payé'?'<button class="btn ok sm" onclick="APP.validerReintegration("+req.id+")">Valider réintégration</button>':'<span style="color:#b71c1c;font-size:12px;font-weight:700">Régler cotisation d\'abord</span>')
+        +' <button class="btn dng sm" onclick="APP.rejeterAffil("+req.id+")">Rejeter</button>'
+        +'</div>';
+    });
+    h+='</div>';
+  }
+  return h;
+}
+
+function tAffiliations(){
+  var all=D.affiliationsPending;
+  var h='<div class="sec">Affiliations</div>'
+    +'<div class="alert a-i" style="margin-bottom:16px">Le Grand Secrétaire valide les affiliations. Un frère affilié conserve son grade acquis dans son obédience d\'origine.</div>';
+  if(!all.length)return h+'<div style="color:#aaa;text-align:center;padding:24px">Aucune affiliation en attente.</div>';
+  h+='<div class="tw"><table><thead><tr><th>Nom</th><th>Grade reconnu</th><th>Loge d\'origine</th><th>Obédience d\'origine</th><th>Date demande</th><th>Loge d\'accueil</th><th>Statut</th><th>Action</th></tr></thead><tbody>';
+  all.forEach(function(a){
+    var l=gLoge(a.lid);
+    h+='<tr>'
+      +'<td style="font-weight:700">'+a.nom+'</td>'
+      +'<td>'+gCh(a.grade)+'</td>'
+      +'<td>'+a.logeOrigin+'</td>'
+      +'<td>'+a.obOrigin+'</td>'
+      +'<td style="color:#888;font-size:12px">'+a.dateAffil+'</td>'
+      +'<td>'+(l?'N°'+l.numero+' '+l.nom:'—')+'</td>'
+      +'<td>'+(a.st==='Confirmé'?ch('Confirmé','cgreen'):ch('En attente','cor'))+'</td>'
+      +'<td>'+(a.st!=='Confirmé'&&isGS()?'<button class="btn ok sm" onclick="APP.validerAffil(\''+a.id+'\')">Valider<\/button> <button class="btn dng sm" onclick="APP.rejeterAffil(\''+a.id+'\')">Rejeter<\/button>':'')+'</td>'
+      +'</tr>';
+  });
+  return h+'</tbody></table></div>';
+}
+
+function tInfos(){
+  var ob=D.obInfo;
+  var h='<div style="display:flex;align-items:center;margin-bottom:16px"><div class="sec" style="margin:0">'+ob.name+'</div>'
+    +(isGO()||isSuperAdmin()?'<button class="btn outline sm" style="margin-left:auto" onclick="APP.setTab("paramsob")">⚙ Modifier</button>':'')+'</div>'
+    +'<div class="g3" style="margin-bottom:24px">'
+    +[['Siège',ob.siege||D.siege],['Acronyme',ob.acronym||D.acronym],['Fondée en',ob.fondation||D.fondation],['Ville',ob.ville||'—'],['Adresse',ob.adresse||'—'],['Patente',ob.patente||'—'],['Téléphone',ob.tel||'—'],['Email',ob.email||'—'],
+      ['Loges actives',D.loges.filter(function(l){return l.statut==='active';}).length],
+      ['Total frères',D.membres.filter(function(m){return m.logeId&&m.statut==='actif';}).length],
+      ['Taux capitation',fmt(D.tauxCap)+' FCFA']].map(function(x){
+      return'<div class="sc"><div class="sc-l">'+x[0]+'</div><div class="sc-v" style="font-size:'+(String(x[1]).length>12?'14px':'21px')+'">'+x[1]+'</div></div>';}).join('')
+    +'</div>'
+    +'<div class="sec" style="font-size:14px">Grands Officiers</div><div class="g4">';
+  D.grandOff.forEach(function(g){var m=g.mid?gMbr(g.mid):null;
+    h+='<div class="card" style="text-align:center">'
+      +'<div style="font-size:10px;font-weight:900;text-transform:uppercase;letter-spacing:.3px;margin-bottom:6px">'+g.titre+'</div>'
+      +(m?'<div style="font-weight:700;font-size:13px;margin-bottom:4px">'+m.nom+'</div>'+gCh(m.grade):'<div style="color:#bbb;font-size:12px;font-style:italic">Vacant</div>')
+      +'</div>';
+  });
+  return h+'</div>';
+}
+
+function tGrandOff(){
+  var h='<div style="display:flex;align-items:center;margin-bottom:18px">'
+    +'<div class="sec" style="margin:0">Grands Officiers</div><div style="flex:1"></div>'
+    +(hasPerm('editGrandOff','obedience')?'<button class="btn gold" onclick="APP.openMod(\'newGO\',{})">+ Nouveau<\/button>':'')
+    +'</div><div class="g4">';
+  D.grandOff.forEach(function(g){var m=g.mid?gMbr(g.mid):null;
+    h+='<div class="card">'
+      +'<div style="font-size:10px;font-weight:900;text-transform:uppercase;letter-spacing:.3px;margin-bottom:8px">'+g.titre+'</div>'
+      +(m?'<div style="font-weight:700;font-size:13px;margin-bottom:6px">'+m.nom+'</div>'+'<div style="margin-bottom:8px">'+rCh(m.role)+ch(m.matricule,'cg')+'</div>'
+        :'<div style="color:#bbb;font-size:12px;font-style:italic;margin-bottom:8px">Poste vacant</div>')
+      +'<div style="display:flex;gap:5px;flex-wrap:wrap">'
+      +(hasPerm('editGrandOff','obedience')?'<button class="btn outline sm" onclick="APP.openMod(\'assignGO\',{gid:\''+g.id+'\'})">Affecter<\/button>':'')
+      +(m&&hasPerm('editGrandOff','obedience')?'<button class="btn dng sm" onclick="APP.revokeGO(\''+g.id+'\')">Retirer<\/button>':'')
+      +'</div></div>';
+  });
+  return h+'</div>';
+}
+
+function tAdmin(){
+  var vl=D.versements;
+  var tot=sumA(vl,function(v){return v.mnt;}),paid=sumA(vl.filter(function(v){return v.st==='Payé';}),function(v){return v.mnt;});
+  var aR=D.caps.filter(function(c){return c.st==='Retard';});
+  // Avances loges
+  var logeAvances=D.versements.reduce(function(s,v){return s+(v.avances?sumA(v.avances,function(a){return a.mnt;}):0);},0);
+  var h='<div class="sec">Administration Obédience</div>'
+    +'<div class="g3" style="margin-bottom:20px">'
+    +[['Total dû',fmt(tot)+' F'],['Payé intégral',fmt(paid)+' F'],['Avances reçues',fmt(logeAvances)+' F'],['Solde net',fmt(tot-paid-logeAvances)+' F'],['Recouvrement',tot?Math.round((paid+logeAvances)/tot*100)+'%':'0%']].map(function(x){
+      return'<div class="sc"><div class="sc-l">'+x[0]+'</div><div class="sc-v">'+x[1]+'</div></div>';}).join('')
+    +'</div>'
+    +'<div style="display:flex;align-items:center;margin-bottom:12px;gap:10px;flex-wrap:wrap">'
+    +'<div style="font-size:14px;font-weight:900">Versements des Loges</div><div style="flex:1"></div>'
+    +'<button class="btn outline sm" onclick="APP.notifRetards()">📧 Relancer tous les retards</button>'
+    +'</div>'
+    +'<div class="tw"><table><thead><tr><th>Loge</th><th>Montant</th><th>Statut</th><th>Date</th><th>Action</th></tr></thead><tbody>';
+  vl.forEach(function(v){var l=gLoge(v.lid);
+    h+='<tr><td style="font-weight:700">'+(l?'N°'+l.numero+' — '+l.nom:'—')+'</td>'
+      +'<td style="font-weight:700">'+fmt(v.mnt)+' F</td>'
+      +'<td>'+sCh(v.st)+'</td><td style="color:#888;font-size:12px">'+(v.date||'—')+'</td>'
+      +'<td>'+(v.st!=='Payé'?'<button class="btn ok sm" onclick="APP.payVL(\''+v.id+'\')">Valider<\/button>':'')+'</td></tr>';
+  });
+  h+='</tbody></table></div>';
+  if(aR.length){
+    h+='<div style="font-size:14px;font-weight:900;margin:18px 0 12px">Cotisations en retard — Vue obédience</div>'
+      +'<div class="tw"><table><thead><tr><th>Frère</th><th>Loge</th><th>Montant</th><th>Notification</th></tr></thead><tbody>';
+    aR.forEach(function(c){var m=gMbr(c.mid),l=gLoge(c.lid);
+      var notif=D.notifLog.filter(function(n){return n.mid===c.mid;}).length;
+      h+='<tr><td style="font-weight:700">'+(m?m.nom:'—')+'</td><td>'+(l?l.nom:'—')+'</td>'
+        +'<td style="font-weight:700">'+fmt(c.mnt)+' F</td>'
+        +'<td><button class="btn inf sm" onclick="APP.openMod(\'notif\',{mid:\''+c.mid+'\'})">Relancer ('+notif+')<\/button></td></tr>';
+    });
+    h+='</tbody></table></div>';
+  }
+  return h;
+}
+
+function tParams(){
+  var h='<div class="sec">⚙ Paramètres & Droits</div>'
+    +'<div class="alert a-i" style="margin-bottom:16px">Configurez les droits d\'accès pour chaque rôle. Ces paramètres s\'appliquent à toutes les loges et à l\'obédience.</div>';
+  // Loge perms
+  h+='<div style="font-size:14px;font-weight:900;margin-bottom:12px">Droits au niveau des Loges</div>'
+    +'<div class="card" style="margin-bottom:18px">';
+  Object.keys(DEFAULT_PERMS.loge).forEach(function(key){
+    var pobj=DEFAULT_PERMS.loge[key];
+    var cur=D.customPerms&&D.customPerms.loge&&D.customPerms.loge[key]?D.customPerms.loge[key]:pobj.roles;
+    h+='<div class="perm-row">'
+      +'<div style="flex:1"><div style="font-weight:700;font-size:13px">'+pobj.label+'</div>'
+      +'<div style="font-size:11px;color:#888;margin-top:2px">Rôles actuels : '+cur.join(', ')+'</div></div>'
+      +'<div style="display:flex;gap:6px;flex-wrap:wrap">'
+      +['VM','Officier','Frère'].map(function(role){
+        var on=cur.indexOf(role)!==-1;
+        return'<div style="display:flex;align-items:center;gap:4px;font-size:12px">'
+          +'<button class="toggle'+(on?' on':'')+'" onclick="APP.togglePerm(\'loge\',\''+key+'\',\''+role+'\',this)" title="'+role+'"></button>'
+          +'<span style="font-size:11px;font-weight:600">'+role+'</span></div>';
+      }).join('')
+      +'</div></div>';
+  });
+  h+='</div>';
+  // Obedience perms
+  h+='<div style="font-size:14px;font-weight:900;margin-bottom:12px">Droits au niveau de l\'Obédience</div>'
+    +'<div class="card">';
+  Object.keys(DEFAULT_PERMS.obedience).forEach(function(key){
+    var pobj=DEFAULT_PERMS.obedience[key];
+    var cur=D.customPerms&&D.customPerms.obedience&&D.customPerms.obedience[key]?D.customPerms.obedience[key]:pobj.roles;
+    h+='<div class="perm-row">'
+      +'<div style="flex:1"><div style="font-weight:700;font-size:13px">'+pobj.label+'</div>'
+      +'<div style="font-size:11px;color:#888;margin-top:2px">Rôles actuels : '+cur.join(', ')+'</div></div>'
+      +'<div style="display:flex;gap:6px;flex-wrap:wrap">'
+      +['Grand Secrétaire','Grand Trésorier'].map(function(role){
+        var on=cur.indexOf(role)!==-1;
+        return'<div style="display:flex;align-items:center;gap:4px;font-size:12px">'
+          +'<button class="toggle'+(on?' on':'')+'" onclick="APP.togglePerm(\'obedience\',\''+key+'\',\''+role+'\',this)" title="'+role+'"></button>'
+          +'<span style="font-size:11px;font-weight:600">'+role+'</span></div>';
+      }).join('')
+      +'</div></div>';
+  });
+  return h+'</div>'+modH();
+}
+
+function tAlertsOb(aP,aR,pend,aff){
+  var h='<div class="sec">Alertes Obédience</div>';
+  var total=aP.length+aR.length+pend+aff;
+  if(!total)return h+'<div class="alert a-ok">✓ Aucune alerte.</div>';
+  if(pend){h+='<div class="alert a-w"><div class="a-t">Dossiers complets à valider ('+pend+')</div><p style="font-size:13px">Allez dans l\'onglet Dossiers pour les examiner.</p></div>';}
+  if(aff){h+='<div class="alert a-w"><div class="a-t">Affiliations en attente ('+aff+')</div><p style="font-size:13px">Allez dans l\'onglet Affiliations pour les valider.</p></div>';}
+  if(aP.length){h+='<div class="alert a-w"><div class="a-t">Propositions de grade ('+aP.length+')</div>';aP.forEach(function(m){var l=gLoge(m.logeId),ok=l&&isCapOK(m,l.id);h+='<div class="arow"><span style="font-weight:700">'+m.nom+'</span>'+gCh(m.grade)+(l?'<span style="color:#888;font-size:12px">'+l.nom+'</span>':'')+(ok?ch('Éligible','cgreen'):ch('Cotisation requise','cred'))+'</div>';});h+='</div>';}
+  if(aR.length){h+='<div class="alert a-e"><div class="a-t">Capitations en retard ('+aR.length+')</div>';aR.forEach(function(c){var m=gMbr(c.mid),l=gLoge(c.lid);h+='<div class="arow"><span style="font-weight:700">'+(m?m.nom:'—')+'</span>'+(m?ch(m.matricule,'cg'):'')+(l?'<span style="color:#888;font-size:12px">'+l.nom+'</span>':'')+'<span style="color:#b71c1c;font-weight:700">'+fmt(c.mnt)+' F</span><button class="btn ok sm" onclick="APP.openMod(\'notif\',{mid:\''+(m?m.id:'')+'\'})">Relancer<\/button></div>';});h+='</div>';}
+  return h;
+}
+
+// ── LOGE VIEW ──
+function vLoge(){
+  var loge=gLoge(S.lid);if(!loge)return hdr()+'<div class="cont">Introuvable.</div>';
+  var off=isLO(S.lid),ms=lMbrs(S.lid);
+  var props=ms.filter(isPropGrade),caps=lCaps(S.lid),retards=caps.filter(function(c){return c.st==='Retard';});
+  var an=props.length+retards.length;
+  var tCount=loge.agenda.filter(function(e){return e.type==='Tenue'||e.type==='Cérémonie';}).length;
+  var userPost=getUserPost(loge.id);
+  var accessLvl=getAccessLevel(loge.id);
+  var allTabs=[
+    {id:'programme',lbl:'Programme',min:0},
+    {id:'instruction',lbl:'Instruction',min:0},
+    {id:'membres',lbl:'Membres ('+ms.length+')',min:3},
+    {id:'officiers',lbl:'Officiers',min:3},
+    {id:'assiduites',lbl:'Assiduité',min:3},
+    {id:'visiteurs',lbl:'Visiteurs',min:3},
+    {id:'documents',lbl:'Documents',min:2},
+    {id:'finances',lbl:'Finances',min:7,offOnly:true},
+    {id:'capitations',lbl:'Capitations',min:7,offOnly:true},
+    {id:'tronc',lbl:'Tronc Veuve',min:5,offOnly:true},
+    {id:'hospitalier',lbl:'Hospitalier',min:5,offOnly:true},
+    {id:'alertes',lbl:'Alertes',min:7,badge:an||'',offOnly:true},
+    {id:'rapport',lbl:'Rapport',min:10,offOnly:true},
+    {id:'paramsLoge',lbl:'⚙ Paramètres',min:10,offOnly:true},
+  ];
+  var tabs=allTabs.filter(function(t){
+    if(isGO()||isSuperAdmin())return true;
+    if(t.offOnly&&!off)return false;
+    if(!off)return!t.offOnly||false;
+    return canAccessTab(loge.id,t.id)||accessLvl>=(t.min||0);
+  });
+  var bar='<div class="lbar"><div class="lnum">N°'+loge.numero+'</div>'
+    +'<div><div style="font-weight:900;font-size:15px">'+loge.nom+'</div>'
+    +'<div style="color:#888;font-size:12px">📍 '+loge.ville+' · '+ms.length+' frères · '+ch(tCount+'/3 min.',tCount>=3?'cgreen':'cred')+'</div></div>'
+    +'<div style="flex:1"></div>'
+    +(off?'<button class="btn outline sm" onclick="APP.openMod(\'newEvt\',{lid:\''+loge.id+'\'})">+ Tenue<\/button>'
+       +'<button class="btn ok sm" onclick="APP.openMod(\'affiliationForm\',{lid:\''+loge.id+'\'})">+ Affiliation<\/button>'
+       +'<button class="btn gold sm" onclick="APP.openMod(\'dossierForm\',{lid:\''+loge.id+'\'})">+ Nouveau Frère<\/button>':'')
+    +'</div>';
+  var c='';
+  if(S.tab==='programme')c=lProg(loge,off);
+  else if(S.tab==='instruction')c=lInstr(loge,off);
+  else if(S.tab==='membres')c=lMbrs2(loge,ms,off);
+  else if(S.tab==='officiers')c=lOffs(loge,ms,off);
+  else if(S.tab==='capitations')c=lCaps2(loge,caps,off);
+  else if(S.tab==='assiduites')c=lAssid(loge,ms);
+  else if(S.tab==='visiteurs')c=lVis(loge,off);
+  else if(S.tab==='documents')c=tDocuments('loge',loge.id);
+  else if(S.tab==='finances'&&off)c=lFin(loge,caps);
+  else if(S.tab==='capitations')c=lCaps2(loge,caps,off);
+  else if(S.tab==='tronc')c=lTroncVeuve(loge,off);
+  else if(S.tab==='alertes'&&off)c=lAlerts(loge,ms,props,retards);
+  else if(S.tab==='rapport'&&off)c=lRapport(loge,ms,caps);
+  else if(S.tab==='hospitalier')c=lRapportHospitalier(loge);
+  else if(S.tab==='paramsLoge'&&off)c=lParams(loge,off);
+  var userPost2=getUserPost(loge.id);
+  var lvl2=getAccessLevel(loge.id);
+  var officerBanner2='';
+  if(off&&userPost2&&!isGO()){
+    var pColor=lvl2>=10?'#27ae60':lvl2>=7?'#c9a227':lvl2>=5?'#1a5f8a':'#555';
+    officerBanner2='<div style="background:#fff;border-bottom:2px solid #e5e5e5;padding:7px 18px;display:flex;align-items:center;gap:12px;flex-wrap:wrap">'
+      +'<div style="background:#111;color:#c9a227;border-radius:6px;padding:4px 11px;font-size:12px;font-weight:900">'+userPost2+'</div>'
+      +'<div style="font-size:12px;color:#555">Niveau <strong style="color:'+pColor+'">'+lvl2+'/10</strong></div>'
+      +'<div style="flex:1"></div>'
+      +'<div style="font-size:11px;color:#888;font-style:italic">Tableau de bord adapté à votre poste</div>'
+      +'</div>';
+  }
+  return hdr()+bar+officerBanner2+tbr(tabs)+'<div class="cont">'+c+'</div>'+modH();
+}
+
+function lProg(loge,off){
+  var evts=loge.agenda.slice().sort(function(a,b){return a.date.localeCompare(b.date);});
+  var tC=evts.filter(function(e){return e.type==='Tenue'||e.type==='Cérémonie';}).length;
+  return'<div style="display:flex;align-items:center;gap:10px;margin-bottom:16px;flex-wrap:wrap">'
+    +'<div class="sec" style="margin:0">Programme — 9 mois</div>'
+    +ch(tC+' tenue(s)',tC>=3?'cgreen':'cred')
+    +'<div style="flex:1"></div>'
+    +(off?'<button class="btn gold" onclick="APP.openMod(\'newEvt\',{lid:\''+loge.id+'\'})">+ Ajouter<\/button>':'')
+    +'</div>'
+    +(tC<3?'<div class="alert a-w" style="margin-bottom:14px"><div class="a-t">Programme incomplet</div>'+tC+' tenue(s) sur 3 minimum requis.</div>':'')
+    +buildProgTable(evts,false);
+}
+
+function lInstr(loge,off){
+  var evts=(loge.instruction||[]).slice().sort(function(a,b){return a.date.localeCompare(b.date);});
+  return'<div style="display:flex;align-items:center;gap:10px;margin-bottom:16px;flex-wrap:wrap">'
+    +'<div class="sec" style="margin:0">Tenues d\'Instruction</div>'+ch(evts.length+' séance(s)','cteal')+'<div style="flex:1"></div>'
+    +(off?'<button class="btn gold" onclick="APP.openMod(\'newInstr\',{lid:\''+loge.id+'\'})">+ Ajouter<\/button>':'')
+    +'</div>'+buildProgTable(evts,true);
+}
+
+function lMbrs2(loge,ms,off){
+  var h='<div class="sec">Frères de la Loge</div><div class="tw"><table><thead><tr>'
+    +'<th>Matricule</th><th>Nom</th><th>Grade</th><th>Durée</th><th>Assiduité</th><th>Situation</th><th>Rôle</th>'
+    +(off?'<th>Actions</th>':'')+'</tr></thead><tbody>';
+  ms.forEach(function(m){
+    var mo=moAt(m.dateGrade),propG=isPropGrade(m),capOK=isCapOK(m,loge.id);
+    var ass=getAssiduite(m.id,loge.id);
+    var propFull=propG&&capOK;
+    var dur=m.grade==='Maitre'?'—':mo+'/12 mois';
+    var badge=propFull?ch('✓ Proposable','cgreen'):propG&&!capOK?ch('Cotisation req.','cred'):'';
+    h+='<tr>'
+      +'<td>'+ch(m.matricule,'cg')+'</td>'
+      +'<td style="font-weight:700">'+m.nom+(m.affiliation?'<br><span style="font-size:10px;color:#888">Affilié</span>':'')+'</td>'
+      +'<td>'+gCh(m.grade)+'</td>'
+      +'<td><span style="font-size:12px;color:'+(propG&&!capOK?'#b71c1c':propG?'#1b5e20':mo>=9?'#5a3e00':'#888')+'">'+dur+'</span></td>'
+      +'<td><span style="font-size:12px;font-weight:700;color:'+(ass.pct>=70?'#1b5e20':ass.pct>=40?'#5a3e00':'#b71c1c')+'">'+ass.pct+'%</span><span style="font-size:11px;color:#aaa"> ('+ass.present+'/'+ass.total+')</span></td>'
+      +'<td>'+(badge||ch('Régulier','cgr'))+'</td>'
+      +'<td>'+rCh(m.role)+'</td>'
+      +(off?'<td style="white-space:nowrap">'
+        +(propFull&&isVM(loge.id)?'<button class="btn ok sm" onclick="APP.openMod(\'promote\',{mid:\''+m.id+'\'})">Promouvoir<\/button>':'')
+        +(isVM(loge.id)&&!propG?'<button class="btn dng sm" onclick="APP.radier(\''+m.id+'\')">Radier<\/button>':'')
+        +(off?'<button class="btn inf sm" onclick="APP.openMod(\'notif\',{mid:\''+m.id+'\'})">📧<\/button>':'')
+        +'</td>':'')
+      +'</tr>';
+  });
+  h+='</tbody></table></div>';
+  // Frères radiés with reintegration request option
+  var radies=D.membres.filter(function(m){return m.logeId===loge.id&&m.statut==='radié';});
+  if(radies.length&&off){
+    h+='<div style="margin-top:18px"><div style="font-size:14px;font-weight:900;color:#b71c1c;margin-bottom:10px">Frères radiés ('+radies.length+')</div>'
+      +'<div class="tw"><table><thead><tr><th>Matricule</th><th>Nom</th><th>Grade</th><th>Action</th></tr></thead><tbody>';
+    radies.forEach(function(m){
+      var pending=D.reintegrationPending&&D.reintegrationPending.find(function(r){return r.mid===m.id;});
+      h+='<tr><td>'+ch(m.matricule,'cred')+'</td><td style="font-weight:700;color:#b71c1c">'+m.nom+'</td><td>'+gCh(m.grade)+'</td><td>'
+        +(pending?ch('Réintégration en attente','cor'):'<button class="btn outline sm" onclick="APP.demandeReintegration("+m.id+")">Demander réintégration</button>')
+        +'</td></tr>';
+    });
+    h+='</tbody></table></div></div>';
+  }
+  return h;
+}
+
+function lAssid(loge,ms){
+  var h='<div style="display:flex;align-items:center;margin-bottom:16px">'
+    +'<div class="sec" style="margin:0">Assiduité des Frères</div><div style="flex:1"></div>'
+    +(isLO(loge.id)?'<button class="btn gold" onclick="APP.openMod(\'saisiePresence\',{lid:\''+loge.id+'\'})">Saisir présences<\/button>':'')
+    +'</div>'
+    +'<div class="tw"><table><thead><tr><th>Matricule</th><th>Nom</th><th>Grade</th>'
+    +loge.agenda.map(function(ev){return'<th style="font-size:10px;writing-mode:vertical-lr;height:70px;padding:5px 8px">'+ev.date+'</th>';}).join('')
+    +'<th>Total</th><th>Taux</th></tr></thead><tbody>';
+  ms.forEach(function(m){
+    var ass=getAssiduite(m.id,loge.id);
+    var color=ass.pct>=70?'#1b5e20':ass.pct>=40?'#5a3e00':'#b71c1c';
+    h+='<tr><td>'+ch(m.matricule,'cg')+'</td><td style="font-weight:700">'+m.nom+'</td><td>'+gCh(m.grade)+'</td>';
+    loge.agenda.forEach(function(ev){
+      var pres=D.presences.find(function(p){return p.mid===m.id&&p.evtId===ev.id;});
+      h+='<td style="text-align:center">'+(pres?(pres.present?'<span style="color:#1b5e20;font-weight:900">✓</span>':'<span style="color:#b71c1c">✗</span>'):'<span style="color:#ddd">—</span>')+'</td>';
+    });
+    h+='<td style="font-weight:700">'+ass.present+'/'+ass.total+'</td>'
+      +'<td><span style="font-weight:900;color:'+color+'">'+ass.pct+'%</span></td></tr>';
+  });
+  return h+'</tbody></table></div>';
+}
+
+function lOffs(loge,ms,off){
+  var vacant=loge.officiers.filter(function(o){return !o.mid;}).length;
+  var h='<div style="display:flex;align-items:center;gap:10px;margin-bottom:18px;flex-wrap:wrap">'
+    +'<div class="sec" style="margin:0">Officiers</div>'
+    +ch((loge.officiers.length-vacant)+' nommés','cgreen')+ch(vacant+' vacants','cred')
+    +'<div style="flex:1"></div>'
+    +(off?'<button class="btn gold" onclick="APP.openMod(\'newOff\',{lid:\''+loge.id+'\'})">+ Créer un poste<\/button>':'')
+    +'</div><div class="g4">';
+  loge.officiers.forEach(function(o){var m=o.mid?ms.find(function(x){return x.id===o.mid;}):null;
+    h+='<div class="ocard'+(m?' occ':'')+'">'
+      +'<div style="display:flex;justify-content:space-between;align-items:flex-start;gap:4px">'
+      +'<div class="ot">'+o.titre+'</div>'
+      +(!o.perm&&off?'<button class="btn dng sm" onclick="APP.delOff(\''+loge.id+'\',\''+o.id+'\')" style="padding:3px 7px;font-size:11px">✕<\/button>':'')
+      +'</div>'
+      +(m?'<div class="on2">'+m.nom+'</div>'+ch(m.matricule,'cg'):'<div class="ovac">Poste vacant</div>')
+      +(off?'<div class="oact"><button class="btn outline sm" onclick="APP.openMod(\'assignOff\',{lid:\''+loge.id+'\',oid:\''+o.id+'\'})">'+(m?'Changer':'Affecter')+'<\/button>'+(m?'<button class="btn dng sm" onclick="APP.revokeOff(\''+loge.id+'\',\''+o.id+'\')">Retirer<\/button>':'')+'</div>':'')
+      +'</div>';
+  });
+  return h+'</div>';
+}
+
+// canSeeTresorerie now in ROLE_SYSTEM above
+function lCaps2(loge,caps,off){
+  if(!off&&!canSeeTresorerie(loge))return'<div class="alert a-e">Accès Capitations réservé aux officiers de la loge.</div>';
+  if(!D.avances)D.avances=[];
+  var paid=sumA(caps.filter(function(c){return c.st==='Payé';}),function(c){return c.mnt;});
+  var tot=sumA(caps,function(c){return c.mnt;});
+  var totalV=sumA(D.avances.filter(function(a){return a.lid===loge.id;}),function(a){return a.mnt;});
+  var rec=tot>0?Math.min(100,Math.round((paid+Math.min(tot-paid,totalV))/tot*100)):0;
+  var h='<div style="display:flex;align-items:center;margin-bottom:14px">'
+    +'<div class="sec" style="margin:0">Capitations</div><div style="flex:1"></div>'
+    +(off?'<button class="btn outline sm" onclick="APP.exportCapsExcel(\''+loge.id+'\')">📊 Excel<\/button>'
+      +' <button class="btn outline sm" onclick="APP.exportCapsPDF(\''+loge.id+'\')">📄 PDF<\/button>':'')
+    +'</div>'
+    +'<div class="g3" style="margin-bottom:18px">'
+    +[['Total dû',fmt(tot)+' F'],['Payé',fmt(paid)+' F'],['Avances',fmt(totalV)+' F'],['Recouvrement',rec+'%']].map(function(x){
+      return'<div class="sc"><div class="sc-l">'+x[0]+'</div><div class="sc-v">'+x[1]+'</div></div>';}).join('')
+    +'</div>';
+  caps.forEach(function(c){
+    var m=gMbr(c.mid),sd=getSolde(c.mid,c.lid),av=getAvances(c.mid,c.lid);
+    var propG=m&&isPropGrade(m),bCls=c.st==='Payé'?'paye':c.st==='Retard'?'retard':'attente';
+    var pfB=sd.pct>=100?'#27ae60':sd.pct>=50?'#c9a227':'#c0392b';
+    h+='<div class="cap-card '+bCls+'">'
+      +'<div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap">'
+      +'<div class="ava">'+(m?m.nom[0]:'?')+'</div>'
+      +'<div style="flex:1">'
+      +'<div style="font-weight:900;font-size:14px">'+(m?m.nom:'—')
+        +(m?'<span style="color:#aaa;font-size:11px;margin-left:6px">'+m.matricule+'</span>':'')
+        +(m?' '+gCh(m.grade):'')+'</div>'
+      +'<div style="font-size:12px;color:#555;margin-top:2px">Dû : <strong>'+fmt(c.mnt)+' FCFA</strong>'
+        +(propG&&c.st!=='Payé'?' '+ch('Bloque promotion','cred'):'')+'</div></div>'
+      +'<div style="text-align:right">'+sCh(c.st)+(c.date?'<div style="font-size:11px;color:#aaa;margin-top:3px">'+c.date+'</div>':'')+'</div></div>'
+      +'<div style="margin-top:10px">'
+      +'<div style="display:flex;justify-content:space-between;font-size:11px;color:#555;margin-bottom:4px">'
+      +'<span>Versé : <strong>'+fmt(sd.verse)+' FCFA</strong></span>'
+      +'<span>Solde : <strong style="color:'+(sd.solde<=0?'#1b5e20':'#b71c1c')+'">'+fmt(sd.solde)+' FCFA</strong></span>'
+      +'<span><strong>'+sd.pct+'%</strong></span></div>'
+      +'<div class="pbar"><div class="pfill" style="width:'+sd.pct+'%;background:'+pfB+'"></div></div></div>'
+      +(av.length?'<div style="margin-top:9px"><div style="font-size:10px;font-weight:900;color:#666;margin-bottom:4px;text-transform:uppercase">Versements</div>'
+        +av.map(function(a){return'<div class="av-item"><span>📅 '+a.date+(a.note?' — <em style="color:#aaa">'+a.note+'</em>':'')+'</span><strong>+'+fmt(a.mnt)+' FCFA</strong></div>';}).join('')+'</div>':'')
+      +(off?'<div style="display:flex;gap:7px;margin-top:10px;flex-wrap:wrap">'
+        +(c.st!=='Payé'?'<button class="btn inf sm" onclick="APP.openMod(\'avance\',{mid:\''+c.mid+'\',lid:\''+c.lid+'\',solde:'+sd.solde+'})">+ Versement<\/button>':'')
+        +(c.st!=='Payé'?'<button class="btn gold sm" onclick="APP.payCap(\''+c.id+'\')">✓ Payé intégral<\/button>':'')
+        +(c.st!=='Payé'?'<button class="btn warn-btn sm" onclick="APP.openMod(\'notif\',{mid:\''+(m?m.id:'')+'\'})">📧 Relancer<\/button>':'')
+        +(c.st==='Payé'?'<span style="color:#1b5e20;font-size:12px;font-weight:700">✓ Soldé</span>':'')
+        +'</div>':'')
+      +'</div>';
+  });
+  return h;
+}
+
+function lVis(loge,off){
+  var vis=D.visiteurs.filter(function(v){return v.lid===loge.id;});
+  var h='<div style="display:flex;align-items:center;margin-bottom:16px">'
+    +'<div class="sec" style="margin:0">Visiteurs</div><div style="flex:1"></div>'
+    +(off?'<button class="btn gold" onclick="APP.openMod(\'newVis\',{lid:\''+loge.id+'\'})">+ Visiteur<\/button>':'')
+    +'</div>';
+  if(!vis.length)return h+'<div style="color:#aaa;text-align:center;padding:20px">Aucun visiteur enregistré.</div>';
+  h+='<div class="tw"><table><thead><tr><th>Nom</th><th>Loge</th><th>Grade</th><th>Motif</th><th>Date</th></tr></thead><tbody>';
+  vis.forEach(function(v){h+='<tr><td style="font-weight:700">'+v.nom+'</td><td>'+v.loge+'</td><td>'+gCh(v.grade)+'</td><td>'+v.motif+'</td><td style="color:#888">'+v.date+'</td></tr>';});
+  return h+'</tbody></table></div>';
+}
+
+function lFin(loge,caps){
+  var paid=sumA(caps.filter(function(c){return c.st==='Payé';}),function(c){return c.mnt;});
+  var tot=sumA(caps,function(c){return c.mnt;});
+  var vl=D.versements.filter(function(v){return v.lid===loge.id;});
+  var h='<div class="sec">Situation Financière</div>'
+    +'<div class="g3" style="margin-bottom:22px">'
+    +[['Capitations reçues',fmt(paid)+' F'],['Total dû',fmt(tot)+' F'],['Non reçu',fmt(tot-paid)+' F'],['Recouvrement',tot?Math.round(paid/tot*100)+'%':'0%']].map(function(x){
+      return'<div class="sc"><div class="sc-l">'+x[0]+'</div><div class="sc-v">'+x[1]+'</div></div>';}).join('')
+    +'</div><div style="font-size:14px;font-weight:900;margin-bottom:11px">Versements à la GLUC</div>';
+  vl.forEach(function(v){h+='<div class="card" style="display:flex;align-items:center;gap:12px;flex-wrap:wrap;margin-bottom:10px"><div style="flex:1"><div style="font-weight:700">'+v.desc+'</div><div style="color:#888;font-size:12px">Année '+v.annee+' · '+fmt(v.mnt)+' FCFA</div></div>'+sCh(v.st)+'</div>';});
+  return h;
+}
+
+function lAlerts(loge,ms,props,retards){
+  var h='<div class="sec">Alertes</div>';
+  if(!props.length&&!retards.length)return h+'<div class="alert a-ok">✓ Tout est en ordre.</div>';
+  if(props.length){h+='<div class="alert a-w"><div class="a-t">Propositions de grade ('+props.length+')</div>';props.forEach(function(m){var ok=isCapOK(m,loge.id);h+='<div class="arow"><span style="font-weight:700">'+m.nom+'</span>'+gCh(m.grade)+'<span style="color:#888;font-size:12px">'+moAt(m.dateGrade)+' mois → '+gLbl(nxtG(m.grade))+'</span>'+(ok?ch('Éligible','cgreen'):ch('Cotisation req.','cred'))+(ok?'<button class="btn ok sm" onclick="APP.openMod(\'promote\',{mid:\''+m.id+'\'})">Promouvoir<\/button>':'')+'</div>';});h+='</div>';}
+  if(retards.length){h+='<div class="alert a-e"><div class="a-t">Capitations en retard ('+retards.length+')</div>';retards.forEach(function(c){var m=gMbr(c.mid);h+='<div class="arow"><span style="font-weight:700">'+(m?m.nom:'—')+'</span>'+(m?ch(m.matricule,'cg'):'')+'<span style="color:#b71c1c;font-weight:700">'+fmt(c.mnt)+' F</span><button class="btn ok sm" onclick="APP.payCap(\''+c.id+'\')">Marquer payé<\/button><button class="btn warn-btn sm" onclick="APP.openMod(\'notif\',{mid:\''+(m?m.id:'')+'\'})">📧 Relancer<\/button></div>';});h+='</div>';}
+  return h;
+}
+
+function lRapport(loge,ms,caps){
+  var paid=sumA(caps.filter(function(c){return c.st==='Payé';}),function(c){return c.mnt;});
+  var tot=sumA(caps,function(c){return c.mnt;});
+  var pct=tot?Math.round(paid/tot*100):0;
+  return'<div style="display:flex;align-items:center;gap:10px;margin-bottom:18px;flex-wrap:wrap">'
+    +'<div class="sec" style="margin:0">Rapport d\'Activité</div><div style="flex:1"></div>'
+    +'<button class="btn outline sm" onclick="APP.exportRapportExcel(\''+loge.id+'\')">📊 Excel<\/button>'
+    +' <button class="btn gold" onclick="APP.printRapport(\''+loge.id+'\')">📄 PDF<\/button>'
+    +'</div>'
+    +'<div class="g3" style="margin-bottom:16px">'
+    +[['Frères actifs',ms.length],['Tenues',loge.agenda.length],['Capitations',pct+'%'],['Officiers',loge.officiers.filter(function(o){return o.mid;}).length]].map(function(x){
+      return'<div class="sc"><div class="sc-l">'+x[0]+'</div><div class="sc-v">'+x[1]+'</div></div>';}).join('')
+    +'</div><div class="alert a-i">Utilisez les boutons pour exporter en PDF ou Excel.</div>';
+}
+
+// ── MODALS ──
+APP.openMod=function(name,data){S.modal=name;S.mdata=data||{};R();};
+APP.closeMod=function(){S.modal=null;S.mdata={};R();};
+APP.previewMbr=function(id){var prev=G('mPrev'),ava=G('mPrevAva'),info=G('mPrevInfo');if(!prev)return;if(!id){prev.style.display='none';return;}var m=gMbr(id);if(!m)return;ava.textContent=m.nom[0];info.innerHTML='<div style="font-weight:700">'+m.nom+'</div><div style="font-size:12px;color:#888">'+m.matricule+' · '+gLbl(m.grade)+'</div>';prev.style.display='flex';};
+APP.updateSoldePreview=function(val,solde){var l=G('soldeAp');if(!l)return;var s=Math.max(0,solde-(parseInt(val)||0));l.textContent=fmt(s)+' FCFA';l.style.color=s===0?'#1b5e20':'#b71c1c';};
+
+var MODS={
+  dossierForm:function(d){
+    return mhdr('Nouveau Frère — Dépôt de Dossier')
+      +'<div class="alert a-w" style="margin-bottom:14px"><div class="a-t">Dossier requis</div>Ce dossier sera transmis à l\'Obédience. Le Grand Secrétaire validera la création après examen des 3 documents obligatoires.</div>'
+      +'<div class="fg"><label class="fl">Nom complet</label><input id="mNom" placeholder="Prénom NOM"/></div>'
+      +'<div class="frow"><div class="fg"><label class="fl">Téléphone</label><input id="mTel" placeholder="+242..."/></div><div class="fg"><label class="fl">Email</label><input id="mEmail" placeholder="email@..."/></div></div>'
+      +'<div class="fg"><label class="fl">Grade initial</label><select id="mGradeInit"><option value="Apprenti">Apprenti</option><option value="Compagnon">Compagnon</option><option value="Maitre">Maître</option></select></div>'
+      +'<div class="sec" style="font-size:13px;margin:12px 0 8px">Documents du dossier</div>'
+      +'<div class="fg"><label style="display:flex;align-items:center;gap:8px;cursor:pointer;padding:8px 0;border-bottom:1px solid #f0f0f0"><input id="docEx" type="checkbox" style="width:auto;margin:0"/> <span style="font-size:13px">Extrait d\'acte de naissance</span></label></div>'
+      +'<div class="fg"><label style="display:flex;align-items:center;gap:8px;cursor:pointer;padding:8px 0;border-bottom:1px solid #f0f0f0"><input id="docCas" type="checkbox" style="width:auto;margin:0"/> <span style="font-size:13px">Casier judiciaire vierge</span></label></div>'
+      +'<div class="fg"><label style="display:flex;align-items:center;gap:8px;cursor:pointer;padding:8px 0"><input id="docNat" type="checkbox" style="width:auto;margin:0"/> <span style="font-size:13px">Certificat de nationalité</span></label></div>'
+      +'<div class="fg" style="margin-top:10px"><label class="fl">Note / Observation</label><textarea id="mNote" placeholder="Observations éventuelles…"></textarea></div>'
+      +'<div class="mact"><button class="btn gold full" onclick="APP.soumettreDossier(\''+d.lid+'\')">Soumettre le dossier<\/button><button class="btn ghost full" onclick="APP.closeMod()">Annuler<\/button></div>';
+  },
+  editDossier:function(d){
+    var dos=D.dossiersPending.find(function(x){return x.id===d.id;});if(!dos)return'';
+    return mhdr('Mettre à jour le dossier — '+dos.nom)
+      +'<div class="sec" style="font-size:13px;margin-bottom:8px">Documents reçus</div>'
+      +'<div class="fg"><label style="display:flex;align-items:center;gap:8px;cursor:pointer;padding:8px 0;border-bottom:1px solid #f0f0f0"><input id="docEx" type="checkbox" style="width:auto;margin:0"'+(dos.docs.extrait?' checked':'')+'"/> <span style="font-size:13px">Extrait d\'acte de naissance</span></label></div>'
+      +'<div class="fg"><label style="display:flex;align-items:center;gap:8px;cursor:pointer;padding:8px 0;border-bottom:1px solid #f0f0f0"><input id="docCas" type="checkbox" style="width:auto;margin:0"'+(dos.docs.casier?' checked':'')+'"/> <span style="font-size:13px">Casier judiciaire vierge</span></label></div>'
+      +'<div class="fg"><label style="display:flex;align-items:center;gap:8px;cursor:pointer;padding:8px 0"><input id="docNat" type="checkbox" style="width:auto;margin:0"'+(dos.docs.nationalite?' checked':'')+'"/> <span style="font-size:13px">Certificat de nationalité</span></label></div>'
+      +'<div class="fg" style="margin-top:10px"><label class="fl">Note</label><textarea id="mNote">'+dos.note+'</textarea></div>'
+      +'<div class="mact"><button class="btn gold full" onclick="APP.updateDossier(\''+d.id+'\')">Mettre à jour<\/button><button class="btn ghost full" onclick="APP.closeMod()">Annuler<\/button></div>';
+  },
+  affiliationForm:function(d){
+    return mhdr('Affilier un Frère')
+      +'<div class="alert a-i" style="margin-bottom:12px">La demande sera transmise au Grand Secrétaire pour validation.</div>'
+      +'<div class="fg"><label class="fl">Nom complet</label><input id="mNom" placeholder="Prénom NOM"/></div>'
+      +'<div class="frow"><div class="fg"><label class="fl">Téléphone</label><input id="mTel" placeholder="+242..."/></div><div class="fg"><label class="fl">Email</label><input id="mEmail" placeholder="email@..."/></div></div>'
+      +'<div class="fg"><label class="fl">Grade reconnu</label><select id="mGrade"><option value="Apprenti">Apprenti</option><option value="Compagnon">Compagnon</option><option value="Maitre">Maître</option></select></div>'
+      +'<div class="frow"><div class="fg"><label class="fl">Loge d\'origine</label><input id="mLogeOrig" placeholder="Nom de la loge"/></div><div class="fg"><label class="fl">Obédience d\'origine</label><input id="mObOrig" placeholder="Nom de l\'obédience"/></div></div>'
+      +'<div class="frow"><div class="fg"><label class="fl">Date de la demande</label><input id="mDateAffil" type="date" value="'+tdStr()+'"/></div></div>'
+      +'<div class="mact"><button class="btn gold full" onclick="APP.soumetteAffil(\''+d.lid+'\')">Soumettre<\/button><button class="btn ghost full" onclick="APP.closeMod()">Annuler<\/button></div>';
+  },
+  promote:function(d){
+    var m=gMbr(d.mid);if(!m)return'';
+    var ng=nxtG(m.grade)||'';var capOK=isCapOK(m,m.logeId);
+    return mhdr('Promotion de Grade')
+      +'<div class="card" style="text-align:center;margin-bottom:18px">'
+      +'<div style="font-weight:900;font-size:15px;margin-bottom:10px">'+m.nom+'</div>'
+      +'<div style="display:flex;align-items:center;gap:16px;justify-content:center">'+gCh(m.grade)+'<span style="color:#ccc;font-size:22px">→</span>'+gCh(ng)+'</div>'
+      +'<div style="color:#888;font-size:12px;margin-top:10px">'+gLbl(m.grade)+' depuis <strong>'+moAt(m.dateGrade)+' mois</strong></div>'
+      +'<div style="margin-top:8px">'+(capOK?ch('✓ Cotisation à jour','cgreen'):ch('✗ Cotisation non réglée','cred'))+'</div></div>'
+      +(capOK?'<div class="mact"><button class="btn gold full" onclick="APP.promote(\''+d.mid+'\')">Confirmer<\/button><button class="btn ghost full" onclick="APP.closeMod()">Annuler<\/button></div>'
+             :mnote('Réglez la cotisation avant de promouvoir.','e')+'<div class="mact"><button class="btn ghost full" onclick="APP.closeMod()">Fermer<\/button></div>');
+  },
+  avance:function(d){
+    var m=gMbr(d.mid);
+    return mhdr('Enregistrer un Versement')
+      +'<div class="alert a-i" style="margin-bottom:12px"><strong>'+(m?m.nom:'—')+'</strong> · Solde restant : <strong style="color:#b71c1c">'+fmt(d.solde)+' FCFA</strong></div>'
+      +'<div class="fg"><label class="fl">Montant (FCFA)</label><input id="avMnt" type="number" min="1" max="'+d.solde+'" value="'+d.solde+'" oninput="APP.updateSoldePreview(this.value,'+d.solde+')"/></div>'
+      +'<div style="margin:-4px 0 11px;font-size:12px;color:#555">Solde après : <strong id="soldeAp" style="color:#1b5e20">0 FCFA</strong></div>'
+      +'<div class="fg"><label class="fl">Note</label><input id="avNote" placeholder="Ex: 1er versement…"/></div>'
+      +'<div class="mact"><button class="btn gold full" onclick="APP.ajouterAvance(\''+d.mid+'\',\''+d.lid+'\')">Enregistrer<\/button><button class="btn ghost full" onclick="APP.closeMod()">Annuler<\/button></div>';
+  },
+  notif:function(d){
+    var m=gMbr(d.mid);if(!m)return'';
+    var cap=D.caps.find(function(c){return c.mid===m.id&&c.lid===m.logeId;});
+    var ass=m.logeId?getAssiduite(m.id,m.logeId):{pct:0};
+    var prev=D.notifLog.filter(function(n){return n.mid===m.id;});
+    return mhdr('Relancer — '+m.nom)
+      +'<div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:14px">'
+      +ch(gLbl(m.grade),'cgr')+ch(m.matricule,'cg')
+      +(cap&&cap.st!=='Payé'?ch('Cotisation '+cap.st,'cred'):'')
+      +ch('Assiduité '+ass.pct+'%',ass.pct>=70?'cgreen':ass.pct>=40?'cor':'cred')
+      +'</div>'
+      +'<div class="fg"><label class="fl">Canal de notification</label>'
+      +'<select id="notifCanal"><option value="email">Email ('+m.email+')</option><option value="whatsapp">WhatsApp ('+m.tel+')</option><option value="sms">SMS ('+m.tel+')</option></select></div>'
+      +'<div class="fg"><label class="fl">Message</label>'
+      +'<textarea id="notifMsg">Frère '+m.nom+', nous vous rappelons votre cotisation en attente de règlement. Veuillez contacter votre loge. Fraternellement, GLUC.<\/textarea></div>'
+      +(prev.length?'<div style="font-size:11px;color:#888;margin-bottom:10px">'+prev.length+' relance(s) déjà envoyée(s)</div>':'')
+      +'<div class="mact"><button class="btn gold full" onclick="APP.envoyerNotif(\''+m.id+'\')">Envoyer<\/button><button class="btn ghost full" onclick="APP.closeMod()">Annuler<\/button></div>';
+  },
+  saisiePresence:function(d){
+    var loge=gLoge(d.lid);if(!loge)return'';
+    var ms=lMbrs(d.lid);
+    var evts=loge.agenda.slice().sort(function(a,b){return b.date.localeCompare(a.date);}).slice(0,5);
+    return mhdr('Saisie des Présences')
+      +'<div class="fg"><label class="fl">Tenue / Événement</label>'
+      +'<select id="presEvt"><option value="">— Choisir —</option>'
+      +evts.map(function(e){return'<option value="'+e.id+'">'+e.date+' — '+e.titre+'<\/option>';}).join('')
+      +'<\/select></div>'
+      +'<div style="margin-bottom:10px;font-size:12px;font-weight:700;text-transform:uppercase;color:#555">Présents :</div>'
+      +ms.map(function(m){
+        var pres=D.presences.find(function(p){return p.mid===m.id&&p.evtId===(G('presEvt')?G('presEvt').value:'');});
+        return'<label style="display:flex;align-items:center;gap:8px;padding:7px 0;border-bottom:1px solid #f0f0f0;cursor:pointer">'
+          +'<input type="checkbox" id="pres_'+m.id+'" style="width:auto;margin:0"'+(pres&&pres.present?' checked':'')+'"/>'
+          +'<span style="font-weight:600">'+m.nom+'</span>'+gCh(m.grade)+'<\/label>';
+      }).join('')
+      +'<div class="mact" style="margin-top:14px"><button class="btn gold full" onclick="APP.sauvegarderPresences(\''+d.lid+'\')">Enregistrer<\/button><button class="btn ghost full" onclick="APP.closeMod()">Annuler<\/button></div>';
+  },
+  newEvt:function(d){
+    return mhdr('Ajouter une Tenue')
+      +'<div class="fg"><label class="fl">Titre</label><input id="mTitre" placeholder="Ex: Tenue ordinaire"/></div>'
+      +'<div class="frow"><div class="fg"><label class="fl">Date</label><input id="mDate" type="date"/></div><div class="fg"><label class="fl">Heure</label><input id="mHeure" placeholder="19h00"/></div></div>'
+      +'<div class="fg"><label class="fl">Type</label><select id="mType"><option>Tenue</option><option>Cérémonie</option><option>Agapes</option><option>Événement spécial</option></select></div>'
+      +'<div class="fg"><label class="fl">Thème / Planche</label><input id="mPlanche" placeholder="Ex: La Fraternité universelle"/></div>'
+      +'<div class="fg"><label class="fl">Présentateur</label><input id="mPres" placeholder="Nom du frère présentateur"/></div>'
+      +'<div class="mact"><button class="btn gold full" onclick="APP.createEvt(\''+d.lid+'\')">Ajouter<\/button><button class="btn ghost full" onclick="APP.closeMod()">Annuler<\/button></div>';
+  },
+  newInstr:function(d){
+    return mhdr("Tenue d'Instruction")
+      +'<div class="fg"><label class="fl">Titre</label><input id="mTitre" placeholder="Tenue d\'instruction"/></div>'
+      +'<div class="frow"><div class="fg"><label class="fl">Date</label><input id="mDate" type="date"/></div><div class="fg"><label class="fl">Heure</label><input id="mHeure" placeholder="17h30"/></div></div>'
+      +'<div class="fg"><label class="fl">Thème / Planche</label><input id="mPlanche" placeholder="Ex: Les Outils du 1er degré"/></div>'
+      +'<div class="fg"><label class="fl">Présentateur</label><input id="mPres" placeholder="Nom du présentateur"/></div>'
+      +'<div class="mact"><button class="btn gold full" onclick="APP.createInstr(\''+d.lid+'\')">Ajouter<\/button><button class="btn ghost full" onclick="APP.closeMod()">Annuler<\/button></div>';
+  },
+  newVis:function(d){
+    return mhdr('Enregistrer un Visiteur')
+      +'<div class="fg"><label class="fl">Nom</label><input id="mNom" placeholder="Prénom NOM"/></div>'
+      +'<div class="fg"><label class="fl">Loge d\'origine</label><input id="mLoge" placeholder="Nom de la loge"/></div>'
+      +'<div class="frow"><div class="fg"><label class="fl">Grade</label><select id="mGrade"><option>Apprenti</option><option>Compagnon</option><option>Maitre</option></select></div><div class="fg"><label class="fl">Date</label><input id="mDate" type="date" value="'+tdStr()+'"/></div></div>'
+      +'<div class="fg"><label class="fl">Motif</label><input id="mMotif" placeholder="Ex: Visite fraternelle"/></div>'
+      +'<div class="mact"><button class="btn gold full" onclick="APP.createVis(\''+d.lid+'\')">Enregistrer<\/button><button class="btn ghost full" onclick="APP.closeMod()">Annuler<\/button></div>';
+  },
+  newOff:function(d){
+    return mhdr("Créer un Poste d'Officier")
+      +mnote("Ce poste s'ajoutera aux postes existants.",'w')
+      +'<div class="fg"><label class="fl">Titre du poste</label><input id="mTitre" placeholder="Ex: Archiviste…"/></div>'
+      +'<div class="mact"><button class="btn gold full" onclick="APP.createOff(\''+d.lid+'\')">Créer<\/button><button class="btn ghost full" onclick="APP.closeMod()">Annuler<\/button></div>';
+  },
+  assignOff:function(d){
+    var loge=gLoge(d.lid);if(!loge)return'';
+    var off=loge.officiers.find(function(o){return o.id===d.oid;});if(!off)return'';
+    var elig=lMbrs(d.lid).filter(function(m){return m.grade==='Maitre'||m.grade==='Compagnon';});
+    return mhdr('Affecter : '+off.titre)
+      +'<div class="fg"><label class="fl">Choisir un frère</label><select id="mSel" onchange="APP.previewMbr(this.value)"><option value="">— Sélectionner —</option>'
+      +elig.map(function(m){return'<option value="'+m.id+'">'+m.nom+' ('+m.matricule+') · '+gLbl(m.grade)+'<\/option>';}).join('')+'<\/select></div>'
+      +'<div id="mPrev" style="display:none" class="prev"><div class="ava" id="mPrevAva">?</div><div id="mPrevInfo"></div></div>'
+      +'<div class="mact"><button class="btn gold full" onclick="APP.doAssignOff(\''+d.lid+'\',\''+d.oid+'\')">Affecter<\/button><button class="btn ghost full" onclick="APP.closeMod()">Annuler<\/button></div>';
+  },
+  newGO:function(d){
+    return mhdr('Nouveau Grand Officier')
+      +'<div class="fg"><label class="fl">Titre</label><input id="mTitre" placeholder="Ex: Grand Maître des Cérémonies"/></div>'
+      +'<div class="mact"><button class="btn gold full" onclick="APP.createGO()">Créer<\/button><button class="btn ghost full" onclick="APP.closeMod()">Annuler<\/button></div>';
+  },
+  assignGO:function(d){
+    var go=D.grandOff.find(function(g){return g.id===d.gid;});if(!go)return'';
+    var masters=D.membres.filter(function(m){return m.grade==='Maitre'&&m.statut==='actif';});
+    return mhdr('Affecter : '+go.titre)
+      +'<div class="fg"><label class="fl">Choisir un Maître</label><select id="mSel" onchange="APP.previewMbr(this.value)"><option value="">— Sélectionner —</option>'
+      +masters.map(function(m){var l=gLoge(m.logeId);return'<option value="'+m.id+'">'+m.nom+' ('+m.matricule+')'+(l?' · '+l.nom:'')+'<\/option>';}).join('')+'<\/select></div>'
+      +'<div id="mPrev" style="display:none" class="prev"><div class="ava" id="mPrevAva">?</div><div id="mPrevInfo"></div></div>'
+      +'<div class="mact"><button class="btn gold full" onclick="APP.doAssignGO(\''+d.gid+'\')">Affecter<\/button><button class="btn ghost full" onclick="APP.closeMod()">Annuler<\/button></div>';
+  },
+  newLoge:function(d){
+    return mhdr('+ Nouvelle Loge')
+      +mnote('Numéro attribué : <strong>N°'+nxtLNum(D.loges)+'</strong>')
+      +'<div class="fg"><label class="fl">Nom</label><input id="mNom" placeholder="Ex: Étoile de l\'Équateur"/></div>'
+      +'<div class="fg"><label class="fl">Ville</label><input id="mVille" placeholder="Ex: Dolisie"/></div>'
+      +'<div class="mact"><button class="btn gold full" onclick="APP.createLoge()">Créer<\/button><button class="btn ghost full" onclick="APP.closeMod()">Annuler<\/button></div>';
+  },
+};
+
+MODS.newGrandeLoge=function(d){
+  return mhdr('Nouvelle Tenue de Grande Loge')
+    +'<div class="fg"><label class="fl">Titre</label><input id="mTitre" placeholder="Ex: Tenue Solennelle de Grande Loge"/></div>'
+    +'<div class="frow"><div class="fg"><label class="fl">Date</label><input id="mDate" type="date"/></div><div class="fg"><label class="fl">Heure</label><input id="mHeure" placeholder="10h00"/></div></div>'
+    +'<div class="fg"><label class="fl">Type</label><select id="mTypeGL"><option value="Grande Loge">Tenue de Grande Loge</option><option value="Tenue Blanche">Tenue Blanche Ouverte</option></select></div>'
+    +'<div class="fg"><label class="fl">Lieu</label><input id="mLieu" placeholder="Ex: Temple GLUC Brazzaville"/></div>'
+    +'<div class="mact"><button class="btn gold full" onclick="APP.createGrandeLoge()">Créer<\/button><button class="btn ghost full" onclick="APP.closeMod()">Annuler<\/button></div>';
+};
+MODS.attachCR=function(d){
+  return mhdr('Attacher un Compte Rendu')
+    +'<div class="fg"><label class="fl">Texte du compte rendu</label><textarea id="crText" rows="6" placeholder="Saisissez ou collez le texte du compte rendu..."></textarea></div>'
+    +'<div class="mact"><button class="btn gold full" onclick="APP.saveCR(\''+d.id+'\')">Enregistrer<\/button><button class="btn ghost full" onclick="APP.closeMod()">Annuler<\/button></div>';
+};
+MODS.newDoc=function(d){
+  return mhdr('Ajouter un Document')
+    +'<div class="fg"><label class="fl">Titre</label><input id="docTitre" placeholder="Titre du document"/></div>'
+    +'<div class="frow">'
+    +'<div class="fg"><label class="fl">Type</label><select id="docType"><option>Règlement</option><option>Planche</option><option>Rituel</option><option>Compte rendu</option><option>Note</option><option>Autre</option></select></div>'
+    +'<div class="fg"><label class="fl">Accessible à</label><select id="docGrade"><option value="Tous">Tous les grades</option><option value="Apprenti">Apprenti et +</option><option value="Compagnon">Compagnon et +</option><option value="Maitre">Maître uniquement</option></select></div>'
+    +'</div>'
+    +'<div class="fg"><label class="fl">Contenu / Description</label><textarea id="docContenu" rows="5" placeholder="Contenu du document ou description..."></textarea></div>'
+    +'<div class="mact"><button class="btn gold full" onclick="APP.saveDoc()">Enregistrer<\/button><button class="btn ghost full" onclick="APP.closeMod()">Annuler<\/button></div>';
+};
+MODS.newTronc=function(d){
+  return mhdr('Tronc de la Veuve — Nouvelle opération')
+    +'<div class="frow"><div class="fg"><label class="fl">Type</label><select id="trType"><option>Recette</option><option>Dépense</option></select></div><div class="fg"><label class="fl">Montant (FCFA)</label><input id="trMnt" type="number" min="1" placeholder="0"/></div></div>'
+    +'<div class="fg"><label class="fl">Description</label><input id="trDesc" placeholder="Ex: Collecte de la tenue du 25/04"/></div>'
+    +'<div class="fg"><label class="fl">Date</label><input id="trDate" type="date" value="'+tdStr()+'"/></div>'
+    +'<div class="mact"><button class="btn gold full" onclick="APP.saveTronc(\''+d.lid+'\')">Enregistrer<\/button><button class="btn ghost full" onclick="APP.closeMod()">Annuler<\/button></div>';
+};
+MODS.editSuperAdmin=function(d){
+  return mhdr('Modifier Super Admin')
+    +'<div class="fg"><label class="fl">Matricule</label><input id="saNom" value="'+D.superAdmin.matricule+'"/></div>'
+    +'<div class="fg"><label class="fl">Nouveau mot de passe</label><input id="saPwd" type="password" placeholder="Laisser vide = inchangé"/></div>'
+    +'<div class="fg"><label class="fl">Email</label><input id="saEmail" value="'+D.superAdmin.email+'"/></div>'
+    +'<div class="mact"><button class="btn gold full" onclick="APP.saveSuperAdmin()">Enregistrer<\/button><button class="btn ghost full" onclick="APP.closeMod()">Annuler<\/button></div>';
+};
+MODS.changePwd = function(d){
+  return mhdr('Changer mon mot de passe')
+    +'<div class="fg"><label class="fl">Mot de passe actuel</label><input id="pwOld" type="password" placeholder="••••••"/></div>'
+    +'<div class="fg"><label class="fl">Nouveau mot de passe</label><input id="pwNew" type="password" placeholder="••••••"/></div>'
+    +'<div class="fg"><label class="fl">Confirmer</label><input id="pwConf" type="password" placeholder="••••••"/></div>'
+    +'<div id="pwErr" style="display:none" class="lerr"></div>'
+    +'<div class="mact"><button class="btn gold full" onclick="APP.doChangePwd()">Enregistrer<\/button><button class="btn ghost full" onclick="APP.closeMod()">Annuler<\/button></div>';
+};
+MODS.massNotif=function(d){
+  return mhdr('Envoi en Masse')
+    +'<div class="fg"><label class="fl">Destinataires</label>'
+    +'<select id="massTarget"><option value="retards">Tous les frères en retard</option><option value="attente">Tous en attente</option><option value="all">Tous les frères actifs</option><option value="nonassidus">Frères non assidus (&lt;50%)</option></select></div>'
+    +'<div class="fg"><label class="fl">Canal</label>'
+    +'<select id="massCanal"><option value="email">Email</option><option value="whatsapp">WhatsApp</option><option value="sms">SMS</option></select></div>'
+    +'<div class="fg"><label class="fl">Objet / Titre</label><input id="massSubject" placeholder="Ex: Rappel cotisation 2026"/></div>'
+    +'<div class="fg"><label class="fl">Message</label><textarea id="massMsg" rows="4" placeholder="Cher Frère {nom}, nous vous rappelons..."></textarea></div>'
+    +'<div class="mact"><button class="btn gold full" onclick="APP.sendMassNotif()">Envoyer<\/button><button class="btn ghost full" onclick="APP.closeMod()">Annuler<\/button></div>';
+};
+MODS.planifNotif=function(d){
+  return mhdr('Planifier un Envoi')
+    +'<div class="alert a-i" style="margin-bottom:12px">L\'envoi sera déclenché à la date et heure choisies (simulation).</div>'
+    +'<div class="frow"><div class="fg"><label class="fl">Date</label><input id="planDate" type="date" value="'+tdStr()+'"/></div><div class="fg"><label class="fl">Heure</label><input id="planHeure" type="time" value="09:00"/></div></div>'
+    +'<div class="fg"><label class="fl">Destinataires</label><select id="planTarget"><option value="retards">Frères en retard</option><option value="all">Tous les frères</option></select></div>'
+    +'<div class="fg"><label class="fl">Canal</label><select id="planCanal"><option>email</option><option>whatsapp</option><option>sms</option></select></div>'
+    +'<div class="fg"><label class="fl">Message</label><textarea id="planMsg" rows="3" placeholder="Message à envoyer..."></textarea></div>'
+    +'<div class="mact"><button class="btn gold full" onclick="APP.planifierNotif()">Planifier<\/button><button class="btn ghost full" onclick="APP.closeMod()">Annuler<\/button></div>';
+};
+MODS.notifAssid=function(d){
+  var m=gMbr(d.mid);if(!m)return'';
+  var ass=m.logeId?getAssiduite(m.id,m.logeId):{pct:0,present:0,total:0};
+  return mhdr('Notification Assiduité — '+m.nom)
+    +'<div style="margin-bottom:14px">'+ch(gLbl(m.grade),'cgr')+ch(m.matricule,'cg')+'<span style="margin-left:8px;font-weight:700;color:#b71c1c">Assiduité : '+ass.pct+'% ('+ass.present+'/'+ass.total+')</span></div>'
+    +'<div class="fg"><label class="fl">Canal</label><select id="notifCanal"><option value="email">Email ('+m.email+')</option><option value="whatsapp">WhatsApp ('+m.tel+')</option></select></div>'
+    +'<div class="fg"><label class="fl">Message</label><textarea id="notifMsg">Frère '+m.nom+', votre taux d\'assiduité ('+ass.pct+'%) est insuffisant. Votre présence est attendue aux prochaines tenues. Fraternellement, GLUC.</textarea></div>'
+    +'<div class="mact"><button class="btn gold full" onclick="APP.envoyerNotif(\''+m.id+'\')">Envoyer<\/button><button class="btn ghost full" onclick="APP.closeMod()">Annuler<\/button></div>';
+};
+MODS.avanceLoge=function(d){
+  var v=D.versements.find(function(x){return x.id===d.vid;});
+  if(!v)return'';
+  var deja=sumA(v.avances||[],function(a){return a.mnt;});
+  var solde=v.mnt-deja;
+  return mhdr('Avance versement loge')
+    +'<div class="alert a-i" style="margin-bottom:12px">Solde restant : <strong>'+fmt(solde)+' FCFA</strong></div>'
+    +'<div class="fg"><label class="fl">Montant avance (FCFA)</label><input id="avLMnt" type="number" min="1" max="'+solde+'" value="'+solde+'"/></div>'
+    +'<div class="fg"><label class="fl">Note</label><input id="avLNote" placeholder="Ex: 1er versement"/></div>'
+    +'<div class="mact"><button class="btn gold full" onclick="APP.saveAvanceLoge(\''+d.vid+'\')">Enregistrer<\/button><button class="btn ghost full" onclick="APP.closeMod()">Annuler<\/button></div>';
+};
+
+
+// ── ACTIONS ──
+APP.soumettreDossier=function(lid){
+  var nom=G('mNom').value.trim();if(!nom)return;
+  var docs={extrait:G('docEx')&&G('docEx').checked,casier:G('docCas')&&G('docCas').checked,nationalite:G('docNat')&&G('docNat').checked};
+  var allOK=docs.extrait&&docs.casier&&docs.nationalite;
+  D.dossiersPending.push({id:uid(),lid:lid,nom:nom,tel:G('mTel')?G('mTel').value.trim():'',email:G('mEmail')?G('mEmail').value.trim():'',grade:G('mGradeInit')?G('mGradeInit').value:'Apprenti',docs:docs,note:G('mNote')?G('mNote').value.trim():'',date:tdStr(),st:allOK?'Complet':'Incomplet'});
+  alert('Dossier soumis à l\'Obédience. Le Grand Secrétaire sera notifié.');APP.closeMod();
+};
+APP.updateDossier=function(id){
+  var dos=D.dossiersPending.find(function(x){return x.id===id;});if(!dos)return;
+  dos.docs={extrait:G('docEx')&&G('docEx').checked,casier:G('docCas')&&G('docCas').checked,nationalite:G('docNat')&&G('docNat').checked};
+  dos.note=G('mNote')?G('mNote').value.trim():'';
+  dos.st=(dos.docs.extrait&&dos.docs.casier&&dos.docs.nationalite)?'Complet':'Incomplet';
+  APP.closeMod();
+};
+APP.validerDossier=function(id){
+  var dos=D.dossiersPending.find(function(x){return x.id===id;});if(!dos)return;
+  if(!dos.docs.extrait||!dos.docs.casier||!dos.docs.nationalite){alert('Dossier incomplet.');return;}
+  var mat=nxtMat(D.membres);var mid=uid();
+  D.membres.push({id:mid,matricule:mat,nom:dos.nom,grade:'Apprenti',dateGrade:tdStr(),logeId:dos.lid,role:'Frère',pwd:'1234',statut:'actif',tel:dos.tel,email:dos.email,affiliation:null});
+  D.caps.push({id:uid(),mid:mid,lid:dos.lid,annee:2026,mnt:D.tauxCap,st:'En attente',date:null});
+  dos.st='Validé';
+  D.dossiersPending=D.dossiersPending.filter(function(x){return x.id!==id;});
+  var l=gLoge(dos.lid);
+  alert('Frère créé avec succès : '+dos.nom+' ('+mat+') dans la loge '+(l?l.nom:'')+'. MDP par défaut : 1234');
+  R();
+};
+APP.rejeterDossier=function(id){if(!confirm('Rejeter ce dossier ?'))return;D.dossiersPending=D.dossiersPending.filter(function(x){return x.id!==id;});R();};
+APP.soumetteAffil=function(lid){
+  var nom=G('mNom').value.trim();if(!nom)return;
+  D.affiliationsPending.push({id:uid(),lid:lid,nom:nom,tel:G('mTel')?G('mTel').value.trim():'',email:G('mEmail')?G('mEmail').value.trim():'',grade:G('mGrade').value,logeOrigin:G('mLogeOrig')?G('mLogeOrig').value.trim():'',obOrigin:G('mObOrig')?G('mObOrig').value.trim():'',dateAffil:G('mDateAffil')?G('mDateAffil').value:tdStr(),st:'En attente',note:''});
+  alert('Demande d\'affiliation transmise au Grand Secrétaire.');APP.closeMod();
+};
+APP.validerAffil=function(id){
+  var a=D.affiliationsPending.find(function(x){return x.id===id;});if(!a)return;
+  var mat=nxtMat(D.membres);var mid=uid();
+  D.membres.push({id:mid,matricule:mat,nom:a.nom,grade:a.grade,dateGrade:tdStr(),logeId:a.lid,role:'Frère',pwd:'1234',statut:'actif',tel:a.tel,email:a.email,affiliation:{logeOrigin:a.logeOrigin,obOrigin:a.obOrigin,dateAffil:a.dateAffil,st:'Confirmé'}});
+  // Split capitation: half to each loge
+  var halfCap=Math.round(D.tauxCap/2);
+  D.caps.push({id:uid(),mid:mid,lid:a.lid,annee:2026,mnt:halfCap,st:'En attente',date:null,note:'Capitation affilié (50%)'});
+  // Find original loge if member already has one
+  var origMbr=D.membres.find(function(x){return x.nom===a.nom&&x.logeId!==a.lid;});
+  if(origMbr){
+    var origCap=D.caps.find(function(c){return c.mid===origMbr.id;});
+    if(origCap)origCap.mnt=halfCap,origCap.note='Capitation affilié (50%)';
+  }
+  a.st='Confirmé';
+  D.affiliationsPending=D.affiliationsPending.filter(function(x){return x.id!==id;});
+  alert('Affiliation validée. Frère '+a.nom+' créé ('+mat+'). MDP : 1234');R();
+};
+APP.rejeterAffil=function(id){if(!confirm('Rejeter cette affiliation ?'))return;D.affiliationsPending=D.affiliationsPending.filter(function(x){return x.id!==id;});R();};
+APP.promote=function(mid){var m=D.membres.find(function(x){return x.id===mid;});if(!m)return;if(!isCapOK(m,m.logeId)){alert('Cotisation non réglée.');return;}var ng=nxtG(m.grade);if(ng){m.grade=ng;m.dateGrade=tdStr();}APP.closeMod();};
+APP.radier=function(mid){
+  if(!confirm('Soumettre une demande de radiation au Grand Secrétaire ?'))return;
+  var m=D.membres.find(function(x){return x.id===mid;});if(!m)return;
+  if(!D.radiationPending)D.radiationPending=[];
+  if(D.radiationPending.find(function(r){return r.mid===mid;})){alert('Demande déjà soumise.');return;}
+  D.radiationPending.push({id:uid(),mid:mid,date:tdStr(),st:'En attente',motif:'Radiation demandée par le VM'});
+  alert('Demande de radiation soumise au Grand Secrétaire pour validation.');R();
+};
+APP.validerRadiation=function(id){
+  var req=D.radiationPending.find(function(x){return x.id===id;});if(!req)return;
+  var m=D.membres.find(function(x){return x.id===req.mid;});
+  if(m){m.statut='radié';}
+  D.radiationPending=D.radiationPending.filter(function(x){return x.id!==id;});
+  R();
+};
+APP.rejeterRadiation=function(id){
+  D.radiationPending=D.radiationPending.filter(function(x){return x.id!==id;});R();
+};
+APP.demandeReintegration=function(mid){
+  var m=D.membres.find(function(x){return x.id===mid;});if(!m)return;
+  var cap=D.caps.find(function(c){return c.mid===mid;});
+  if(!cap||cap.st!=='Payé'){alert('Le frère doit être à jour de ses capitations avant réintégration.');return;}
+  if(!D.reintegrationPending)D.reintegrationPending=[];
+  D.reintegrationPending.push({id:uid(),mid:mid,date:tdStr(),st:'En attente'});
+  alert('Demande de réintégration soumise au Grand Secrétaire.');R();
+};
+APP.validerReintegration=function(id){
+  var req=D.reintegrationPending.find(function(x){return x.id===id;});if(!req)return;
+  var m=D.membres.find(function(x){return x.id===req.mid;});
+  if(m){m.statut='actif';}
+  D.reintegrationPending=D.reintegrationPending.filter(function(x){return x.id!==id;});
+  R();
+};
+APP.ajouterAvance=function(mid,lid){var mntEl=G('avMnt');if(!mntEl)return;var mnt=parseInt(mntEl.value)||0;if(mnt<=0)return;if(!D.avances)D.avances=[];D.avances.push({id:uid(),mid:mid,lid:lid,mnt:mnt,note:G('avNote')?G('avNote').value.trim():'',date:tdStr()});var sd=getSolde(mid,lid);var cap=D.caps.find(function(c){return c.mid===mid&&c.lid===lid;});if(cap&&sd.solde<=0){cap.st='Payé';cap.date=tdStr();}else if(cap&&cap.st==='Retard'){cap.st='En attente';}APP.closeMod();};
+APP.createEvt=function(lid){var t=G('mTitre').value.trim(),d=G('mDate').value;if(!t||!d)return;var loge=gLoge(lid);if(!loge)return;loge.agenda.push({id:uid(),titre:t,date:d,heure:G('mHeure')?G('mHeure').value:'',type:G('mType')?G('mType').value:'Tenue',planche:G('mPlanche')?G('mPlanche').value.trim():'',presentateur:G('mPres')?G('mPres').value.trim():''});APP.closeMod();};
+APP.createInstr=function(lid){var d=G('mDate').value;if(!d)return;var loge=gLoge(lid);if(!loge)return;if(!loge.instruction)loge.instruction=[];loge.instruction.push({id:uid(),titre:G('mTitre')?G('mTitre').value.trim()||"Tenue d'instruction":'',date:d,heure:G('mHeure')?G('mHeure').value:'',planche:G('mPlanche')?G('mPlanche').value.trim():'',presentateur:G('mPres')?G('mPres').value.trim():''});APP.closeMod();};
+APP.createVis=function(lid){var nom=G('mNom').value.trim(),loge=G('mLoge').value.trim();if(!nom||!loge)return;D.visiteurs.push({id:uid(),lid:lid,nom:nom,loge:loge,grade:G('mGrade').value,motif:G('mMotif').value.trim(),date:G('mDate').value});APP.closeMod();};
+APP.createOff=function(lid){var t=G('mTitre').value.trim();if(!t)return;var loge=gLoge(lid);if(!loge)return;loge.officiers.push({id:uid(),titre:t,mid:null,perm:false});APP.closeMod();};
+APP.doAssignOff=function(lid,oid){
+  var sel=G('mSel');if(!sel||!sel.value)return;
+  var loge=gLoge(lid);if(!loge)return;
+  var o=loge.officiers.find(function(x){return x.id===oid;});if(!o)return;
+  // Cumul check
+  if(!canHoldOffice(sel.value,o.titre,loge)){
+    alert('Ce membre occupe déjà un poste dans cette loge. Cumul de fonctions non autorisé (sauf Secrétaire + Député/Député Adjoint).');return;
+  }
+  // Free previous holder if any
+  if(o.mid&&o.mid!==sel.value){
+    var prev=gMbr(o.mid);
+    if(prev){
+      var stillOfficer=loge.officiers.some(function(x){return x.id!==oid&&x.mid===prev.id;});
+      if(!stillOfficer){
+        prev.role='Membre';
+        if(S.user&&S.user.id===prev.id)S.user.role='Membre';
+      }
+    }
+  }
+  // Assign new officer
+  o.mid=sel.value;
+  // Update member role to officer title
+  var m=gMbr(sel.value);
+  if(m){
+    m.role=o.titre;
+    // Update live session if this is the current user
+    if(S.user&&S.user.id===m.id){
+      S.user.role=o.titre;
+    }
+  }
+  APP.closeMod();
+  // Show confirmation with new access level
+  var dash=getOfficerDashboard(lid);
+  if(dash&&m){
+    var postMsg='Membre '+m.nom+' nommé(e) au poste '+o.titre+'. Niveau acces: '+dash.level+'/10.';
+    setTimeout(function(){alert(postMsg);},100);
+  }
+};
+APP.revokeOff=function(lid,oid){
+  var loge=gLoge(lid);if(!loge)return;
+  var o=loge.officiers.find(function(x){return x.id===oid;});if(!o)return;
+  var m=o.mid?gMbr(o.mid):null;
+  o.mid=null;
+  if(m){
+    // Check if still officer elsewhere in this loge
+    var stillOfficer=loge.officiers.some(function(x){return x.mid===m.id;});
+    if(!stillOfficer){
+      m.role='Membre';
+      if(S.user&&S.user.id===m.id){S.user.role='Membre';}
+    }
+  }
+  R();
+};
+APP.delOff=function(lid,oid){var loge=gLoge(lid);if(!loge)return;loge.officiers=loge.officiers.filter(function(o){return o.id!==oid;});R();};
+APP.createGO=function(){var t=G('mTitre').value.trim();if(!t)return;D.grandOff.push({id:uid(),titre:t,mid:null});APP.closeMod();};
+APP.doAssignGO=function(gid){var sel=G('mSel');if(!sel||!sel.value)return;var g=D.grandOff.find(function(x){return x.id===gid;});if(g)g.mid=sel.value;APP.closeMod();};
+APP.revokeGO=function(gid){var g=D.grandOff.find(function(x){return x.id===gid;});if(g)g.mid=null;R();};
+APP.payCap=function(id){var c=D.caps.find(function(x){return x.id===id;});if(c){c.st='Payé';c.date=tdStr();}R();};
+APP.payVL=function(id){var v=D.versements.find(function(x){return x.id===id;});if(v){v.st='Payé';v.date=tdStr();}R();};
+APP.createLoge=function(){
+  var nom=G('mNom').value.trim(),ville=G('mVille').value.trim();if(!nom||!ville)return;
+  var email=G('mLogeEmail')?G('mLogeEmail').value.trim():'';
+  var id=nxtLId(D.loges),num=nxtLNum(D.loges);
+  D.loges.push({id:id,numero:num,nom:nom,ville:ville,email:email,statut:'active',agenda:[],instruction:[],officiers:mkOffs(),logo:null});
+  D.versements.push({id:uid(),lid:id,annee:2026,mnt:D.tauxLoge,st:'En attente',date:null,desc:'Capitation annuelle 2026'});
+  // Fondateurs = Maîtres par défaut
+  var fText=G('mFondateurs')?G('mFondateurs').value.trim():'';
+  if(fText){
+    fText.split('\n').forEach(function(n){
+      n=n.trim();if(!n)return;
+      var mid=uid(),mat=nxtMat(D.membres);
+      D.membres.push({id:mid,matricule:mat,nom:n,grade:'Maitre',dateGrade:tdStr(),logeId:id,role:'Frère',pwd:'1234',statut:'actif',tel:'',email:'',affiliation:null});
+      D.caps.push({id:uid(),mid:mid,lid:id,annee:2026,mnt:D.tauxCap,st:'En attente',date:null});
+    });
+  }
+  APP.closeMod();
+};
+APP.envoyerNotif=function(mid){
+  var m=gMbr(mid);if(!m)return;
+  var canal=G('notifCanal')?G('notifCanal').value:'email';
+  var msg=G('notifMsg')?G('notifMsg').value.trim():'';
+  D.notifLog.push({id:uid(),mid:mid,canal:canal,msg:msg,date:tdStr(),dest:canal==='email'?m.email:m.tel});
+  alert('Notification '+(canal==='email'?'email':'WhatsApp/SMS')+' simulée à '+m.nom+(canal==='email'?' ('+m.email+')':' ('+m.tel+')')+'\n\nMode démo — Pour les vraies notifications, configurez un fournisseur.');
+  APP.closeMod();
+};
+APP.notifRetards=function(){
+  var aR=D.caps.filter(function(c){return c.st==='Retard';});
+  aR.forEach(function(c){var m=gMbr(c.mid);if(m){D.notifLog.push({id:uid(),mid:c.mid,canal:'email',msg:'Relance cotisation',date:tdStr(),dest:m.email});}});
+  alert(aR.length+' notification(s) simulée(s) envoyée(s).');R();
+};
+APP.sauvegarderPresences=function(lid){
+  var evtId=G('presEvt')?G('presEvt').value:'';if(!evtId){alert('Choisissez une tenue.');return;}
+  var ms=lMbrs(lid);
+  ms.forEach(function(m){
+    var existing=D.presences.find(function(p){return p.mid===m.id&&p.evtId===evtId;});
+    var checked=G('pres_'+m.id)&&G('pres_'+m.id).checked;
+    if(existing)existing.present=checked;
+    else D.presences.push({id:uid(),mid:m.id,lid:lid,evtId:evtId,present:checked});
+  });
+  APP.closeMod();
+};
+APP.togglePerm=function(scope,key,role,btn){
+  if(!D.customPerms)D.customPerms={loge:{},obedience:{}};
+  if(!D.customPerms[scope])D.customPerms[scope]={};
+  var def=(scope==='obedience'?DEFAULT_PERMS.obedience:DEFAULT_PERMS.loge)[key];
+  var cur=D.customPerms[scope][key]?D.customPerms[scope][key]:[].concat(def.roles);
+  var idx=cur.indexOf(role);
+  if(idx===-1)cur.push(role);else cur.splice(idx,1);
+  D.customPerms[scope][key]=cur;
+  btn.classList.toggle('on');
+  var row=btn.closest('.perm-row');
+  if(row){var info=row.querySelector('div div:last-child');if(info)info.textContent='Rôles actuels : '+cur.join(', ');}
+};
+
+// ── EXPORTS ──
+function csvE(v){var s=String(v===null||v===undefined?'':v);return'"'+s.replace(/"/g,'""')+'"';}
+APP.exportCapsExcel=function(lid){
+  var loge=gLoge(lid);if(!loge)return;
+  var caps=lCaps(lid);
+  var rows=[['Frère','Matricule','Grade','Montant dû','Versé','Solde','Statut','Date paiement']];
+  caps.forEach(function(c){var m=gMbr(c.mid),sd=getSolde(c.mid,c.lid);rows.push([m?m.nom:'—',m?m.matricule:'—',m?gLbl(m.grade):'—',c.mnt,sd.verse,sd.solde,c.st,c.date||'']);});
+  var csv=rows.map(function(r){return r.map(csvE).join(',');}).join('\n');
+  var a=document.createElement('a');a.href=URL.createObjectURL(new Blob(['\uFEFF'+csv],{type:'text/csv;charset=utf-8'}));
+  a.download='Capitations_'+loge.nom.replace(/[^a-zA-Z0-9]/g,'_')+'_'+tdStr()+'.csv';a.click();URL.revokeObjectURL(a.href);
+};
+APP.exportCapsPDF=function(lid){APP.printRapport(lid);};
+APP.exportRapportExcel=function(lid){
+  var loge=gLoge(lid);if(!loge)return;
+  var ms=lMbrs(lid),caps=lCaps(lid);
+  var rows=[['RAPPORT ACTIVITÉ — Loge N°'+loge.numero+' '+loge.nom+' — GLUC — '+tdStr()],['']];
+  rows.push(['=== FRÈRES ==='],['Matricule','Nom','Grade','Durée (mois)','Assiduité %','Rôle']);
+  ms.forEach(function(m){var ass=getAssiduite(m.id,lid);rows.push([m.matricule,m.nom,gLbl(m.grade),moAt(m.dateGrade),ass.pct+'%',m.role]);});
+  rows.push([''],['=== CAPITATIONS ==='],['Frère','Matricule','Dû','Versé','Solde','Statut']);
+  caps.forEach(function(c){var m=gMbr(c.mid),sd=getSolde(c.mid,c.lid);rows.push([m?m.nom:'—',m?m.matricule:'—',c.mnt,sd.verse,sd.solde,c.st]);});
+  rows.push([''],['=== PROGRAMME ==='],['Date','Heure','Type','Thème','Présentateur']);
+  loge.agenda.slice().sort(function(a,b){return a.date.localeCompare(b.date);}).forEach(function(ev){rows.push([ev.date,ev.heure,ev.type,ev.planche||'',ev.presentateur||'']);});
+  rows.push([''],['=== ASSIDUITÉ ==='],['Matricule','Nom'].concat(loge.agenda.map(function(e){return e.date;})).concat(['Total','Taux%']));
+  ms.forEach(function(m){var ass=getAssiduite(m.id,lid);var row=[m.matricule,m.nom];loge.agenda.forEach(function(ev){var p=D.presences.find(function(pr){return pr.mid===m.id&&pr.evtId===ev.id;});row.push(p?(p.present?'P':'A'):'—');});row.push(ass.present+'/'+ass.total,ass.pct+'%');rows.push(row);});
+  var csv=rows.map(function(r){return(Array.isArray(r)?r:[r]).map(csvE).join(',');}).join('\n');
+  var a=document.createElement('a');a.href=URL.createObjectURL(new Blob(['\uFEFF'+csv],{type:'text/csv;charset=utf-8'}));
+  a.download='Rapport_'+loge.nom.replace(/[^a-zA-Z0-9]/g,'_')+'_'+tdStr()+'.csv';a.click();URL.revokeObjectURL(a.href);
+};
+
+APP.printRapport=function(lid){
+  var loge=gLoge(lid);if(!loge)return;
+  var ms=lMbrs(lid),caps=lCaps(lid);
+  var paid=sumA(caps.filter(function(c){return c.st==='Payé';}),function(c){return c.mnt;});
+  var tot=sumA(caps,function(c){return c.mnt;});
+  var pct=tot?Math.round(paid/tot*100):0;
+  var logH=LOGO?'<img src="'+LOGO+'" style="width:60px;height:60px;border-radius:50%;border:2px solid #c9a227;"/>':'<div style="font-size:36px">⬡</div>';
+  var rMbrs=ms.map(function(m){var ass=getAssiduite(m.id,lid);return'<tr><td>'+m.matricule+'</td><td>'+m.nom+'</td><td>'+gLbl(m.grade)+'</td><td>'+moAt(m.dateGrade)+'</td><td>'+ass.pct+'%</td><td>'+m.role+'</td></tr>';}).join('');
+  var rOffs=loge.officiers.map(function(o){var m=o.mid?gMbr(o.mid):null;return'<tr><td>'+o.titre+'</td><td>'+(m?m.nom:'<i>Vacant</i>')+'</td><td>'+(m?m.matricule:'—')+'</td></tr>';}).join('');
+  var rProg=loge.agenda.slice().sort(function(a,b){return a.date.localeCompare(b.date);}).map(function(e){return'<tr><td>'+e.date+'</td><td>'+e.heure+'</td><td>'+e.type+'</td><td>'+(e.planche||'—')+'</td><td>'+(e.presentateur||'—')+'</td></tr>';}).join('');
+  var rInstr=(loge.instruction||[]).slice().sort(function(a,b){return a.date.localeCompare(b.date);}).map(function(e){return'<tr><td>'+e.date+'</td><td>'+e.heure+'</td><td>'+(e.planche||'—')+'</td><td>'+(e.presentateur||'—')+'</td></tr>';}).join('');
+  var rCaps=caps.map(function(c){var m=gMbr(c.mid),sd=getSolde(c.mid,c.lid);return'<tr><td>'+(m?m.nom:'—')+'</td><td>'+fmt(c.mnt)+'</td><td>'+fmt(sd.verse)+'</td><td style="color:'+(sd.solde<=0?'green':'red')+'">'+fmt(sd.solde)+'</td><td>'+c.st+'</td></tr>';}).join('');
+  var rVis=D.visiteurs.filter(function(v){return v.lid===lid;}).map(function(v){return'<tr><td>'+v.nom+'</td><td>'+v.loge+'</td><td>'+v.grade+'</td><td>'+v.motif+'</td><td>'+v.date+'</td></tr>';}).join('');
+  var w=window.open('','_blank','width=900,height=700');
+  w.document.write('<!DOCTYPE htm'+'l><html><head><meta charset="UTF-8"><title>Rapport '+loge.nom+'</title>'
+    +'<sty'+'le>body{font-family:Georgia,serif;color:#111;padding:26px;max-width:800px;margin:0 auto;}'
+    +'h1{font-size:20px;text-align:center;border-bottom:3px solid #c9a227;padding-bottom:10px;margin-bottom:5px;}'
+    +'h2{font-size:11px;font-weight:900;text-transform:uppercase;letter-spacing:1px;margin:18px 0 7px;border-bottom:2px solid #111;padding-bottom:3px;}'
+    +'.sub{text-align:center;color:#555;font-size:11px;margin-bottom:20px;}'
+    +'.kpi{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin:14px 0;}'
+    +'.kb{border:2px solid #c9a227;border-radius:8px;padding:9px;text-align:center;}'
+    +'.kv{font-size:20px;font-weight:900;}.kl{font-size:10px;color:#666;text-transform:uppercase;font-weight:700;margin-top:3px;}'
+    +'table{width:100%;border-collapse:collapse;font-size:11px;margin:6px 0;}'
+    +'th{background:#111;color:#fff;padding:6px 9px;text-align:left;font-size:10px;text-transform:uppercase;}'
+    +'td{padding:6px 9px;border-bottom:1px solid #eee;}tr:nth-child(even) td{background:#fafafa;}'
+    +'.footer{margin-top:24px;text-align:center;color:#888;font-size:10px;border-top:2px solid #c9a227;padding-top:10px;}'
+    +'@media print{button{display:none!important;}@page{margin:11mm;}}'
+    +'</sty'+'le></head><body>'
+    +'<div style="text-align:center;margin-bottom:18px">'+logH
+    +'<h1>GRANDE LOGE UNIE DU CONGO</h1>'
+    +'<div class="sub">Rapport d\'Activité — Loge N°'+loge.numero+' « '+loge.nom+' » — '+loge.ville+'<br>Exercice 2026 · Généré le '+tdStr()+'</div></div>'
+    +'<div class="kpi"><div class="kb"><div class="kv">'+ms.length+'</div><div class="kl">Frères</div></div><div class="kb"><div class="kv">'+loge.agenda.length+'</div><div class="kl">Tenues</div></div><div class="kb"><div class="kv">'+pct+'%</div><div class="kl">Capitations</div></div><div class="kb"><div class="kv">'+loge.officiers.filter(function(o){return o.mid;}).length+'</div><div class="kl">Officiers</div></div></div>'
+    +'<h2>I. Tableau des Frères</h2><table><thead><tr><th>Matricule</th><th>Nom</th><th>Grade</th><th>Durée</th><th>Assiduité</th><th>Rôle</th></tr></thead><tbody>'+rMbrs+'</tbody></table>'
+    +'<h2>II. Officiers</h2><table><thead><tr><th>Poste</th><th>Nommé</th><th>Matricule</th></tr></thead><tbody>'+rOffs+'</tbody></table>'
+    +'<h2>III. Programme des Tenues</h2><table><thead><tr><th>Date</th><th>Heure</th><th>Type</th><th>Thème/Planche</th><th>Présentateur</th></tr></thead><tbody>'+rProg+'</tbody></table>'
+    +(rInstr?'<h2>IV. Tenues d\'Instruction</h2><table><thead><tr><th>Date</th><th>Heure</th><th>Thème/Planche</th><th>Présentateur</th></tr></thead><tbody>'+rInstr+'</tbody></table>':'')
+    +'<h2>V. Capitations</h2><table><thead><tr><th>Frère</th><th>Dû</th><th>Versé</th><th>Solde</th><th>Statut</th></tr></thead><tbody>'+rCaps
+    +'<tr style="background:#111;color:#fff;font-weight:900"><td>TOTAL</td><td>'+fmt(tot)+' F</td><td>'+fmt(paid)+' F</td><td>'+fmt(tot-paid)+' F</td><td>'+pct+'%</td></tr></tbody></table>'
+    +(rVis?'<h2>VI. Visiteurs</h2><table><thead><tr><th>Nom</th><th>Loge</th><th>Grade</th><th>Motif</th><th>Date</th></tr></thead><tbody>'+rVis+'</tbody></table>':'')
+    +'<div class="footer">GLUC — Document confidentiel · '+tdStr()+'</div>'
+    +'<div style="text-align:center;margin-top:14px"><button onclick="window.print()" style="background:#111;color:#fff;border:none;padding:10px 22px;border-radius:7px;font-size:14px;cursor:pointer">🖨 Imprimer / PDF</button></div>'
+    +'</bod'+'y><\/html>');
+  w.document.close();
+};
+
+initAutoSave();
+APP.render();
+
+
+</script>
+</body>
+</html>

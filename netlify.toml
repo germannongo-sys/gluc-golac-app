@@ -1,0 +1,20 @@
+[build]
+  publish = "."
+
+[[redirects]]
+  from = "/"
+  to = "/index.html"
+  status = 200
+
+[[redirects]]
+  from = "/gluc"
+  to = "/gluc/index.html"
+  status = 301
+
+[[redirects]]
+  from = "/golac"
+  to = "/golac/index.html"
+  status = 301
+
+[build.environment]
+  NODE_VERSION = "18"

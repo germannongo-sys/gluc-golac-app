@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+<title>Applications Maçonniques — GLUC & GOLAC</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0;}
+body{background:#111;color:#fff;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;min-height:100vh;display:flex;align-items:center;justify-content:center;}
+.wrap{text-align:center;padding:40px 20px;max-width:700px;width:100%;}
+.symbol{font-size:64px;color:#c9a227;margin-bottom:20px;}
+h1{font-size:22px;font-weight:900;letter-spacing:3px;text-transform:uppercase;margin-bottom:8px;}
+.sub{color:#888;font-size:13px;margin-bottom:48px;letter-spacing:1px;}
+.cards{display:grid;grid-template-columns:1fr 1fr;gap:20px;margin-bottom:40px;}
+@media(max-width:500px){.cards{grid-template-columns:1fr;}}
+.card{background:#1a1a1a;border:2px solid #333;border-radius:16px;padding:32px 24px;cursor:pointer;text-decoration:none;color:#fff;transition:all .2s;display:block;}
+.card:hover{border-color:#c9a227;transform:translateY(-4px);box-shadow:0 12px 32px rgba(201,162,39,.2);}
+.card-sym{font-size:36px;margin-bottom:14px;}
+.card-name{font-size:18px;font-weight:900;color:#c9a227;margin-bottom:6px;}
+.card-full{font-size:12px;color:#888;line-height:1.5;margin-bottom:12px;}
+.card-badge{display:inline-block;background:#c9a227;color:#111;border-radius:20px;font-size:11px;font-weight:700;padding:3px 10px;}
+.card-badge.mixte{background:#8b4589;color:#fff;}
+.footer{color:#444;font-size:12px;}
+.footer span{color:#c9a227;}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="symbol">⬡</div>
+  <h1>Applications Maçonniques</h1>
+  <div class="sub">Sélectionnez votre Obédience</div>
+  <div class="cards">
+    <a class="card" href="./gluc/index.html">
+      <div class="card-sym">⬡</div>
+      <div class="card-name">GLUC</div>
+      <div class="card-full">Grande Loge Unie du Congo<br>Brazzaville, République du Congo</div>
+      <span class="card-badge">Loge régulière</span>
+    </a>
+    <a class="card" href="./golac/index.html">
+      <div class="card-sym">⚥</div>
+      <div class="card-name">GOLAC</div>
+      <div class="card-full">Grand Orient et Loges Associées du Congo<br>Brazzaville, République du Congo</div>
+      <span class="card-badge mixte">Loge mixte</span>
+    </a>
+  </div>
+  <div class="footer"><span>⬡</span> À la Gloire du Grand Architecte de l'Univers <span>⬡</span></div>
+</div>
+</body>
+</html>
