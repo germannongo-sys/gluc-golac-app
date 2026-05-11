@@ -1689,12 +1689,39 @@ function vMonEspace(){
       if(!otEvts.length)return;
       h+='<div style="margin-bottom:18px"><div style="font-weight:700;font-size:13px;margin-bottom:8px">⬡ N°'+ol.numero+' — '+ol.nom+' ('+ol.ville+')</div>';
       h+='<div style="border:1.5px solid #e5e5e5;border-radius:9px;overflow:hidden">'
-        +'<div style="display:grid;grid-template-columns:90px 70px 1fr;background:#111;"><div style="padding:8px 11px;color:#fff;font-size:10px;font-weight:700;text-transform:uppercase">Date</div><div style="padding:8px 11px;color:#fff;font-size:10px;font-weight:700;text-transform:uppercase">Heure</div><div style="padding:8px 11px;color:#fff;font-size:10px;font-weight:700;text-transform:uppercase">Tenue</div></div>';
-      otEvts.slice(0,5).forEach(function(e){
-        h+='<div style="display:grid;grid-template-columns:90px 70px 1fr;border-top:1px solid #f0f0f0"><div style="padding:8px 11px;font-size:12px;font-weight:700">'+e.date+'</div><div style="padding:8px 11px;font-size:12px;color:#666">'+e.heure+'</div><div style="padding:8px 11px;font-size:12px">'+e.titre+'</div></div>';
+        +'<div style="display:grid;grid-template-columns:90px 60px 80px 1fr 1fr;background:#111">'
+        +['Date','Heure','Type','Thème / Planche','Présentateur'].map(function(t){return'<div style="padding:8px 10px;color:#fff;font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.3px">'+t+'</div>';}).join('')
+        +'</div>';
+      otEvts.slice(0,6).forEach(function(e){
+        h+='<div style="display:grid;grid-template-columns:90px 60px 80px 1fr 1fr;border-top:1px solid #f0f0f0">'
+          +'<div style="padding:8px 10px;font-size:12px;font-weight:700">'+e.date+'</div>'
+          +'<div style="padding:8px 10px;font-size:12px;color:#666">'+e.heure+'</div>'
+          +'<div style="padding:8px 10px">'+tCh(e.type||'Tenue')+'</div>'
+          +'<div style="padding:8px 10px;font-size:12px">'+(e.planche||'—')+'</div>'
+          +'<div style="padding:8px 10px;font-size:12px;color:#555">'+(e.presentateur||'—')+'</div>'
+          +'</div>';
       });
       h+='</div></div>';
     });
+  }
+  // Tenues de Grande Loge / Obédience
+  var glT=(D.grandeLogeTenues||[]).slice().sort(function(a,b){return a.date.localeCompare(b.date);});
+  if(glT.length){
+    h+='<div class="sec" style="margin-top:20px">📅 Tenues de l\'Obédience — '+D.obInfo.acronym+'</div>';
+    h+='<div style="border:1.5px solid #e5e5e5;border-radius:9px;overflow:hidden;margin-bottom:16px">'
+      +'<div style="display:grid;grid-template-columns:90px 60px 80px 1fr 1fr;background:#111">'
+      +['Date','Heure','Type','Titre','Lieu'].map(function(t){return'<div style="padding:8px 10px;color:#fff;font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.3px">'+t+'</div>';}).join('')
+      +'</div>';
+    glT.forEach(function(t){
+      h+='<div style="display:grid;grid-template-columns:90px 60px 80px 1fr 1fr;border-top:1px solid #f0f0f0">'
+        +'<div style="padding:8px 10px;font-size:12px;font-weight:700">'+t.date+'</div>'
+        +'<div style="padding:8px 10px;font-size:12px;color:#666">'+t.heure+'</div>'
+        +'<div style="padding:8px 10px">'+ch(t.type||'Grande Loge','cteal2')+'</div>'
+        +'<div style="padding:8px 10px;font-size:12px;font-weight:600">'+t.titre+'</div>'
+        +'<div style="padding:8px 10px;font-size:12px;color:#888">'+t.lieu+'</div>'
+        +'</div>';
+    });
+    h+='</div>';
   }
   // Infos obédience
   h+='<div class="sec" style="margin-top:6px">'+D.obInfo.name+'</div>'
