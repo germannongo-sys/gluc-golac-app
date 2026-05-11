@@ -254,9 +254,17 @@ function getAssiduite(mid,lid){
 function getPlanchesCount(mid,lid){
   var m=gMbr(mid),loge=gLoge(lid);if(!m||!loge)return 0;
   var nom=cleanText(m.nom).toLowerCase();
-  return (loge.agenda||[]).concat(loge.instruction||[]).filter(function(ev){
-    return cleanText(ev.planche).length>0&&cleanText(ev.presentateur).toLowerCase()===nom;
+  var fromEvts=(loge.agenda||[]).concat(loge.instruction||[]).filter(function(ev){
+    if(!cleanText(ev.planche||'').length)return false;
+    if(cleanText(ev.presentateur||'').toLowerCase()!==nom)return false;
+    return !ev.planStatus||(ev.planStatus==='Présentée');
   }).length;
+  var fromStandalone=(loge.planches||[]).filter(function(p){
+    var pNom=p.mid?(gMbr(p.mid)?cleanText(gMbr(p.mid).nom).toLowerCase():''):cleanText(p.presentateur||'').toLowerCase();
+    if(pNom!==nom)return false;
+    return !p.planStatus||(p.planStatus==='Présentée');
+  }).length;
+  return fromEvts+fromStandalone;
 }
 function isPromotionOK(m,lid){return isPropGrade(m)&&isCapOK(m,lid)&&getPlanchesCount(m.id,lid)>=3;}
 
@@ -321,6 +329,7 @@ function buildData(){
        instruction:[
          {id:'in1',titre:"Tenue d'instruction",date:'2026-04-11',heure:'17h30',planche:'Les Outils du 1er degré',presentateur:'Jean Mukulu'},
        ],
+       planches:[],customOfficerPerms:null,
        officiers:o1},
       {id:'L002',numero:'002',nom:'Égalité et Lumière',ville:'Pointe-Noire',statut:'active',
        agenda:[
@@ -329,6 +338,7 @@ function buildData(){
          {id:'ag6',titre:'Tenue ordinaire',date:'2026-06-20',heure:'19h00',type:'Tenue',planche:'Le Rôle du Compagnon',presentateur:'Albert Zola'},
        ],
        instruction:[{id:'in2',titre:"Tenue d'instruction",date:'2026-04-14',heure:'17h00',planche:'Les Colonnes du Temple',presentateur:'Sophie Mbala'}],
+       planches:[],customOfficerPerms:null,
        officiers:o2},
     ],
     membres:[
@@ -663,6 +673,32 @@ APP.exportTronc=function(lid){
 // ── PARAMÈTRES LOGE ──
 function lParams(loge,off){
   if(!off)return'<div class="alert a-e">Accès réservé aux officiers.</div>';
+  var tabLabels={programme:'Programme',instruction:'Instruction',planches:'Planches & Thèmes',membres:'Membres',officiers:'Officiers',assiduites:'Assiduité',visiteurs:'Visiteurs',documents:'Documents',finances:'Finances',capitations:'Capitations',tronc:'Tronc Veuve',hospitalier:'Hospitalier',alertes:'Alertes',rapport:'Rapport',paramsLoge:'Paramètres'};
+  var allModuleTabs=Object.keys(tabLabels);
+  var officierPosts=Object.keys(OFFICER_PERMS).filter(function(k){return k!=='VM'&&k!=='Vénérable Maîtresse'&&k!=='default';});
+  var officierDroits='<div style="font-size:14px;font-weight:900;margin:22px 0 12px">Droits d\'accès aux modules par poste d\'officier</div>'
+    +'<div class="alert a-i" style="margin-bottom:14px;font-size:12px">Cochez les modules accessibles pour chaque poste. Le VM a toujours accès à tout. Cliquez sur un poste pour modifier ses droits.</div>'
+    +'<div class="card">';
+  officierPosts.forEach(function(post){
+    var cur=loge.customOfficerPerms&&loge.customOfficerPerms[post]?loge.customOfficerPerms[post]:[].concat(OFFICER_PERMS[post]||OFFICER_PERMS['default']);
+    var isCustom=loge.customOfficerPerms&&loge.customOfficerPerms[post];
+    officierDroits+='<div class="perm-row" style="flex-direction:column;gap:8px;align-items:flex-start;margin-bottom:4px">'
+      +'<div style="display:flex;align-items:center;gap:8px;width:100%">'
+      +'<span style="font-weight:700;font-size:13px;min-width:160px">'+post+'</span>'
+      +(isCustom?'<span style="font-size:10px;color:#c9a227;font-weight:700">PERSONNALISÉ</span>'+'<button class="btn ghost sm" style="font-size:11px;margin-left:auto" onclick="APP.resetOfficerPerms(\''+loge.id+'\',\''+post+'\')">Réinitialiser</button>':'<span style="font-size:10px;color:#aaa">Défaut</span>')
+      +'</div>'
+      +'<div style="display:flex;gap:6px;flex-wrap:wrap">'
+      +allModuleTabs.map(function(tab){
+        var on=cur.indexOf(tab)!==-1;
+        return'<div style="display:flex;align-items:center;gap:3px">'
+          +'<button class="toggle'+(on?' on':'')+'" onclick="APP.toggleOfficerTab(\''+loge.id+'\',\''+post+'\',\''+tab+'\',this)" title="'+tabLabels[tab]+'"></button>'
+          +'<span style="font-size:11px;color:#555">'+tabLabels[tab]+'</span></div>';
+      }).join('')
+      +'</div>'
+      +'<div class="perm-tags" style="font-size:10px;color:#aaa;font-style:italic">Actifs : '+cur.join(', ')+'</div>'
+      +'</div>';
+  });
+  officierDroits+='</div>';
   return'<div class="sec">⚙ Paramètres de la Loge</div>'
     +'<div style="display:grid;grid-template-columns:1fr 1fr;gap:18px">'
     +'<div>'
@@ -677,7 +713,8 @@ function lParams(loge,off){
     +'<div class="fg"><label class="fl">Email</label><input id="logeEmail" value="'+(loge.email||'')+'" onchange="APP.saveLogeInfo(\''+loge.id+'\',\'email\',this.value)"/></div>'
     +'<div class="fg"><label class="fl">Taux de capitation (FCFA)</label><input id="logeCap" type="number" value="'+(loge.tauxCap||D.tauxCap)+'" onchange="APP.saveLogeInfo(\''+loge.id+'\',\'tauxCap\',parseInt(this.value))"/></div>'
     +'</div></div>'
-    +'</div>';
+    +'</div>'
+    +officierDroits;
 }
 APP.loadLogeLogo=function(inp,lid){
   var file=inp.files[0];if(!file)return;
@@ -725,10 +762,33 @@ function tParamsOb(){
     +'</div></div>'
     // Droits globaux
     +'<div style="font-size:14px;font-weight:900;margin:16px 0 12px">Droits & Permissions</div>'
-    +tParams();
+    +tParams()
+    // Questions secrètes
+    +'<div style="font-size:14px;font-weight:900;margin:22px 0 12px">🔐 Questions secrètes de connexion</div>'
+    +'<div class="alert a-i" style="margin-bottom:14px;font-size:12px">Chaque grade a une question posée lors de la connexion. Modifiez la question et la réponse attendue. Séparez les réponses alternatives par une virgule.</div>'
+    +['Apprenti','Compagnon','Maitre'].map(function(grade){
+      var sq=D.secretQuestions[grade]||{q:'',a:'',variants:[]};
+      return'<div class="card" style="margin-bottom:12px">'
+        +'<div style="font-weight:700;font-size:13px;margin-bottom:10px">'+gLbl(grade)+'</div>'
+        +'<div class="fg"><label class="fl">Question</label><textarea id="sq_q_'+grade+'" rows="2" style="min-height:60px">'+sq.q+'</textarea></div>'
+        +'<div class="fg"><label class="fl">Réponse principale</label><input id="sq_a_'+grade+'" value="'+sq.a+'"/></div>'
+        +'<div class="fg"><label class="fl">Réponses alternatives (séparées par virgule)</label><input id="sq_v_'+grade+'" value="'+(sq.variants||[]).join(', ')+'"/></div>'
+        +'</div>';
+    }).join('')
+    +'<button class="btn gold" onclick="APP.saveSecretQuestions()">Enregistrer les questions</button>';
   return h;
 }
 APP.saveObInfo=function(key,val){D.obInfo[key]=val;};
+APP.saveSecretQuestions=function(){
+  ['Apprenti','Compagnon','Maitre'].forEach(function(grade){
+    var q=G('sq_q_'+grade)?G('sq_q_'+grade).value.trim():'';
+    var a=G('sq_a_'+grade)?G('sq_a_'+grade).value.trim().toLowerCase():'';
+    var vRaw=G('sq_v_'+grade)?G('sq_v_'+grade).value:'';
+    var variants=vRaw.split(',').map(function(x){return x.trim().toLowerCase();}).filter(Boolean);
+    if(q&&a)D.secretQuestions[grade]={q:q,a:a,variants:variants};
+  });
+  alert('Questions secrètes enregistrées.');
+};
 APP.saveWelcomeMsg=function(){
   D.obInfo.welcomeMsg=G('obWelcomeMsg')?G('obWelcomeMsg').value:'';
   D.obInfo.scrollMsg=G('obScrollMsg')?G('obScrollMsg').value:'';
@@ -1045,6 +1105,10 @@ function canAccessTab(lid, tabId){
   if(isGO()||isSuperAdmin())return true;
   var post=getUserPost(lid);
   if(!post)return false;
+  var loge=gLoge(lid);
+  if(loge&&loge.customOfficerPerms&&loge.customOfficerPerms[post]){
+    return loge.customOfficerPerms[post].indexOf(tabId)!==-1;
+  }
   var perms=OFFICER_PERMS[post]||OFFICER_PERMS['default'];
   return perms.indexOf(tabId)!==-1;
 }
@@ -1147,6 +1211,10 @@ function loadState() {
       if(parsed.customPerms) D.customPerms = parsed.customPerms;
       if(parsed.smsConfig)   D.smsConfig   = parsed.smsConfig;
       if(parsed.logoObedience) D.logoObedience = parsed.logoObedience;
+      D.loges.forEach(function(l){
+        if(!l.planches)l.planches=[];
+        if(!Object.prototype.hasOwnProperty.call(l,'customOfficerPerms'))l.customOfficerPerms=null;
+      });
       sanitizeData(D);
     }
     // Restore logos
@@ -1473,14 +1541,18 @@ function vObedience(){
   return hdr()+tbr(tabs)+'<div class="cont">'+c+'</div>'+modH();
 }
 
-function buildProgTable(evts,isInstr){
+function buildProgTable(evts,isInstr,lid){
   if(!evts.length)return'<div style="color:#aaa;font-size:13px;font-style:italic;padding:10px 0">Aucune tenue programmée.</div>';
   var cols=isInstr?'90px 70px 1fr 1fr':'90px 70px 90px 1fr 1fr';
+  var canEdit=!!lid&&(isLO(lid)||isVM(lid));
   var byMonth={};
   evts.forEach(function(ev){var d=new Date(ev.date);var k=d.getFullYear()+'-'+String(d.getMonth()).padStart(2,'0');if(!byMonth[k])byMonth[k]={label:MFR[d.getMonth()]+' '+d.getFullYear(),evts:[]};byMonth[k].evts.push(ev);});
+  var headers=['Date','Heure',!isInstr?'Type':null,'Thème / Planche','Présentateur'].filter(Boolean);
+  if(canEdit)headers.push('');
   var h='<div style="border:1.5px solid #e5e5e5;border-radius:10px;overflow:hidden;margin-bottom:14px">'
-    +'<div style="display:grid;grid-template-columns:'+cols+';background:#111;">'
-    +['Date','Heure',!isInstr?'Type':null,'Thème / Planche','Présentateur'].filter(Boolean).map(function(t){return'<div style="padding:8px 11px;font-size:10px;font-weight:700;color:#fff;text-transform:uppercase;letter-spacing:.4px">'+t+'</div>';}).join('')
+    +'<div style="display:grid;grid-template-columns:'+cols+(canEdit?' 44px':'')+(isVM(S.lid)?(' auto'):'');
+  h+=';background:#111;">'
+    +headers.map(function(t){return'<div style="padding:8px 11px;font-size:10px;font-weight:700;color:#fff;text-transform:uppercase;letter-spacing:.4px">'+t+'</div>';}).join('')
     +'</div>';
   Object.keys(byMonth).sort().forEach(function(k){
     var mo=byMonth[k];
@@ -1489,13 +1561,17 @@ function buildProgTable(evts,isInstr){
       var pl=ev.planche?ev.planche:'<span style="color:#bbb;font-style:italic">Non défini</span>';
       var pr=ev.presentateur?ev.presentateur:'<span style="color:#bbb">—</span>';
       var hasCR=(ev.compteRendu&&ev.compteRendu.length>0)||(ev.plancheTracee&&ev.plancheTracee.length>0);
-      h+='<div style="display:grid;grid-template-columns:'+cols+(isVM(S.lid)?(' auto'):'')+(hasCR?' auto':'')+(isVM(S.lid)||hasCR?'':'')+';border-top:1px solid #f5f5f5;">'
+      var planSt=ev.planStatus||'Non présentée';
+      var planStBadge=ev.planche?'<span style="display:inline-block;margin-top:3px;font-size:10px;font-weight:700;padding:1px 7px;border-radius:10px;background:'+(planSt==='Présentée'?'#e8f5e9;color:#1b5e20':'#f5f5f5;color:#888')+'">'+planSt+'</span>':'';
+      var useLid=lid||S.lid;
+      h+='<div style="display:grid;grid-template-columns:'+cols+(canEdit?' 44px':'')+(isVM(useLid)?(' auto'):'')+(hasCR?' auto':'')+';border-top:1px solid #f5f5f5;">'
         +'<div style="padding:9px 11px;font-size:13px;font-weight:700">'+ev.date+'</div>'
         +'<div style="padding:9px 11px;font-size:12px;color:#666">'+ev.heure+'</div>'
         +(!isInstr?'<div style="padding:9px 11px">'+tCh(ev.type||'Tenue')+'</div>':'')
-        +'<div style="padding:9px 11px;font-size:13px">'+pl+'</div>'
+        +'<div style="padding:9px 11px;font-size:13px">'+pl+'<br>'+planStBadge+'</div>'
         +'<div style="padding:9px 11px;font-size:13px">'+pr+'</div>'
-        +(hasCR?'<div style="padding:9px 11px"><button class="btn ok sm" onclick="APP.viewPlancheBtn(this)" data-e="'+ev.id+'" data-l="'+S.lid+'">📄 CR<\/button><\/div>':'')
+        +(canEdit?'<div style="padding:6px 5px;display:flex;align-items:center"><button class="btn outline sm" style="padding:3px 7px" onclick="APP.openMod(\'editEvt\',{lid:\''+useLid+'\',eid:\''+ev.id+'\',src:\''+(isInstr?'instr':'agenda')+'\'})">✏<\/button><\/div>':'')
+        +(hasCR?'<div style="padding:9px 11px"><button class="btn ok sm" onclick="APP.viewPlancheBtn(this)" data-e="'+ev.id+'" data-l="'+useLid+'">📄 CR<\/button><\/div>':'')
         +'</div>';
     });
   });
@@ -1515,7 +1591,7 @@ function tProg(){
       +'<span style="color:#888;font-size:12px">· '+l.ville+'</span></div>'
       +ch(tCount+' tenue(s)',tCount>=3?'cgreen':'cred')
       +(isLO(l.id)?'<button class="btn outline sm" onclick="APP.openMod(\'newEvt\',{lid:\''+l.id+'\'})">+ Tenue<\/button>':'')
-      +'</div>'+buildProgTable(evts,false)+'</div>';
+      +'</div>'+buildProgTable(evts,false,l.id)+'</div>';
   });
   return h;
 }
@@ -1576,6 +1652,7 @@ function tDossiers(){
       +docItem(dos.docs.nationalite,'Certificat de nationalité')
       +'</div>'
       +(dos.note?'<div style="font-size:12px;color:#888;font-style:italic">Note : '+dos.note+'</div>':'')
+      +(dos.attachment?'<div style="margin-top:6px"><a href="'+dos.attachment+'" download="piece-jointe" style="font-size:12px;color:#b8962e;text-decoration:underline">📎 Télécharger la pièce jointe</a></div>':'')
       +'</div>'
       +'<div style="display:flex;flex-direction:column;gap:6px">'
       +(docsOK&&isGS()?'<button class="btn ok sm" onclick="APP.validerDossier(\''+dos.id+'\')">✓ Valider & Créer le frère<\/button>':'')
@@ -1782,6 +1859,7 @@ function vLoge(){
   var allTabs=[
     {id:'programme',lbl:'Programme',min:0},
     {id:'instruction',lbl:'Instruction',min:0},
+    {id:'planches',lbl:'Planches & Thèmes',min:0},
     {id:'membres',lbl:'Membres ('+ms.length+')',min:3},
     {id:'officiers',lbl:'Officiers',min:3},
     {id:'assiduites',lbl:'Assiduité',min:3},
@@ -1812,6 +1890,7 @@ function vLoge(){
   var c='';
   if(S.tab==='programme')c=lProg(loge,off);
   else if(S.tab==='instruction')c=lInstr(loge,off);
+  else if(S.tab==='planches')c=lPlanches(loge,ms,off);
   else if(S.tab==='membres')c=lMbrs2(loge,ms,off);
   else if(S.tab==='officiers')c=lOffs(loge,ms,off);
   else if(S.tab==='capitations')c=lCaps2(loge,caps,off);
@@ -1850,7 +1929,7 @@ function lProg(loge,off){
     +(off?'<button class="btn gold" onclick="APP.openMod(\'newEvt\',{lid:\''+loge.id+'\'})">+ Ajouter<\/button>':'')
     +'</div>'
     +(tC<3?'<div class="alert a-w" style="margin-bottom:14px"><div class="a-t">Programme incomplet</div>'+tC+' tenue(s) sur 3 minimum requis.</div>':'')
-    +buildProgTable(evts,false);
+    +buildProgTable(evts,false,loge.id);
 }
 
 function lInstr(loge,off){
@@ -1858,8 +1937,146 @@ function lInstr(loge,off){
   return'<div style="display:flex;align-items:center;gap:10px;margin-bottom:16px;flex-wrap:wrap">'
     +'<div class="sec" style="margin:0">Tenues d\'Instruction</div>'+ch(evts.length+' séance(s)','cteal')+'<div style="flex:1"></div>'
     +(off?'<button class="btn gold" onclick="APP.openMod(\'newInstr\',{lid:\''+loge.id+'\'})">+ Ajouter<\/button>':'')
-    +'</div>'+buildProgTable(evts,true);
+    +'</div>'+buildProgTable(evts,true,loge.id);
 }
+
+// ── PLANCHES & THÈMES ──
+function lPlanches(loge,ms,off){
+  var allPl=[];
+  (loge.agenda||[]).forEach(function(ev){
+    if(ev.planche||ev.presentateur){
+      allPl.push({id:ev.id,titre:ev.planche||'Sans titre',presentateur:ev.presentateur||'—',date:ev.date,source:'tenue',evTitre:ev.titre,typeSrc:'Tenue',notes:'',planStatus:ev.planStatus||'Non présentée'});
+    }
+  });
+  (loge.instruction||[]).forEach(function(ev){
+    if(ev.planche||ev.presentateur){
+      allPl.push({id:ev.id,titre:ev.planche||'Sans titre',presentateur:ev.presentateur||'—',date:ev.date,source:'instruction',evTitre:ev.titre,typeSrc:'Instruction',notes:'',planStatus:ev.planStatus||'Non présentée'});
+    }
+  });
+  (loge.planches||[]).forEach(function(p){
+    var m=p.mid?gMbr(p.mid):null;
+    allPl.push({id:p.id,titre:p.titre,presentateur:m?m.nom:p.presentateur||'—',date:p.date,source:'standalone',evTitre:'—',typeSrc:p.type||'Planche',notes:p.notes||'',planStatus:p.planStatus||'Non présentée'});
+  });
+  allPl.sort(function(a,b){return b.date.localeCompare(a.date);});
+  var byPres={};
+  allPl.forEach(function(p){var k=p.presentateur||'—';if(!byPres[k])byPres[k]=[];byPres[k].push(p);});
+  var h='<div style="display:flex;align-items:center;gap:10px;margin-bottom:18px;flex-wrap:wrap">'
+    +'<div class="sec" style="margin:0">Planches & Thèmes</div>'
+    +ch(allPl.length+' planche(s)','cteal')
+    +'<div style="flex:1"></div>'
+    +(off?'<button class="btn gold" onclick="APP.openMod(\'newPlanche\',{lid:\''+loge.id+'\'})">+ Planche<\/button>':'')
+    +'</div>';
+  if(!allPl.length)return h+'<div class="alert a-i">Aucune planche ou thème enregistré. Ajoutez des thèmes lors de la création des tenues ou créez une planche autonome.</div>';
+  h+='<div style="font-size:13px;font-weight:900;margin-bottom:10px;color:#555;text-transform:uppercase;letter-spacing:.4px">Récapitulatif par Présentateur</div>'
+    +'<div class="g3" style="margin-bottom:22px">';
+  Object.keys(byPres).forEach(function(key){
+    var pList=byPres[key];
+    var m=ms.find(function(x){return x.nom===key;});
+    h+='<div class="sc cardx" onclick="APP.filterPlanches(\''+key.replace(/\\/g,'\\\\').replace(/'/g,"\\'")+'\')">'
+      +'<div class="sc-l">'+key+'</div>'
+      +'<div class="sc-v" style="font-size:20px">'+pList.length+'</div>'
+      +(m?'<div style="font-size:11px;color:#888;margin-top:2px">'+gLbl(m.grade)+'</div>':'<div style="font-size:11px;color:#aaa;margin-top:2px">Externe</div>')
+      +'</div>';
+  });
+  h+='</div>';
+  h+='<div style="display:flex;align-items:center;gap:8px;margin-bottom:10px">'
+    +'<div style="font-size:13px;font-weight:900;color:#555;text-transform:uppercase;letter-spacing:.4px">Toutes les Planches</div>'
+    +'<button class="btn ghost sm" onclick="APP.filterPlanches(\'__all\')">Tout afficher</button>'
+    +'</div>'
+    +'<div id="planchesList">';
+  Object.keys(byPres).forEach(function(key){
+    var pList=byPres[key];
+    var safeKey=key.replace(/&/g,'&amp;').replace(/"/g,'&quot;');
+    h+='<div class="planche-grp" data-pres="'+safeKey+'" style="margin-bottom:20px">'
+      +'<div style="font-weight:900;font-size:13px;margin-bottom:8px;display:flex;align-items:center;gap:8px">'
+      +'<span style="background:#111;color:#c9a227;border-radius:6px;padding:3px 10px;font-size:12px">'+key+'</span>'
+      +ch(pList.length+' planche(s)','cg')
+      +'</div>';
+    pList.forEach(function(p){
+      var presented=p.planStatus==='Présentée';
+      h+='<div class="card" style="margin-bottom:7px;display:flex;align-items:flex-start;gap:12px">'
+        +'<div style="flex:1">'
+        +'<div style="font-weight:700;font-size:13px;margin-bottom:4px">'+p.titre+'</div>'
+        +'<div style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:4px">'
+        +ch(p.typeSrc,'cteal')
+        +'<span style="font-size:11px;color:#888;font-weight:600">📅 '+p.date+'</span>'
+        +(p.evTitre&&p.evTitre!=='—'?'<span style="font-size:11px;color:#aaa">— '+p.evTitre+'</span>':'')
+        +'<span style="font-size:10px;font-weight:700;padding:2px 8px;border-radius:10px;background:'+(presented?'#e8f5e9;color:#1b5e20':'#f5f5f5;color:#888')+'">'+(presented?'✓ Présentée':'Non présentée')+'</span>'
+        +'</div>'
+        +(p.notes?'<div style="font-size:12px;color:#555;font-style:italic;margin-top:3px">'+p.notes+'</div>':'')
+        +'</div>'
+        +'<div style="display:flex;flex-direction:column;gap:4px;align-items:flex-end">'
+        +(off?'<button class="btn '+(presented?'ghost':'ok')+' sm" onclick="APP.togglePlanStatus(\''+loge.id+'\',\''+p.id+'\',\''+p.source+'\')">'+( presented?'Annuler':'✓ Marquer présentée')+'<\/button>':'')
+        +(off&&p.source==='standalone'?'<button class="btn dng sm" onclick="APP.delPlanche(\''+loge.id+'\',\''+p.id+'\')">✕ Supprimer<\/button>':'')
+        +'</div>'
+        +'</div>';
+    });
+    h+='</div>';
+  });
+  return h+'</div>';
+}
+APP.filterPlanches=function(pres){
+  document.querySelectorAll('.planche-grp').forEach(function(g){
+    g.style.display=(pres==='__all'||g.getAttribute('data-pres')===pres)?'block':'none';
+  });
+};
+APP.delPlanche=function(lid,pid){
+  var loge=gLoge(lid);if(!loge||!loge.planches)return;
+  loge.planches=loge.planches.filter(function(p){return p.id!==pid;});R();
+};
+APP.togglePlanStatus=function(lid,pid,src){
+  var loge=gLoge(lid);if(!loge)return;
+  var arr=src==='standalone'?(loge.planches||[]):src==='instruction'?(loge.instruction||[]):(loge.agenda||[]);
+  var ev=arr.find(function(x){return x.id===pid;});if(!ev)return;
+  ev.planStatus=ev.planStatus==='Présentée'?'Non présentée':'Présentée';R();
+};
+APP.savePlanche=function(lid){
+  var loge=gLoge(lid);if(!loge)return;
+  var titre=G('plTitre')?G('plTitre').value.trim():'';if(!titre)return;
+  var mid=G('plPres')?G('plPres').value:'';
+  var m=gMbr(mid);
+  var presName=m?m.nom:(G('plPresCustom')?G('plPresCustom').value.trim():'');
+  if(!loge.planches)loge.planches=[];
+  loge.planches.push({id:uid(),titre:titre,mid:mid||null,presentateur:presName,
+    date:G('plDate')?G('plDate').value:tdStr(),
+    type:G('plType')?G('plType').value:'Planche',
+    planStatus:G('plStatus')?G('plStatus').value:'Non présentée',
+    notes:G('plNotes')?G('plNotes').value.trim():''});
+  APP.closeMod();
+};
+APP.toggleOfficerTab=function(lid,post,tab,btn){
+  var loge=gLoge(lid);if(!loge)return;
+  if(!loge.customOfficerPerms)loge.customOfficerPerms={};
+  if(!loge.customOfficerPerms[post])loge.customOfficerPerms[post]=[].concat(OFFICER_PERMS[post]||OFFICER_PERMS['default']);
+  var cur=loge.customOfficerPerms[post];
+  var idx=cur.indexOf(tab);
+  if(idx===-1)cur.push(tab);else cur.splice(idx,1);
+  btn.classList.toggle('on');
+  var row=btn.closest('.perm-row');
+  if(row){var info=row.querySelector('.perm-tags');if(info)info.textContent='Actifs : '+cur.join(', ');}
+};
+APP.resetOfficerPerms=function(lid,post){
+  var loge=gLoge(lid);if(!loge||!loge.customOfficerPerms)return;
+  delete loge.customOfficerPerms[post];R();
+};
+var _pendingDoc=null;
+APP.previewDocFile=function(inp){
+  var f=inp.files[0];var prev=G('mDocPreview');
+  _pendingDoc=null;if(!f){if(prev)prev.style.display='none';return;}
+  if(f.size>5*1024*1024){alert('Fichier trop volumineux (max 5 Mo).');inp.value='';return;}
+  var reader=new FileReader();
+  reader.onload=function(e){
+    _pendingDoc={name:f.name,data:e.target.result};
+    if(prev){prev.style.display='block';
+      prev.innerHTML='<div style="background:#f5f5f5;border-radius:6px;padding:7px 11px;font-size:12px;color:#555">📎 <strong>'+f.name+'</strong> — '+Math.round(f.size/1024)+' Ko</div>';}
+  };
+  reader.readAsDataURL(f);
+};
+APP.syncPresSel=function(selId,divId){
+  var selEl=typeof selId==='string'?G(selId):selId;
+  var d=G(divId||'mPresManualDiv');
+  if(d&&selEl)d.style.display=(selEl.value==='__custom')?'block':'none';
+};
 
 function lMbrs2(loge,ms,off){
   var h='<div class="sec">Membres de la Loge</div><div class="tw"><table><thead><tr>'
@@ -1934,12 +2151,19 @@ function lOffs(loge,ms,off){
     +(off?'<button class="btn gold" onclick="APP.openMod(\'newOff\',{lid:\''+loge.id+'\'})">+ Créer un poste<\/button>':'')
     +'</div><div class="g4">';
   loge.officiers.forEach(function(o){var m=o.mid?ms.find(function(x){return x.id===o.mid;}):null;
+    var capOK=m?isCapOK(m,loge.id):null;
+    var plCount=m?getPlanchesCount(m.id,loge.id):0;
     h+='<div class="ocard'+(m?' occ':'')+'">'
       +'<div style="display:flex;justify-content:space-between;align-items:flex-start;gap:4px">'
       +'<div class="ot">'+o.titre+'</div>'
       +(!o.perm&&off?'<button class="btn dng sm" onclick="APP.delOff(\''+loge.id+'\',\''+o.id+'\')" style="padding:3px 7px;font-size:11px">✕<\/button>':'')
       +'</div>'
-      +(m?'<div class="on2">'+m.nom+'</div>'+ch(m.matricule,'cg'):'<div class="ovac">Poste vacant</div>')
+      +(m?'<div class="on2">'+m.nom+'</div>'+ch(m.matricule,'cg')
+        +'<div style="display:flex;gap:4px;flex-wrap:wrap;margin-top:5px">'
+        +'<span style="font-size:10px;font-weight:700;padding:2px 7px;border-radius:8px;background:'+(capOK?'#e8f5e9;color:#1b5e20':'#fce4ec;color:#b71c1c')+'">💰 '+(capOK?'Cap. à jour':'Cap. en retard')+'</span>'
+        +'<span style="font-size:10px;font-weight:700;padding:2px 7px;border-radius:8px;background:#e3f2fd;color:#1565c0">📜 '+plCount+' planche(s)</span>'
+        +'</div>'
+        :'<div class="ovac">Poste vacant</div>')
       +(off?'<div class="oact"><button class="btn outline sm" onclick="APP.openMod(\'assignOff\',{lid:\''+loge.id+'\',oid:\''+o.id+'\'})">'+(m?'Changer':'Affecter')+'<\/button>'+(m?'<button class="btn dng sm" onclick="APP.revokeOff(\''+loge.id+'\',\''+o.id+'\')">Retirer<\/button>':'')+'</div>':'')
       +'</div>';
   });
@@ -2064,6 +2288,10 @@ var MODS={
       +'<div class="fg"><label style="display:flex;align-items:center;gap:8px;cursor:pointer;padding:8px 0;border-bottom:1px solid #f0f0f0"><input id="docCas" type="checkbox" style="width:auto;margin:0"/> <span style="font-size:13px">Casier judiciaire vierge</span></label></div>'
       +'<div class="fg"><label style="display:flex;align-items:center;gap:8px;cursor:pointer;padding:8px 0"><input id="docNat" type="checkbox" style="width:auto;margin:0"/> <span style="font-size:13px">Certificat de nationalité</span></label></div>'
       +'<div class="fg" style="margin-top:10px"><label class="fl">Note / Observation</label><textarea id="mNote" placeholder="Observations éventuelles…"></textarea></div>'
+      +'<div class="sec" style="font-size:13px;margin:12px 0 8px">📎 Document joint (optionnel)</div>'
+      +'<div class="fg"><label class="fl">Pièce jointe — photo, PDF, scan (max 5 Mo)</label>'
+      +'<input id="mDocFile" type="file" accept=".pdf,.jpg,.jpeg,.png,.doc,.docx" style="padding:6px;font-size:13px" onchange="APP.previewDocFile(this)"/></div>'
+      +'<div id="mDocPreview" style="display:none;margin-bottom:8px"></div>'
       +'<div class="mact"><button class="btn gold full" onclick="APP.soumettreDossier(\''+d.lid+'\')">Soumettre le dossier<\/button><button class="btn ghost full" onclick="APP.closeMod()">Annuler<\/button></div>';
   },
   editDossier:function(d){
@@ -2145,21 +2373,61 @@ var MODS={
       +'<div class="mact" style="margin-top:14px"><button class="btn gold full" onclick="APP.sauvegarderPresences(\''+d.lid+'\')">Enregistrer<\/button><button class="btn ghost full" onclick="APP.closeMod()">Annuler<\/button></div>';
   },
   newEvt:function(d){
+    var mbrs=lMbrs(d.lid);
+    var partCks='<div id="evtParticipantsDiv" style="display:none" class="fg"><label class="fl">Participants à la cérémonie</label>'
+      +'<div style="max-height:150px;overflow-y:auto;border:1.5px solid #e0e0e0;border-radius:8px;padding:8px">'
+      +mbrs.map(function(m){return'<label style="display:flex;align-items:center;gap:8px;padding:3px 0;cursor:pointer"><input type="checkbox" value="'+m.id+'" class="evtPartCk"/> <span>'+m.nom+' ('+gLbl(m.grade)+')<\/span><\/label>';}).join('')
+      +'<\/div><\/div>';
     return mhdr('Ajouter une Tenue')
       +'<div class="fg"><label class="fl">Titre</label><input id="mTitre" placeholder="Ex: Tenue ordinaire"/></div>'
       +'<div class="frow"><div class="fg"><label class="fl">Date</label><input id="mDate" type="date"/></div><div class="fg"><label class="fl">Heure</label><input id="mHeure" placeholder="19h00"/></div></div>'
-      +'<div class="fg"><label class="fl">Type</label><select id="mType"><option>Tenue</option><option>Cérémonie</option><option>Agapes</option><option>Événement spécial</option></select></div>'
+      +'<div class="fg"><label class="fl">Type</label><select id="mType" onchange="APP.toggleCeremonie(this.value)"><option>Tenue</option><option>Cérémonie</option><option>Agapes</option><option>Événement spécial</option></select></div>'
+      +partCks
       +'<div class="fg"><label class="fl">Thème / Planche</label><input id="mPlanche" placeholder="Ex: La Fraternité universelle"/></div>'
-      +'<div class="fg"><label class="fl">Présentateur</label><input id="mPres" placeholder="Nom du frère présentateur"/></div>'
+      +'<div class="fg"><label class="fl">Statut de la planche</label><select id="mPlanStatus"><option value="Non présentée">Non présentée</option><option value="Présentée">Présentée</option></select></div>'
+      +'<div class="fg"><label class="fl">Présentateur</label><select id="mPresId" onchange="APP.syncPresSel(\'mPresId\',\'mPresManualDiv\')"><option value="">— Sélectionner un frère —</option>'
+      +mbrs.map(function(m){return'<option value="'+m.id+'">'+m.nom+'<\/option>';}).join('')
+      +'<option value="__custom">Autre / Saisie libre…</option><\/select>'
+      +'<div id="mPresManualDiv" style="display:none;margin-top:6px"><input id="mPresManual" placeholder="Nom du présentateur"/></div><\/div>'
       +'<div class="mact"><button class="btn gold full" onclick="APP.createEvt(\''+d.lid+'\')">Ajouter<\/button><button class="btn ghost full" onclick="APP.closeMod()">Annuler<\/button></div>';
   },
   newInstr:function(d){
+    var mbrs=lMbrs(d.lid);
     return mhdr("Tenue d'Instruction")
       +'<div class="fg"><label class="fl">Titre</label><input id="mTitre" placeholder="Tenue d\'instruction"/></div>'
       +'<div class="frow"><div class="fg"><label class="fl">Date</label><input id="mDate" type="date"/></div><div class="fg"><label class="fl">Heure</label><input id="mHeure" placeholder="17h30"/></div></div>'
       +'<div class="fg"><label class="fl">Thème / Planche</label><input id="mPlanche" placeholder="Ex: Les Outils du 1er degré"/></div>'
-      +'<div class="fg"><label class="fl">Présentateur</label><input id="mPres" placeholder="Nom du présentateur"/></div>'
+      +'<div class="fg"><label class="fl">Statut de la planche</label><select id="mPlanStatus"><option value="Non présentée">Non présentée</option><option value="Présentée">Présentée</option></select></div>'
+      +'<div class="fg"><label class="fl">Présentateur</label><select id="mPresId" onchange="APP.syncPresSel(\'mPresId\',\'mPresManualDiv\')"><option value="">— Sélectionner un frère —</option>'
+      +mbrs.map(function(m){return'<option value="'+m.id+'">'+m.nom+'<\/option>';}).join('')
+      +'<option value="__custom">Autre / Saisie libre…</option><\/select>'
+      +'<div id="mPresManualDiv" style="display:none;margin-top:6px"><input id="mPresManual" placeholder="Nom du présentateur"/></div><\/div>'
       +'<div class="mact"><button class="btn gold full" onclick="APP.createInstr(\''+d.lid+'\')">Ajouter<\/button><button class="btn ghost full" onclick="APP.closeMod()">Annuler<\/button></div>';
+  },
+  editEvt:function(d){
+    var loge=gLoge(d.lid);if(!loge)return'';
+    var arr=d.src==='instr'?(loge.instruction||[]):loge.agenda;
+    var ev=arr.find(function(x){return x.id===d.eid;});if(!ev)return'';
+    var ms=lMbrs(d.lid);
+    var curPres=ev.presentateur||'';
+    var curMbr=ms.find(function(m){return m.nom===curPres;});
+    var curMid=curMbr?curMbr.id:'';
+    var isCustom=curPres&&!curMbr;
+    var partCks='<div id="evtParticipantsDiv" style="display:'+(ev.type==='Cérémonie'?'block':'none')+'" class="fg"><label class="fl">Participants à la cérémonie</label>'
+      +'<div style="max-height:150px;overflow-y:auto;border:1.5px solid #e0e0e0;border-radius:8px;padding:8px">'
+      +ms.map(function(m){var chk=(ev.participants||[]).indexOf(m.id)!==-1;return'<label style="display:flex;align-items:center;gap:8px;padding:3px 0;cursor:pointer"><input type="checkbox" value="'+m.id+'" class="evtPartCk"'+(chk?' checked':'')+'/> <span>'+m.nom+' ('+gLbl(m.grade)+')<\/span><\/label>';}).join('')
+      +'<\/div><\/div>';
+    return mhdr(d.src==='instr'?"Modifier la Tenue d'Instruction":'Modifier la Tenue')
+      +'<div class="fg"><label class="fl">Titre</label><input id="mTitre" value="'+(ev.titre||'')+'"/></div>'
+      +'<div class="frow"><div class="fg"><label class="fl">Date</label><input id="mDate" type="date" value="'+(ev.date||'')+'" /></div><div class="fg"><label class="fl">Heure</label><input id="mHeure" value="'+(ev.heure||'')+'" placeholder="19h00"/></div></div>'
+      +(d.src!=='instr'?'<div class="fg"><label class="fl">Type</label><select id="mType" onchange="APP.toggleCeremonie(this.value)"><option'+(ev.type==='Tenue'?' selected':'')+'>Tenue</option><option'+(ev.type==='Cérémonie'?' selected':'')+'>Cérémonie</option><option'+(ev.type==='Agapes'?' selected':'')+'>Agapes</option><option'+(ev.type==="Événement spécial"?' selected':'')+'>Événement spécial</option></select></div>'+partCks:'')
+      +'<div class="fg"><label class="fl">Thème / Planche</label><input id="mPlanche" value="'+(ev.planche||'')+'" placeholder="Ex: La Fraternité universelle"/></div>'
+      +'<div class="fg"><label class="fl">Statut de la planche</label><select id="mPlanStatus"><option value="Non présentée"'+(!ev.planStatus||ev.planStatus==='Non présentée'?' selected':'')+'>Non présentée</option><option value="Présentée"'+(ev.planStatus==='Présentée'?' selected':'')+'>Présentée</option></select></div>'
+      +'<div class="fg"><label class="fl">Présentateur</label><select id="mPresId" onchange="APP.syncPresSel(\'mPresId\',\'mPresManualDiv\')"><option value="">— Sélectionner un frère —</option>'
+      +ms.map(function(m){return'<option value="'+m.id+'"'+(m.id===curMid?' selected':'')+'>'+m.nom+'<\/option>';}).join('')
+      +'<option value="__custom"'+(isCustom?' selected':'')+'>Autre / Saisie libre…</option><\/select>'
+      +'<div id="mPresManualDiv" style="display:'+(isCustom?'block':'none')+';margin-top:6px"><input id="mPresManual" value="'+(isCustom?curPres:'')+'" placeholder="Nom du présentateur"/></div><\/div>'
+      +'<div class="mact"><button class="btn gold full" onclick="APP.updateEvt(\''+d.lid+'\',\''+d.eid+'\',\''+(d.src||'agenda')+'\')">Enregistrer<\/button><button class="btn ghost full" onclick="APP.closeMod()">Annuler<\/button></div>';
   },
   newVis:function(d){
     return mhdr('Enregistrer un Visiteur')
@@ -2281,6 +2549,26 @@ MODS.notifAssid=function(d){
     +'<div class="fg"><label class="fl">Message</label><textarea id="notifMsg">Frère '+m.nom+', votre taux d\'assiduité ('+ass.pct+'%) est insuffisant. Votre présence est attendue aux prochaines tenues. Fraternellement, GOLAC.</textarea></div>'
     +'<div class="mact"><button class="btn gold full" onclick="APP.envoyerNotif(\''+m.id+'\')">Envoyer<\/button><button class="btn ghost full" onclick="APP.closeMod()">Annuler<\/button></div>';
 };
+MODS.newPlanche=function(d){
+  var mbrs=lMbrs(d.lid);
+  return mhdr('Nouvelle Planche / Thème autonome')
+    +'<div class="alert a-i" style="margin-bottom:12px;font-size:12px">Une planche autonome n\'est pas liée à une tenue spécifique. Pour lier une planche à une tenue, modifiez directement la tenue dans le Programme.</div>'
+    +'<div class="fg"><label class="fl">Titre / Thème</label><input id="plTitre" placeholder="Ex: La Fraternité universelle"/></div>'
+    +'<div class="fg"><label class="fl">Présentateur (frère/sœur de la loge)</label>'
+    +'<select id="plPres"><option value="">— Sélectionner —</option>'
+    +mbrs.map(function(m){return'<option value="'+m.id+'">'+m.nom+' ('+gLbl(m.grade)+')<\/option>';}).join('')
+    +'<option value="__ext">Autre — saisir manuellement</option>'
+    +'<\/select><\/div>'
+    +'<div id="plPresExtDiv" style="display:none" class="fg"><label class="fl">Nom du présentateur</label><input id="plPresCustom" placeholder="Prénom NOM"/></div>'
+    +'<div class="frow">'
+    +'<div class="fg"><label class="fl">Date</label><input id="plDate" type="date" value="'+tdStr()+'"/></div>'
+    +'<div class="fg"><label class="fl">Type</label><select id="plType"><option>Planche</option><option>Thème</option><option>Étude</option><option>Exposé</option></select></div>'
+    +'<\/div>'
+    +'<div class="fg"><label class="fl">Statut</label><select id="plStatus"><option value="Non présentée">Non présentée</option><option value="Présentée">Présentée</option></select></div>'
+    +'<div class="fg"><label class="fl">Notes / Résumé</label><textarea id="plNotes" placeholder="Observations, résumé de la planche..."></textarea></div>'
+    +'<script>G("plPres").onchange=function(){G("plPresExtDiv").style.display=(this.value==="__ext")?"block":"none";}<\/script>'
+    +'<div class="mact"><button class="btn gold full" onclick="APP.savePlanche(\''+d.lid+'\')">Enregistrer<\/button><button class="btn ghost full" onclick="APP.closeMod()">Annuler<\/button></div>';
+};
 MODS.avanceLoge=function(d){
   var v=D.versements.find(function(x){return x.id===d.vid;});
   if(!v)return'';
@@ -2299,7 +2587,8 @@ APP.soumettreDossier=function(lid){
   var nom=G('mNom').value.trim();if(!nom)return;
   var docs={extrait:G('docEx')&&G('docEx').checked,casier:G('docCas')&&G('docCas').checked,nationalite:G('docNat')&&G('docNat').checked};
   var allOK=docs.extrait&&docs.casier&&docs.nationalite;
-  D.dossiersPending.push({id:uid(),lid:lid,nom:nom,tel:G('mTel')?G('mTel').value.trim():'',email:G('mEmail')?G('mEmail').value.trim():'',grade:G('mGradeInit')?G('mGradeInit').value:'Apprenti',genre:G('mGenre')?G('mGenre').value:'M',docs:docs,note:G('mNote')?G('mNote').value.trim():'',date:tdStr(),st:allOK?'Complet':'Incomplet'});
+  D.dossiersPending.push({id:uid(),lid:lid,nom:nom,tel:G('mTel')?G('mTel').value.trim():'',email:G('mEmail')?G('mEmail').value.trim():'',grade:G('mGradeInit')?G('mGradeInit').value:'Apprenti',genre:G('mGenre')?G('mGenre').value:'M',docs:docs,note:G('mNote')?G('mNote').value.trim():'',date:tdStr(),st:allOK?'Complet':'Incomplet',attachment:_pendingDoc||null});
+  _pendingDoc=null;
   alert('Dossier soumis à l\'Obédience. Le Grand Secrétaire sera notifié.');APP.closeMod();
 };
 APP.updateDossier=function(id){
@@ -2385,8 +2674,30 @@ APP.validerReintegration=function(id){
   R();
 };
 APP.ajouterAvance=function(mid,lid){var mntEl=G('avMnt');if(!mntEl)return;var mnt=parseInt(mntEl.value)||0;if(mnt<=0)return;if(!D.avances)D.avances=[];D.avances.push({id:uid(),mid:mid,lid:lid,mnt:mnt,note:G('avNote')?G('avNote').value.trim():'',date:tdStr()});var sd=getSolde(mid,lid);var cap=D.caps.find(function(c){return c.mid===mid&&c.lid===lid;});if(cap&&sd.solde<=0){cap.st='Payé';cap.date=tdStr();}else if(cap&&cap.st==='Retard'){cap.st='En attente';}APP.closeMod();};
-APP.createEvt=function(lid){var t=G('mTitre').value.trim(),d=G('mDate').value;if(!t||!d)return;var loge=gLoge(lid);if(!loge)return;loge.agenda.push({id:uid(),titre:t,date:d,heure:G('mHeure')?G('mHeure').value:'',type:G('mType')?G('mType').value:'Tenue',planche:G('mPlanche')?G('mPlanche').value.trim():'',presentateur:G('mPres')?G('mPres').value.trim():''});APP.closeMod();};
-APP.createInstr=function(lid){var d=G('mDate').value;if(!d)return;var loge=gLoge(lid);if(!loge)return;if(!loge.instruction)loge.instruction=[];loge.instruction.push({id:uid(),titre:G('mTitre')?G('mTitre').value.trim()||"Tenue d'instruction":'',date:d,heure:G('mHeure')?G('mHeure').value:'',planche:G('mPlanche')?G('mPlanche').value.trim():'',presentateur:G('mPres')?G('mPres').value.trim():''});APP.closeMod();};
+APP.createEvt=function(lid){
+  var t=G('mTitre').value.trim(),d=G('mDate').value;if(!t||!d)return;
+  var loge=gLoge(lid);if(!loge)return;
+  var presEl=G('mPresId');var pres='';
+  if(presEl){var pval=presEl.value;if(pval==='__custom'){pres=G('mPresManual')?G('mPresManual').value.trim():'';}else if(pval){var pm=lMbrs(lid).find(function(m){return m.id===pval;});pres=pm?pm.nom:pval;}}
+  var parts=[];document.querySelectorAll('.evtPartCk:checked').forEach(function(c){parts.push(c.value);});
+  loge.agenda.push({id:uid(),titre:t,date:d,heure:G('mHeure')?G('mHeure').value:'',type:G('mType')?G('mType').value:'Tenue',planche:G('mPlanche')?G('mPlanche').value.trim():'',planStatus:G('mPlanStatus')?G('mPlanStatus').value:'Non présentée',presentateur:pres,participants:parts});
+  APP.closeMod();
+};
+APP.toggleCeremonie=function(val){var d=G('evtParticipantsDiv');if(d)d.style.display=(val==='Cérémonie')?'block':'none';};
+APP.updateEvt=function(lid,eid,src){
+  var t=G('mTitre').value.trim(),d=G('mDate').value;if(!t||!d)return;
+  var loge=gLoge(lid);if(!loge)return;
+  var arr=src==='instr'?(loge.instruction||[]):loge.agenda;
+  var ev=arr.find(function(x){return x.id===eid;});if(!ev)return;
+  var presEl=G('mPresId');var pres='';
+  if(presEl){var pval=presEl.value;if(pval==='__custom'){pres=G('mPresManual')?G('mPresManual').value.trim():'';}else if(pval){var pm=lMbrs(lid).find(function(m){return m.id===pval;});pres=pm?pm.nom:pval;}}
+  var parts=[];document.querySelectorAll('.evtPartCk:checked').forEach(function(c){parts.push(c.value);});
+  ev.titre=t;ev.date=d;ev.heure=G('mHeure')?G('mHeure').value:'';ev.type=G('mType')?G('mType').value:'Tenue';
+  ev.planche=G('mPlanche')?G('mPlanche').value.trim():'';ev.planStatus=G('mPlanStatus')?G('mPlanStatus').value:'Non présentée';
+  ev.presentateur=pres;ev.participants=parts;
+  APP.closeMod();
+};
+APP.createInstr=function(lid){var d=G('mDate').value;if(!d)return;var loge=gLoge(lid);if(!loge)return;if(!loge.instruction)loge.instruction=[];var presEl=G('mPresId');var pres='';if(presEl){var pval=presEl.value;if(pval==='__custom'){pres=G('mPresManual')?G('mPresManual').value.trim():'';}else if(pval){var pm=lMbrs(lid).find(function(m){return m.id===pval;});pres=pm?pm.nom:pval;}}loge.instruction.push({id:uid(),titre:G('mTitre')?G('mTitre').value.trim()||"Tenue d'instruction":'',date:d,heure:G('mHeure')?G('mHeure').value:'',planche:G('mPlanche')?G('mPlanche').value.trim():'',planStatus:G('mPlanStatus')?G('mPlanStatus').value:'Non présentée',presentateur:pres});APP.closeMod();};
 APP.createVis=function(lid){var nom=G('mNom').value.trim(),loge=G('mLoge').value.trim();if(!nom||!loge)return;D.visiteurs.push({id:uid(),lid:lid,nom:nom,loge:loge,grade:G('mGrade').value,motif:G('mMotif').value.trim(),date:G('mDate').value});APP.closeMod();};
 APP.createOff=function(lid){var t=G('mTitre').value.trim();if(!t)return;var loge=gLoge(lid);if(!loge)return;loge.officiers.push({id:uid(),titre:t,mid:null,perm:false});APP.closeMod();};
 APP.doAssignOff=function(lid,oid){
