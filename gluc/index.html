@@ -400,6 +400,7 @@ function buildData(){
     reintegrationPending:[],
     radiationPending:[],
     logoObedience:null,
+    docLogoSource:'obedience',
     customWelcome:true,
     secretQuestions:{
       Apprenti:{q:'Où les apprentis francs-maçons ont-ils coutume de gagner leurs salaires ?',a:'boaz',variants:['à la colonne boaz','colonne boaz','boaz']},
@@ -724,14 +725,25 @@ function tParamsOb(){
     +['name','acronym','siege','ville','adresse','fondation','patente','tel','email','description'].map(function(k){
       var labels={name:'Nom',acronym:'Acronyme',siege:'Siège',ville:'Ville',adresse:'Adresse',fondation:'Fondée en',patente:'Patente',tel:'Téléphone',email:'Email',description:'Description'};
       return'<div class="fg"><label class="fl">'+labels[k]+'</label>'
-        +'<input id="obInfo_'+k+'" value="'+(D.obInfo[k]||'')+'" onchange="APP.saveObInfo(\''+k+'\',this.value)"/></div>';
+        +'<input id="obInfo_'+k+'" value="'+(D.obInfo[k]||'')+'"/></div>';
     }).join('')
+    +'<button class="btn gold" style="width:100%;margin-top:4px" onclick="APP.saveAllObInfo()">💾 Enregistrer les modifications</button>'
     +'</div>'
     // Logo
     +'<div style="font-size:14px;font-weight:900;margin-bottom:12px">Logo de l\'Obédience</div>'
     +'<div class="card" style="margin-bottom:14px;text-align:center">'
     +(D.logoObedience?'<img src="'+D.logoObedience+'" style="width:80px;height:80px;border-radius:50%;border:3px solid #c9a227;margin-bottom:10px"/><br>':'<div style="width:80px;height:80px;border-radius:50%;background:#f5f5f5;border:2px dashed #ccc;display:flex;align-items:center;justify-content:center;margin:0 auto 10px;font-size:28px">⬡</div>')
     +'<label class="btn outline sm" style="cursor:pointer;display:inline-flex;align-items:center;gap:6px">📷 Changer le logo<input type="file" accept="image/*" style="display:none" onchange="APP.loadLogoOb(this)"/></label>'
+    +'</div>'
+    +'<div style="font-size:14px;font-weight:900;margin-bottom:12px">Logo dans les documents imprimés</div>'
+    +'<div class="card" style="margin-bottom:14px">'
+    +'<div style="font-size:12px;color:#555;margin-bottom:10px">Choisissez quel logo apparaît dans l\'en-tête des rapports et reçus imprimés.</div>'
+    +[['obedience',"Logo de l'obédience"],['loge','Logo de la loge (si disponible)'],['both','Les deux logos'],['none','Aucun logo']].map(function(opt){
+      var v=opt[0],lbl=opt[1];
+      var cur=D.docLogoSource||'obedience';
+      return'<label style="display:flex;align-items:center;gap:8px;padding:5px 0;cursor:pointer;font-size:13px">'
+        +'<input type="radio" name="docLogoSrc" value="'+v+'"'+(cur===v?' checked':'')+' onchange="D.docLogoSource=this.value"/> '+lbl+'</label>';
+    }).join('')
     +'</div>'
     +'</div>'
     // Right: Welcome + Droits
@@ -769,6 +781,16 @@ function tParamsOb(){
   return h;
 }
 APP.saveObInfo=function(key,val){D.obInfo[key]=val;};
+APP.saveAllObInfo=function(){
+  ['name','acronym','siege','ville','adresse','fondation','patente','tel','email','description'].forEach(function(k){
+    var el=G('obInfo_'+k);if(el)D.obInfo[k]=el.value;
+  });
+  R();
+  var t=document.createElement('div');
+  t.style.cssText='position:fixed;bottom:24px;left:50%;transform:translateX(-50%);background:#1b5e20;color:#fff;padding:11px 28px;border-radius:8px;font-size:14px;font-weight:700;z-index:9999;box-shadow:0 4px 16px rgba(0,0,0,0.25)';
+  t.textContent='✓ Informations de l\'obédience enregistrées';
+  document.body.appendChild(t);setTimeout(function(){t.remove();},2800);
+};
 APP.saveSecretQuestions=function(){
   ['Apprenti','Compagnon','Maitre'].forEach(function(grade){
     var q=G('sq_q_'+grade)?G('sq_q_'+grade).value.trim():'';
@@ -969,7 +991,7 @@ APP.printRapportGlobal=function(){
   }).join('');
   w.document.write('<!DOCTYPE htm'+'l><html><head><meta charset="UTF-8"><title>Rapport GLUC</title>'
     +'<style>body{font-family:Georgia,serif;padding:24px;max-width:900px;margin:0 auto;}h1{border-bottom:2px solid #c9a227;padding-bottom:8px;}table{width:100%;border-collapse:collapse;font-size:12px;}th{background:#111;color:#fff;padding:7px 10px;text-align:left;}td{padding:7px 10px;border-bottom:1px solid #eee;}@media print{button{display:none!important;}}<'+'/style></head><body>'
-    +'<h1>Rapport Général — Grande Loge Unie du Congo</h1>'
+    +'<h1>Rapport Général — '+D.obInfo.name+'</h1>'
     +'<p style="color:#888;font-size:12px">Généré le '+tdStr()+' · '+D.loges.length+' loges actives · '+D.membres.filter(function(m){return m.logeId&&m.statut==='actif';}).length+' frères</p>'
     +'<table><thead><tr><th>N°</th><th>Loge</th><th>Ville</th><th>Frères</th><th>Tenues</th><th>Capitations</th><th>Versement GLUC</th></tr></thead><tbody>'+rows+'</tbody></table>'
     +'<div style="text-align:center;margin-top:16px"><button onclick="window.print()" style="background:#111;color:#fff;border:none;padding:9px 20px;border-radius:6px;cursor:pointer">🖨 PDF</button></div>'
@@ -1179,6 +1201,7 @@ function loadState() {
       if(parsed.customPerms) D.customPerms = parsed.customPerms;
       if(parsed.smsConfig)   D.smsConfig   = parsed.smsConfig;
       if(parsed.logoObedience) D.logoObedience = parsed.logoObedience;
+      if(parsed.docLogoSource) D.docLogoSource = parsed.docLogoSource;
       // Migration : garantir les champs planches et customOfficerPerms sur chaque loge
       D.loges.forEach(function(l){
         if(!l.planches)l.planches=[];
@@ -1239,6 +1262,7 @@ APP.render=function(){
     h+=renderWelcomeModal();
     S.pendingWelcome=false;
   }
+  document.title=D.obInfo.acronym+' — '+D.obInfo.name;
   G('app').innerHTML=h;
 };
 var R=APP.render;
@@ -1259,7 +1283,7 @@ function hdr(){
   }
   if(S.view==='monEspace')bc='<span class="hdr-sep">›</span><span style="color:#c9a227;font-size:13px;font-weight:700">Mon Espace</span>';
   return'<div class="hdr"><div class="hdr-logo">'+logoImg(34)+'</div>'
-    +'<div><div class="hdr-gluc">GLUC</div><div class="hdr-sub">Grande Loge Unie du Congo</div></div>'
+    +'<div><div class="hdr-gluc">'+D.obInfo.acronym+'</div><div class="hdr-sub">'+D.obInfo.name+'</div></div>'
     +bc+'<div style="flex:1"></div>'
     +'<div style="text-align:right;margin-right:10px">'
     +'<div style="color:#fff;font-size:13px;font-weight:700">'+S.user.nom+'</div>'
@@ -1293,7 +1317,7 @@ function vLogin(){
   }).join('');
   return'<div class="lpg"><div class="lbox">'
     +'<div class="llogo">'+logo+'</div>'
-    +'<div class="ltit">GLUC</div><div class="lsub">Grande Loge Unie du Congo</div>'
+    +'<div class="ltit">'+D.obInfo.acronym+'</div><div class="lsub">'+D.obInfo.name+'</div>'
     +'<div class="alert a-w" style="font-size:11px;margin-bottom:14px">Version statique : les données et mots de passe restent dans ce navigateur. Ne publiez pas de données sensibles sans backend sécurisé.</div>'
     +'<div class="fg"><label class="fl">Matricule</label>'
     +'<input id="lM" placeholder="Ex: F-001 ou GLUC-00" autocomplete="off" onkeydown="if(event.key===\'Enter\')G(\'lP\').focus()"/></div>'
@@ -1442,7 +1466,7 @@ function vMonEspace(){
     });
   }
   // Infos obédience
-  h+='<div class="sec" style="margin-top:6px">Grande Loge Unie du Congo</div>'
+  h+='<div class="sec" style="margin-top:6px">'+D.obInfo.name+'</div>'
     +'<div class="g3" style="margin-bottom:8px">'
     +[['Siège',D.siege],['Acronyme',D.acronym],['Fondée en',D.fondation]].map(function(x){
       return'<div class="sc"><div class="sc-l">'+x[0]+'</div><div class="sc-v" style="font-size:16px">'+x[1]+'</div></div>';}).join('')
@@ -2792,7 +2816,7 @@ APP.printRecu=function(id){
     +'<sty'+'le>body{font-family:Georgia,serif;color:#111;padding:32px;max-width:720px;margin:0 auto;}'
     +'.box{border:2px solid #111;padding:26px;}h1{text-align:center;font-size:22px;margin:4px 0 8px;text-transform:uppercase;}'
     +'.sub{text-align:center;color:#555;font-size:12px;margin-bottom:22px}.row{display:flex;justify-content:space-between;border-bottom:1px solid #eee;padding:9px 0;font-size:14px}.lbl{color:#555}.val{font-weight:700;text-align:right}.total{font-size:18px;border-top:2px solid #111;margin-top:14px;padding-top:12px}.sign{display:flex;justify-content:space-between;margin-top:44px;font-size:12px;color:#555}.foot{text-align:center;margin-top:26px;font-size:11px;color:#777}@media print{button{display:none!important}@page{margin:12mm}}</sty'+'le></head><body>'
-    +'<div class="box"><h1>Reçu de capitation</h1><div class="sub">Grande Loge Unie du Congo · '+tdStr()+' · Réf. '+ref+'</div>'
+    +'<div class="box"><h1>Reçu de capitation</h1><div class="sub">'+D.obInfo.name+' ·'+tdStr()+' · Réf. '+ref+'</div>'
     +'<div class="row"><span class="lbl">Frère</span><span class="val">'+(m?m.nom:'—')+'</span></div>'
     +'<div class="row"><span class="lbl">Matricule</span><span class="val">'+(m?m.matricule:'—')+'</span></div>'
     +'<div class="row"><span class="lbl">Loge</span><span class="val">'+(loge?('N°'+loge.numero+' '+loge.nom):'—')+'</span></div>'
@@ -2800,7 +2824,7 @@ APP.printRecu=function(id){
     +'<div class="row"><span class="lbl">Montant dû</span><span class="val">'+fmt(sd.du)+' FCFA</span></div>'
     +'<div class="row"><span class="lbl">Montant versé</span><span class="val">'+fmt(sd.verse)+' FCFA</span></div>'
     +'<div class="row total"><span class="lbl">Solde</span><span class="val">0 FCFA</span></div>'
-    +'<div class="sign"><span>Le Trésorier</span><span>Signature</span></div><div class="foot">Document généré par l\'application GLUC</div></div>'
+    +'<div class="sign"><span>Le Trésorier</span><span>Signature</span></div><div class="foot">Document généré par '+D.obInfo.acronym+'</div></div>'
     +'<div style="text-align:center;margin-top:18px"><button onclick="window.print()" style="background:#111;color:#fff;border:none;padding:10px 22px;border-radius:7px;cursor:pointer">Imprimer</button></div>'
     +'</bod'+'y><\/html>');
   w.document.close();
@@ -2876,7 +2900,7 @@ APP.exportCapsPDF=function(lid){APP.printRapport(lid);};
 APP.exportRapportExcel=function(lid){
   var loge=gLoge(lid);if(!loge)return;
   var ms=lMbrs(lid),caps=lCaps(lid);
-  var rows=[['RAPPORT ACTIVITÉ — Loge N°'+loge.numero+' '+loge.nom+' — GLUC — '+tdStr()],['']];
+  var rows=[['RAPPORT ACTIVITÉ — Loge N°'+loge.numero+' '+loge.nom+' — '+D.obInfo.acronym+' — '+tdStr()],['']];
   rows.push(['=== FRÈRES ==='],['Matricule','Nom','Grade','Durée (mois)','Assiduité %','Rôle']);
   ms.forEach(function(m){var ass=getAssiduite(m.id,lid);rows.push([m.matricule,m.nom,gLbl(m.grade),moAt(m.dateGrade),ass.pct+'%',m.role]);});
   rows.push([''],['=== CAPITATIONS ==='],['Frère','Matricule','Dû','Versé','Solde','Statut']);
@@ -2896,7 +2920,12 @@ APP.printRapport=function(lid){
   var paid=sumA(caps.filter(function(c){return c.st==='Payé';}),function(c){return c.mnt;});
   var tot=sumA(caps,function(c){return c.mnt;});
   var pct=tot?Math.round(paid/tot*100):0;
-  var logH=LOGO?'<img src="'+LOGO+'" style="width:60px;height:60px;border-radius:50%;border:2px solid #c9a227;"/>':'<div style="font-size:36px">⬡</div>';
+  var _dls=D.docLogoSource||'obedience';
+  var logH;
+  if(_dls==='none'){logH='';}
+  else if(_dls==='loge'&&loge.logo){logH='<img src="'+loge.logo+'" style="width:60px;height:60px;border-radius:50%;border:2px solid #c9a227;"/>';}
+  else if(_dls==='both'){logH='<div style="display:inline-flex;gap:12px;align-items:center">'+(LOGO?'<img src="'+LOGO+'" style="width:60px;height:60px;border-radius:50%;border:2px solid #c9a227;"/>':'')+( loge.logo?'<img src="'+loge.logo+'" style="width:60px;height:60px;border-radius:50%;border:2px solid #c9a227;"/>':'')+'</div>';}
+  else{logH=LOGO?'<img src="'+LOGO+'" style="width:60px;height:60px;border-radius:50%;border:2px solid #c9a227;"/>':'<div style="font-size:36px">⬡</div>';}
   var rMbrs=ms.map(function(m){var ass=getAssiduite(m.id,lid);return'<tr><td>'+m.matricule+'</td><td>'+m.nom+'</td><td>'+gLbl(m.grade)+'</td><td>'+moAt(m.dateGrade)+'</td><td>'+ass.pct+'%</td><td>'+m.role+'</td></tr>';}).join('');
   var rOffs=loge.officiers.map(function(o){var m=o.mid?gMbr(o.mid):null;return'<tr><td>'+o.titre+'</td><td>'+(m?m.nom:'<i>Vacant</i>')+'</td><td>'+(m?m.matricule:'—')+'</td></tr>';}).join('');
   var rProg=loge.agenda.slice().sort(function(a,b){return a.date.localeCompare(b.date);}).map(function(e){return'<tr><td>'+e.date+'</td><td>'+e.heure+'</td><td>'+e.type+'</td><td>'+(e.planche||'—')+'</td><td>'+(e.presentateur||'—')+'</td></tr>';}).join('');
@@ -2919,7 +2948,7 @@ APP.printRapport=function(lid){
     +'@media print{button{display:none!important;}@page{margin:11mm;}}'
     +'</sty'+'le></head><body>'
     +'<div style="text-align:center;margin-bottom:18px">'+logH
-    +'<h1>GRANDE LOGE UNIE DU CONGO</h1>'
+    +'<h1>'+D.obInfo.name.toUpperCase()+'</h1>'
     +'<div class="sub">Rapport d\'Activité — Loge N°'+loge.numero+' « '+loge.nom+' » — '+loge.ville+'<br>Exercice 2026 · Généré le '+tdStr()+'</div></div>'
     +'<div class="kpi"><div class="kb"><div class="kv">'+ms.length+'</div><div class="kl">Frères</div></div><div class="kb"><div class="kv">'+loge.agenda.length+'</div><div class="kl">Tenues</div></div><div class="kb"><div class="kv">'+pct+'%</div><div class="kl">Capitations</div></div><div class="kb"><div class="kv">'+loge.officiers.filter(function(o){return o.mid;}).length+'</div><div class="kl">Officiers</div></div></div>'
     +'<h2>I. Tableau des Frères</h2><table><thead><tr><th>Matricule</th><th>Nom</th><th>Grade</th><th>Durée</th><th>Assiduité</th><th>Rôle</th></tr></thead><tbody>'+rMbrs+'</tbody></table>'
@@ -2929,7 +2958,7 @@ APP.printRapport=function(lid){
     +'<h2>V. Capitations</h2><table><thead><tr><th>Frère</th><th>Dû</th><th>Versé</th><th>Solde</th><th>Statut</th></tr></thead><tbody>'+rCaps
     +'<tr style="background:#111;color:#fff;font-weight:900"><td>TOTAL</td><td>'+fmt(tot)+' F</td><td>'+fmt(paid)+' F</td><td>'+fmt(tot-paid)+' F</td><td>'+pct+'%</td></tr></tbody></table>'
     +(rVis?'<h2>VI. Visiteurs</h2><table><thead><tr><th>Nom</th><th>Loge</th><th>Grade</th><th>Motif</th><th>Date</th></tr></thead><tbody>'+rVis+'</tbody></table>':'')
-    +'<div class="footer">GLUC — Document confidentiel · '+tdStr()+'</div>'
+    +'<div class="footer">'+D.obInfo.acronym+' — Document confidentiel · '+tdStr()+'</div>'
     +'<div style="text-align:center;margin-top:14px"><button onclick="window.print()" style="background:#111;color:#fff;border:none;padding:10px 22px;border-radius:7px;font-size:14px;cursor:pointer">🖨 Imprimer / PDF</button></div>'
     +'</bod'+'y><\/html>');
   w.document.close();
