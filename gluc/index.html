@@ -1334,8 +1334,8 @@ APP.togglePw=function(){var i=G('lP');i.type=i.type==='password'?'text':'passwor
 APP.logout=function(){S.user=null;S.view='login';S.lid=null;S.tab='membres';R();};
 APP.changeAtelier=function(){S.view='atelierSelect';R();};
 APP.setTab=function(t){S.tab=t;R();};
-APP.toggleProgMenu=function(){var m=G('progDropMenu');if(m)m.style.display=m.style.display==='block'?'none':'block';};
-APP.setTabProg=function(t){var m=G('progDropMenu');if(m)m.style.display='none';S.tab=t;R();};
+APP.toggleProgMenu=function(){if(['programme','instruction','planches'].indexOf(S.tab)<0){S.tab='programme';R();}};
+APP.toggleFinMenu=function(){if(['finances','capitations','tronc'].indexOf(S.tab)<0){S.tab='finances';R();}};
 APP.goOb=function(tab){S.view='obedience';S.tab=tab||'programmes';R();};
 APP.loadLogo=function(inp){var file=inp.files[0];if(!file)return;var r=new FileReader();r.onload=function(e){LOGO=e.target.result;R();};r.readAsDataURL(file);};
 
@@ -1851,23 +1851,37 @@ function vLoge(){
     return canAccessTab(loge.id,t.id)||accessLvl>=(t.min||0);
   });
   var inPG=['programme','instruction','planches'].indexOf(S.tab)>=0;
+  var inFG=['finances','capitations','tronc'].indexOf(S.tab)>=0;
   var tabBarHtml='<div class="tabbar">';
   tabs.forEach(function(t){
     if(t.id==='instruction'||t.id==='planches')return;
+    if(t.id==='capitations'||t.id==='tronc')return;
     if(t.id==='programme'){
-      tabBarHtml+='<div style="position:relative;display:inline-block">'
-        +'<button class="tab'+(inPG?' on':'')+'" onclick="APP.toggleProgMenu()">Programme ▾</button>'
-        +'<div id="progDropMenu" style="display:none;position:absolute;top:100%;left:0;background:#fff;border:1px solid #ddd;border-radius:8px;box-shadow:0 4px 16px rgba(0,0,0,.15);z-index:999;min-width:185px;overflow:hidden">'
-        +'<div onclick="APP.setTabProg(\'programme\')" style="padding:11px 16px;cursor:pointer;font-size:13px;border-bottom:1px solid #f0f0f0;'+(S.tab==='programme'?'background:#f5f0e0;font-weight:700':'')+'">'+'📅 Programme</div>'
-        +'<div onclick="APP.setTabProg(\'instruction\')" style="padding:11px 16px;cursor:pointer;font-size:13px;border-bottom:1px solid #f0f0f0;'+(S.tab==='instruction'?'background:#f5f0e0;font-weight:700':'')+'">'+'📖 Instruction</div>'
-        +'<div onclick="APP.setTabProg(\'planches\')" style="padding:11px 16px;cursor:pointer;font-size:13px;'+(S.tab==='planches'?'background:#f5f0e0;font-weight:700':'')+'">'+'📜 Planches & Thèmes</div>'
-        +'</div></div>';
+      tabBarHtml+='<button class="tab'+(inPG?' on':'')+'" onclick="APP.toggleProgMenu()">Programme'+(inPG?' ▾':' ▸')+'</button>';
+    }else if(t.id==='finances'){
+      tabBarHtml+='<button class="tab'+(inFG?' on':'')+'" onclick="APP.toggleFinMenu()">Finances'+(inFG?' ▾':' ▸')+'</button>';
     }else{
       tabBarHtml+='<button class="tab'+(S.tab===t.id?' on':'')+'" onclick="APP.setTab(\''+t.id+'\')">'
         +t.lbl+(t.badge&&t.badge!==''?'<span class="bdg">'+t.badge+'</span>':'')+'</button>';
     }
   });
   tabBarHtml+='</div>';
+  if(inPG){
+    tabBarHtml+='<div class="tabbar" style="background:#252525;border-bottom:2px solid #c9a227">'
+      +'<button class="tab'+(S.tab==='programme'?' on':'')+'" onclick="APP.setTab(\'programme\')">📅 Programme</button>'
+      +'<button class="tab'+(S.tab==='instruction'?' on':'')+'" onclick="APP.setTab(\'instruction\')">📖 Instruction</button>'
+      +'<button class="tab'+(S.tab==='planches'?' on':'')+'" onclick="APP.setTab(\'planches\')">📜 Planches & Thèmes</button>'
+      +'</div>';
+  }
+  if(inFG){
+    var hasCap=tabs.some(function(t){return t.id==='capitations';});
+    var hasTronc=tabs.some(function(t){return t.id==='tronc';});
+    tabBarHtml+='<div class="tabbar" style="background:#252525;border-bottom:2px solid #c9a227">'
+      +'<button class="tab'+(S.tab==='finances'?' on':'')+'" onclick="APP.setTab(\'finances\')">💰 Finances</button>'
+      +(hasCap?'<button class="tab'+(S.tab==='capitations'?' on':'')+'" onclick="APP.setTab(\'capitations\')">💳 Capitations</button>':'')
+      +(hasTronc?'<button class="tab'+(S.tab==='tronc'?' on':'')+'" onclick="APP.setTab(\'tronc\')">🕊 Tronc Veuve</button>':'')
+      +'</div>';
+  }
   var bar='<div class="lbar"><div class="lnum">N°'+loge.numero+'</div>'
     +'<div><div style="font-weight:900;font-size:15px">'+loge.nom+'</div>'
     +'<div style="color:#888;font-size:12px">📍 '+loge.ville+' · '+ms.length+' frères · '+ch(tCount+'/3 min.',tCount>=3?'cgreen':'cred')+'</div></div>'
