@@ -1365,6 +1365,8 @@ APP.togglePw=function(){var i=G('lP');i.type=i.type==='password'?'text':'passwor
 APP.logout=function(){S.user=null;S.view='login';S.lid=null;S.tab='membres';R();};
 APP.changeAtelier=function(){S.view='atelierSelect';R();};
 APP.setTab=function(t){S.tab=t;R();};
+APP.toggleProgMenu=function(){var m=G('progDropMenu');if(m)m.style.display=m.style.display==='block'?'none':'block';};
+APP.setTabProg=function(t){var m=G('progDropMenu');if(m)m.style.display='none';S.tab=t;R();};
 APP.goOb=function(tab){S.view='obedience';S.tab=tab||'programmes';R();};
 APP.loadLogo=function(inp){var file=inp.files[0];if(!file)return;var r=new FileReader();r.onload=function(e){LOGO=e.target.result;R();};r.readAsDataURL(file);};
 
@@ -1879,6 +1881,24 @@ function vLoge(){
     if(!off)return!t.offOnly||false;
     return canAccessTab(loge.id,t.id)||accessLvl>=(t.min||0);
   });
+  var inPG=['programme','instruction','planches'].indexOf(S.tab)>=0;
+  var tabBarHtml='<div class="tabbar">';
+  tabs.forEach(function(t){
+    if(t.id==='instruction'||t.id==='planches')return;
+    if(t.id==='programme'){
+      tabBarHtml+='<div style="position:relative;display:inline-block">'
+        +'<button class="tab'+(inPG?' on':'')+'" onclick="APP.toggleProgMenu()">Programme ▾</button>'
+        +'<div id="progDropMenu" style="display:none;position:absolute;top:100%;left:0;background:#fff;border:1px solid #ddd;border-radius:8px;box-shadow:0 4px 16px rgba(0,0,0,.15);z-index:999;min-width:185px;overflow:hidden">'
+        +'<div onclick="APP.setTabProg(\'programme\')" style="padding:11px 16px;cursor:pointer;font-size:13px;border-bottom:1px solid #f0f0f0;'+(S.tab==='programme'?'background:#f5f0e0;font-weight:700':'')+'">'+'📅 Programme</div>'
+        +'<div onclick="APP.setTabProg(\'instruction\')" style="padding:11px 16px;cursor:pointer;font-size:13px;border-bottom:1px solid #f0f0f0;'+(S.tab==='instruction'?'background:#f5f0e0;font-weight:700':'')+'">'+'📖 Instruction</div>'
+        +'<div onclick="APP.setTabProg(\'planches\')" style="padding:11px 16px;cursor:pointer;font-size:13px;'+(S.tab==='planches'?'background:#f5f0e0;font-weight:700':'')+'">'+'📜 Planches & Thèmes</div>'
+        +'</div></div>';
+    }else{
+      tabBarHtml+='<button class="tab'+(S.tab===t.id?' on':'')+'" onclick="APP.setTab(\''+t.id+'\')">'
+        +t.lbl+(t.badge&&t.badge!==''?'<span class="bdg">'+t.badge+'</span>':'')+'</button>';
+    }
+  });
+  tabBarHtml+='</div>';
   var bar='<div class="lbar"><div class="lnum">N°'+loge.numero+'</div>'
     +'<div><div style="font-weight:900;font-size:15px">'+loge.nom+'</div>'
     +'<div style="color:#888;font-size:12px">📍 '+loge.ville+' · '+ms.length+' frères · '+ch(tCount+'/3 min.',tCount>=3?'cgreen':'cred')+'</div></div>'
@@ -1916,7 +1936,7 @@ function vLoge(){
       +'<div style="font-size:11px;color:#888;font-style:italic">Tableau de bord adapté à votre poste</div>'
       +'</div>';
   }
-  return hdr()+bar+officerBanner2+tbr(tabs)+'<div class="cont">'+c+'</div>'+modH();
+  return hdr()+bar+officerBanner2+tabBarHtml+'<div class="cont">'+c+'</div>'+modH();
 }
 
 function lProg(loge,off){
