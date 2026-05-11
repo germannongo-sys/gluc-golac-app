@@ -711,8 +711,9 @@ function lParams(loge,off){
     +'</div>'
     +'<div style="font-size:14px;font-weight:900;margin-bottom:12px">Informations</div>'
     +'<div class="card">'
-    +'<div class="fg"><label class="fl">Email</label><input id="logeEmail" value="'+(loge.email||'')+'" onchange="APP.saveLogeInfo(\''+loge.id+'\',\'email\',this.value)"/></div>'
-    +'<div class="fg"><label class="fl">Taux de capitation (FCFA)</label><input id="logeCap" type="number" value="'+(loge.tauxCap||D.tauxCap)+'" onchange="APP.saveLogeInfo(\''+loge.id+'\',\'tauxCap\',parseInt(this.value))"/></div>'
+    +'<div class="fg"><label class="fl">Email</label><input id="logeEmail" value="'+(loge.email||'')+'"/></div>'
+    +'<div class="fg"><label class="fl">Taux de capitation (FCFA)</label><input id="logeCap" type="number" value="'+(loge.tauxCap||D.tauxCap)+'"/></div>'
+    +'<button class="btn gold" style="width:100%;margin-top:4px" onclick="APP.saveAllLogeInfo(\''+loge.id+'\')">💾 Enregistrer les modifications</button>'
     +'</div></div>'
     +'</div>'
     +officierDroits;
@@ -722,6 +723,16 @@ APP.loadLogeLogo=function(inp,lid){
   var r=new FileReader();r.onload=function(e){var l=gLoge(lid);if(l)l.logo=e.target.result;R();};r.readAsDataURL(file);
 };
 APP.saveLogeInfo=function(lid,key,val){var l=gLoge(lid);if(l)l[key]=val;};
+APP.saveAllLogeInfo=function(lid){
+  var l=gLoge(lid);if(!l)return;
+  var em=G('logeEmail');if(em)l.email=em.value;
+  var tc=G('logeCap');if(tc)l.tauxCap=parseInt(tc.value)||D.tauxCap;
+  R();
+  var t=document.createElement('div');
+  t.style.cssText='position:fixed;bottom:24px;left:50%;transform:translateX(-50%);background:#1b5e20;color:#fff;padding:11px 28px;border-radius:8px;font-size:14px;font-weight:700;z-index:9999;box-shadow:0 4px 16px rgba(0,0,0,0.25)';
+  t.textContent='✓ Informations de la loge enregistrées';
+  document.body.appendChild(t);setTimeout(function(){t.remove();},2800);
+};
 
 // ── PARAMÈTRES OBÉDIENCE ──
 function tParamsOb(){
@@ -754,6 +765,13 @@ function tParamsOb(){
       return'<label style="display:flex;align-items:center;gap:8px;padding:5px 0;cursor:pointer;font-size:13px">'
         +'<input type="radio" name="docLogoSrc" value="'+v+'"'+(cur===v?' checked':'')+' onchange="D.docLogoSource=this.value"/> '+lbl+'</label>';
     }).join('')
+    +'</div>'
+    +'<div style="font-size:14px;font-weight:900;margin-bottom:12px">Taux globaux</div>'
+    +'<div class="card" style="margin-bottom:14px">'
+    +'<div style="font-size:12px;color:#555;margin-bottom:10px">Ces taux s\'appliquent par défaut à toutes les loges (sauf si une loge a son propre taux).</div>'
+    +'<div class="fg"><label class="fl">Taux de capitation membre (FCFA)</label><input id="obTauxCap" type="number" value="'+D.tauxCap+'"/></div>'
+    +'<div class="fg"><label class="fl">Versement annuel par loge (FCFA)</label><input id="obTauxLoge" type="number" value="'+D.tauxLoge+'"/></div>'
+    +'<button class="btn gold" style="width:100%;margin-top:4px" onclick="APP.saveObTaux()">💾 Enregistrer les taux</button>'
     +'</div>'
     +'</div>'
     // Right: Welcome + Droits
@@ -791,6 +809,17 @@ function tParamsOb(){
   return h;
 }
 APP.saveObInfo=function(key,val){D.obInfo[key]=val;};
+APP.saveObTaux=function(){
+  var tc=parseInt(G('obTauxCap')?G('obTauxCap').value:'');
+  var tl=parseInt(G('obTauxLoge')?G('obTauxLoge').value:'');
+  if(tc>0)D.tauxCap=tc;
+  if(tl>0)D.tauxLoge=tl;
+  R();
+  var t=document.createElement('div');
+  t.style.cssText='position:fixed;bottom:24px;left:50%;transform:translateX(-50%);background:#1b5e20;color:#fff;padding:11px 28px;border-radius:8px;font-size:14px;font-weight:700;z-index:9999;box-shadow:0 4px 16px rgba(0,0,0,0.25)';
+  t.textContent='✓ Taux globaux enregistrés';
+  document.body.appendChild(t);setTimeout(function(){t.remove();},2800);
+};
 APP.saveAllObInfo=function(){
   ['name','acronym','siege','ville','adresse','fondation','patente','tel','email','description'].forEach(function(k){
     var el=G('obInfo_'+k);if(el)D.obInfo[k]=el.value;
@@ -1234,6 +1263,8 @@ function loadState() {
       if(parsed.smsConfig)   D.smsConfig   = parsed.smsConfig;
       if(parsed.logoObedience) D.logoObedience = parsed.logoObedience;
       if(parsed.docLogoSource) D.docLogoSource = parsed.docLogoSource;
+      if(parsed.tauxCap) D.tauxCap = parsed.tauxCap;
+      if(parsed.tauxLoge) D.tauxLoge = parsed.tauxLoge;
       D.loges.forEach(function(l){
         if(!l.planches)l.planches=[];
         if(!Object.prototype.hasOwnProperty.call(l,'customOfficerPerms'))l.customOfficerPerms=null;
@@ -2661,7 +2692,7 @@ APP.validerDossier=function(id){
   if(!dos.docs.extrait||!dos.docs.casier||!dos.docs.nationalite){alert('Dossier incomplet.');return;}
   var mat=nxtMat(D.membres);var mid=uid();
   var genreDos=dos.genre||'M';D.membres.push({id:mid,matricule:mat,nom:dos.nom,grade:dos.grade||'Apprenti',dateGrade:tdStr(),logeId:dos.lid,role:genreDos==='F'?'Membre':'Membre',pwd:'1234',statut:'actif',tel:dos.tel,email:dos.email,affiliation:null,genre:genreDos});
-  D.caps.push({id:uid(),mid:mid,lid:dos.lid,annee:2026,mnt:D.tauxCap,st:'En attente',date:null});
+  D.caps.push({id:uid(),mid:mid,lid:dos.lid,annee:2026,mnt:((gLoge(dos.lid)||{}).tauxCap||D.tauxCap),st:'En attente',date:null});
   dos.st='Validé';
   D.dossiersPending=D.dossiersPending.filter(function(x){return x.id!==id;});
   var l=gLoge(dos.lid);
@@ -2679,7 +2710,7 @@ APP.validerAffil=function(id){
   var mat=nxtMat(D.membres);var mid=uid();
   var genreAff=a.genre||'M';D.membres.push({id:mid,matricule:mat,nom:a.nom,grade:a.grade,dateGrade:tdStr(),logeId:a.lid,role:'Membre',pwd:'1234',statut:'actif',tel:a.tel,email:a.email,affiliation:{logeOrigin:a.logeOrigin,obOrigin:a.obOrigin,dateAffil:a.dateAffil,st:'Confirmé'},genre:genreAff});
   // Split capitation: half to each loge
-  var halfCap=Math.round(D.tauxCap/2);
+  var halfCap=Math.round(((gLoge(a.lid)||{}).tauxCap||D.tauxCap)/2);
   D.caps.push({id:uid(),mid:mid,lid:a.lid,annee:2026,mnt:halfCap,st:'En attente',date:null,note:'Capitation affilié (50%)'});
   // Find original loge if member already has one
   var origMbr=D.membres.find(function(x){return x.nom===a.nom&&x.logeId!==a.lid;});
