@@ -435,7 +435,7 @@ var S={user:null,view:'login',lid:null,tab:'membres',modal:null,mdata:{}};
 function G(id){return document.getElementById(id);}
 function gMbr(id){return D.membres.find(function(m){return m.id===id;});}
 function gLoge(id){return D.loges.find(function(l){return l.id===id;});}
-function lMbrs(lid){return D.membres.filter(function(m){return m.logeId===lid&&m.statut==='actif';});}
+function lMbrs(lid){return D.membres.filter(function(m){return (m.logeId===lid||m.secondLogeId===lid)&&m.statut==='actif';});}
 function lCaps(lid){return D.caps.filter(function(c){return c.lid===lid;});}
 
 function ch(t,c){return'<span class="chip '+c+'">'+t+'</span>';}
@@ -998,6 +998,13 @@ APP.validerBiApp=function(id){
   var m=gMbr(req.mid);if(!m)return;
   m.secondLogeId=req.logeDemandeId;
   req.st='Validé';
+  // Auto-generate capitation for the second loge
+  var yr=new Date().getFullYear();
+  var existCap=D.caps.find(function(c){return c.mid===m.id&&c.lid===req.logeDemandeId&&c.annee===yr;});
+  if(!existCap){
+    var loge2=gLoge(req.logeDemandeId);
+    D.caps.push({id:uid(),mid:m.id,lid:req.logeDemandeId,annee:yr,mnt:(loge2&&loge2.tauxCap?loge2.tauxCap:D.tauxCap),st:'En attente',date:null,note:'Bi-appartenance'});
+  }
   R();
 };
 APP.rejeterBiApp=function(id){
@@ -2405,13 +2412,15 @@ function lMbrs2(loge,ms,off){
     var propFull=propG&&capOK&&plOK;
     var dur=m.grade==='Maitre'?'—':mo+'/12 mois';
     var badge=propFull?ch('✓ Proposable','cgreen'):propG&&!capOK?ch('Cotisation req.','cred'):propG&&!plOK?ch('3 planches req.','cred'):'';
-    var biLogeId=m.secondLogeId||null;
+    var isPrimary=m.logeId===loge.id;
+    var biLogeId=isPrimary?m.secondLogeId:(m.secondLogeId===loge.id?m.logeId:null);
     var biLoge=biLogeId?gLoge(biLogeId):null;
     h+='<tr>'
       +'<td>'+ch(m.matricule,'cg')+'</td>'
       +'<td style="font-weight:700">'+m.nom
         +(m.affiliation?'<br><span style="font-size:10px;color:#888">Affilié(e)</span>':'')
-        +(biLoge?'<br>'+ch('⇔ '+biLoge.nom,'cteal'):'')
+        +(biLoge&&isPrimary?'<br>'+ch('⇔ '+biLoge.nom,'cteal'):'')
+        +(!isPrimary&&biLoge?'<br><span style="font-size:10px;background:#e3f2fd;color:#1565c0;padding:1px 6px;border-radius:8px;font-weight:700">Loge principale : '+biLoge.nom+'</span>':'')
         +'<br>'+genreChip(m)+'</td>'
       +'<td>'+gCh(m.grade)+'</td>'
       +'<td><span style="font-size:12px;color:'+(propG&&!capOK?'#b71c1c':propG?'#1b5e20':mo>=9?'#5a3e00':'#888')+'">'+dur+'</span></td>'
@@ -2419,12 +2428,12 @@ function lMbrs2(loge,ms,off){
       +'<td>'+(badge||ch('Régulier','cgr'))+'</td>'
       +'<td>'+rCh(m.role,m)+'</td>'
       +(off?'<td style="white-space:nowrap;display:flex;flex-wrap:wrap;gap:4px">'
-        +((propFull||(!plOK&&isVM(loge.id)&&capOK))&&isVM(loge.id)?'<button class="btn ok sm" onclick="APP.openMod(\'promote\',{mid:\''+m.id+'\'})">Promouvoir<\/button>':'')
-        +(isVM(loge.id)&&!propG?'<button class="btn dng sm" onclick="APP.radier(\''+m.id+'\')">Radier<\/button>':'')
+        +(isPrimary&&(propFull||(!plOK&&isVM(loge.id)&&capOK))&&isVM(loge.id)?'<button class="btn ok sm" onclick="APP.openMod(\'promote\',{mid:\''+m.id+'\'})">Promouvoir<\/button>':'')
+        +(isPrimary&&isVM(loge.id)&&!propG?'<button class="btn dng sm" onclick="APP.radier(\''+m.id+'\')">Radier<\/button>':'')
         +(off?'<button class="btn inf sm" onclick="APP.openMod(\'notif\',{mid:\''+m.id+'\'})">📧<\/button>':'')
-        +(isVM(loge.id)&&otherLoges.length&&!biLogeId
+        +(isPrimary&&isVM(loge.id)&&otherLoges.length&&!m.secondLogeId
           ?'<button class="btn ghost sm" onclick="APP.openMod(\'biAppartForm\',{mid:\''+m.id+'\',lid:\''+loge.id+'\'})">⇔ Bi-appart.<\/button>':'')
-        +(isGS()&&biLogeId
+        +(isGS()&&m.secondLogeId
           ?'<button class="btn dng sm" onclick="APP.retirerBiApp(\''+m.id+'\')">Retirer bi-app.<\/button>':'')
         +'</td>':'')
       +'</tr>';

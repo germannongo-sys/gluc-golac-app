@@ -415,6 +415,7 @@ function buildData(){
     troncVeuve:[],
     reintegrationPending:[],
     radiationPending:[],
+    biAppartPending:[],
     logoObedience:null,
     docLogoSource:'obedience',
     customWelcome:true,
@@ -435,7 +436,7 @@ var S={user:null,view:'login',lid:null,tab:'membres',modal:null,mdata:{}};
 function G(id){return document.getElementById(id);}
 function gMbr(id){return D.membres.find(function(m){return m.id===id;});}
 function gLoge(id){return D.loges.find(function(l){return l.id===id;});}
-function lMbrs(lid){return D.membres.filter(function(m){return m.logeId===lid&&m.statut==='actif';});}
+function lMbrs(lid){return D.membres.filter(function(m){return (m.logeId===lid||m.secondLogeId===lid)&&m.statut==='actif';});}
 function lCaps(lid){return D.caps.filter(function(c){return c.lid===lid;});}
 
 function ch(t,c){return'<span class="chip '+c+'">'+t+'</span>';}
@@ -970,11 +971,50 @@ APP.setBiApp=function(mid,lid){
   var m=D.membres.find(function(x){return x.id===mid;});if(!m)return;
   if(!lid){delete m.secondLogeId;}else{m.secondLogeId=lid;}
   R();
-  var loge=lid?gLoge(lid):null;
+};
+APP.soumettreBiApp=function(mid,lid){
+  var l2=G('biLoge2')?G('biLoge2').value:'';
+  if(!l2){alert('Veuillez choisir une 2e loge.');return;}
+  if(!D.biAppartPending)D.biAppartPending=[];
+  if(D.biAppartPending.find(function(r){return r.mid===mid&&r.st==='En attente';})){alert('Une demande est déjà en cours pour ce frère.');return;}
+  D.biAppartPending.push({id:uid(),mid:mid,loge1Id:lid,loge2Id:l2,motif:G('biMotif')?G('biMotif').value.trim():'',date:tdStr(),st:'En attente'});
+  APP.closeMod();
   var t=document.createElement('div');
-  t.style.cssText='position:fixed;bottom:24px;left:50%;transform:translateX(-50%);background:#006064;color:#fff;padding:11px 28px;border-radius:8px;font-size:14px;font-weight:700;z-index:9999;box-shadow:0 4px 16px rgba(0,0,0,0.25)';
-  t.textContent=lid?'⇔ '+m.nom+' bi-appartenant — '+loge.nom:'✓ Bi-appartenance retirée pour '+m.nom;
+  t.style.cssText='position:fixed;bottom:24px;left:50%;transform:translateX(-50%);background:#1565c0;color:#fff;padding:11px 28px;border-radius:8px;font-size:14px;font-weight:700;z-index:9999;box-shadow:0 4px 16px rgba(0,0,0,0.25)';
+  t.textContent='📨 Demande soumise au Grand Secrétaire';
+  document.body.appendChild(t);setTimeout(function(){t.remove();},3000);
+};
+APP.validerBiApp=function(id){
+  if(!D.biAppartPending)return;
+  var req=D.biAppartPending.find(function(x){return x.id===id;});if(!req)return;
+  var m=D.membres.find(function(x){return x.id===req.mid;});
+  if(!m)return;
+  m.secondLogeId=req.loge2Id;
+  req.st='Confirmé';
+  // Auto-generate capitation for the second loge
+  var yr=new Date().getFullYear();
+  var existCap=D.caps.find(function(c){return c.mid===m.id&&c.lid===req.loge2Id&&c.annee===yr;});
+  if(!existCap){
+    var loge2=gLoge(req.loge2Id);
+    D.caps.push({id:uid(),mid:m.id,lid:req.loge2Id,annee:yr,mnt:(loge2&&loge2.tauxCap?loge2.tauxCap:D.tauxCap),st:'En attente',date:null,note:'Bi-appartenance'});
+  }
+  R();
+  var t=document.createElement('div');
+  t.style.cssText='position:fixed;bottom:24px;left:50%;transform:translateX(-50%);background:#1b5e20;color:#fff;padding:11px 28px;border-radius:8px;font-size:14px;font-weight:700;z-index:9999;box-shadow:0 4px 16px rgba(0,0,0,0.25)';
+  t.textContent='✓ Bi-appartenance validée — '+m.nom;
   document.body.appendChild(t);setTimeout(function(){t.remove();},2800);
+};
+APP.rejeterBiApp=function(id){
+  if(!confirm('Rejeter cette demande de bi-appartenance ?'))return;
+  if(!D.biAppartPending)return;
+  D.biAppartPending=D.biAppartPending.filter(function(x){return x.id!==id;});R();
+};
+APP.retirerBiApp=function(mid){
+  if(!confirm('Retirer la bi-appartenance de ce frère ?'))return;
+  var m=D.membres.find(function(x){return x.id===mid;});if(!m)return;
+  delete m.secondLogeId;
+  if(D.biAppartPending)D.biAppartPending=D.biAppartPending.filter(function(x){return x.mid!==mid;});
+  R();
 };
 APP.applyPalette=function(gold,dark,bg){
   D.themeColors={gold:gold,dark:dark,bg:bg};
@@ -1380,6 +1420,7 @@ function loadState() {
       if(parsed.affiliationsPending) D.affiliationsPending = parsed.affiliationsPending;
       if(parsed.radiationPending)   D.radiationPending   = parsed.radiationPending;
       if(parsed.reintegrationPending) D.reintegrationPending = parsed.reintegrationPending;
+      if(parsed.biAppartPending) D.biAppartPending = parsed.biAppartPending;
       if(parsed.notifLog)    D.notifLog    = parsed.notifLog;
       if(parsed.smsLog)      D.smsLog      = parsed.smsLog;
       if(parsed.grandeLogeTenues) D.grandeLogeTenues = parsed.grandeLogeTenues;
@@ -1884,24 +1925,55 @@ function tDossiers(){
 
 function tAffiliations(){
   var all=D.affiliationsPending;
+  var biP=(D.biAppartPending||[]).filter(function(r){return r.st!=='Confirmé';});
   var h='<div class="sec">Affiliations</div>'
     +'<div class="alert a-i" style="margin-bottom:16px">Le Grand Secrétaire valide les affiliations. Un frère affilié conserve son grade acquis dans son obédience d\'origine.</div>';
-  if(!all.length)return h+'<div style="color:#aaa;text-align:center;padding:24px">Aucune affiliation en attente.</div>';
-  h+='<div class="tw"><table><thead><tr><th>Nom</th><th>Grade reconnu</th><th>Loge d\'origine</th><th>Obédience d\'origine</th><th>Date demande</th><th>Loge d\'accueil</th><th>Statut</th><th>Action</th></tr></thead><tbody>';
-  all.forEach(function(a){
-    var l=gLoge(a.lid);
-    h+='<tr>'
-      +'<td style="font-weight:700">'+a.nom+'</td>'
-      +'<td>'+gCh(a.grade)+'</td>'
-      +'<td>'+a.logeOrigin+'</td>'
-      +'<td>'+a.obOrigin+'</td>'
-      +'<td style="color:#888;font-size:12px">'+a.dateAffil+'</td>'
-      +'<td>'+(l?'N°'+l.numero+' '+l.nom:'—')+'</td>'
-      +'<td>'+(a.st==='Confirmé'?ch('Confirmé','cgreen'):ch('En attente','cor'))+'</td>'
-      +'<td>'+(a.st!=='Confirmé'&&isGS()?'<button class="btn ok sm" onclick="APP.validerAffil(\''+a.id+'\')">Valider<\/button> <button class="btn dng sm" onclick="APP.rejeterAffil(\''+a.id+'\')">Rejeter<\/button>':'')+'</td>'
-      +'</tr>';
-  });
-  return h+'</tbody></table></div>';
+  if(!all.length){
+    h+='<div style="color:#aaa;text-align:center;padding:24px">Aucune affiliation en attente.</div>';
+  } else {
+    h+='<div class="tw"><table><thead><tr><th>Nom</th><th>Grade reconnu</th><th>Loge d\'origine</th><th>Obédience d\'origine</th><th>Date demande</th><th>Loge d\'accueil</th><th>Statut</th><th>Action</th></tr></thead><tbody>';
+    all.forEach(function(a){
+      var l=gLoge(a.lid);
+      h+='<tr>'
+        +'<td style="font-weight:700">'+a.nom+'</td>'
+        +'<td>'+gCh(a.grade)+'</td>'
+        +'<td>'+a.logeOrigin+'</td>'
+        +'<td>'+a.obOrigin+'</td>'
+        +'<td style="color:#888;font-size:12px">'+a.dateAffil+'</td>'
+        +'<td>'+(l?'N°'+l.numero+' '+l.nom:'—')+'</td>'
+        +'<td>'+(a.st==='Confirmé'?ch('Confirmé','cgreen'):ch('En attente','cor'))+'</td>'
+        +'<td>'+(a.st!=='Confirmé'&&isGS()?'<button class="btn ok sm" onclick="APP.validerAffil(\''+a.id+'\')">Valider<\/button> <button class="btn dng sm" onclick="APP.rejeterAffil(\''+a.id+'\')">Rejeter<\/button>':'')+'</td>'
+        +'</tr>';
+    });
+    h+='</tbody></table></div>';
+  }
+  // Bi-appartenance section
+  h+='<div style="border-top:2px solid #eee;margin-top:28px;padding-top:18px">'
+    +'<div style="display:flex;align-items:center;gap:10px;margin-bottom:14px">'
+    +'<div class="sec" style="margin:0">⇔ Bi-appartenance</div>'
+    +(biP.length?ch(biP.length+' demande(s)','cor'):'')
+    +'</div>'
+    +'<div class="alert a-i" style="margin-bottom:12px;font-size:12px">Seule l\'Obédience (Grand Secrétaire) peut valider une demande de bi-appartenance. Le Vénérable Maître soumet la demande, le Grand Secrétaire approuve.</div>';
+  if(!biP.length){
+    h+='<div style="color:#aaa;text-align:center;padding:16px">Aucune demande de bi-appartenance en attente.</div>';
+  } else {
+    h+='<div class="tw"><table><thead><tr><th>Frère</th><th>Loge principale</th><th>2e Loge demandée</th><th>Motif</th><th>Date</th><th>Statut</th><th>Action</th></tr></thead><tbody>';
+    biP.forEach(function(r){
+      var m=gMbr(r.mid),l1=gLoge(r.loge1Id),l2=gLoge(r.loge2Id);
+      h+='<tr>'
+        +'<td style="font-weight:700">'+(m?m.nom:'—')+'</td>'
+        +'<td>'+(l1?'N°'+l1.numero+' '+l1.nom:'—')+'</td>'
+        +'<td>'+(l2?'N°'+l2.numero+' '+l2.nom:'—')+'</td>'
+        +'<td style="font-size:12px;color:#888">'+(r.motif||'—')+'</td>'
+        +'<td style="font-size:12px;color:#888">'+r.date+'</td>'
+        +'<td>'+ch('En attente','cor')+'</td>'
+        +'<td>'+(isGS()?'<button class="btn ok sm" onclick="APP.validerBiApp(\''+r.id+'\')">Valider<\/button> <button class="btn dng sm" onclick="APP.rejeterBiApp(\''+r.id+'\')">Rejeter<\/button>':'')+'</td>'
+        +'</tr>';
+    });
+    h+='</tbody></table></div>';
+  }
+  h+='</div>';
+  return h;
 }
 
 function tInfos(){
@@ -2333,13 +2405,15 @@ function lMbrs2(loge,ms,off){
     var propFull=propG&&capOK&&plOK;
     var dur=m.grade==='Maitre'?'—':mo+'/12 mois';
     var badge=propFull?ch('✓ Proposable','cgreen'):propG&&!capOK?ch('Cotisation req.','cred'):propG&&!plOK?ch('3 planches req.','cred'):'';
+    var isPrimary=m.logeId===loge.id;
+    var biLogeId=isPrimary?m.secondLogeId:(m.secondLogeId===loge.id?m.logeId:null);
+    var biLoge=biLogeId?gLoge(biLogeId):null;
     h+='<tr>'
-      var biLogeId=m.secondLogeId||null;
-      var biLoge=biLogeId?gLoge(biLogeId):null;
       +'<td>'+ch(m.matricule,'cg')+'</td>'
       +'<td style="font-weight:700">'+m.nom
         +(m.affiliation?'<br><span style="font-size:10px;color:#888">Affilié</span>':'')
-        +(biLoge?'<br>'+ch('⇔ '+biLoge.nom,'cteal'):'')
+        +(biLoge&&isPrimary?'<br>'+ch('⇔ '+biLoge.nom,'cteal'):'')
+        +(!isPrimary&&biLoge?'<br><span style="font-size:10px;background:#e3f2fd;color:#1565c0;padding:1px 6px;border-radius:8px;font-weight:700">Loge principale : '+biLoge.nom+'</span>':'')
         +'</td>'
       +'<td>'+gCh(m.grade)+'</td>'
       +'<td><span style="font-size:12px;color:'+(propG&&!capOK?'#b71c1c':propG?'#1b5e20':mo>=9?'#5a3e00':'#888')+'">'+dur+'</span></td>'
@@ -2347,15 +2421,13 @@ function lMbrs2(loge,ms,off){
       +'<td>'+(badge||ch('Régulier','cgr'))+'</td>'
       +'<td>'+rCh(m.role)+'</td>'
       +(off?'<td style="white-space:nowrap;display:flex;flex-wrap:wrap;gap:4px">'
-        +((propFull||(!plOK&&isVM(loge.id)&&capOK))&&isVM(loge.id)?'<button class="btn ok sm" onclick="APP.openMod(\'promote\',{mid:\''+m.id+'\'})">Promouvoir<\/button>':'')
-        +(isVM(loge.id)&&!propG?'<button class="btn dng sm" onclick="APP.radier(\''+m.id+'\')">Radier<\/button>':'')
+        +(isPrimary&&(propFull||(!plOK&&isVM(loge.id)&&capOK))&&isVM(loge.id)?'<button class="btn ok sm" onclick="APP.openMod(\'promote\',{mid:\''+m.id+'\'})">Promouvoir<\/button>':'')
+        +(isPrimary&&isVM(loge.id)&&!propG?'<button class="btn dng sm" onclick="APP.radier(\''+m.id+'\')">Radier<\/button>':'')
         +(off?'<button class="btn inf sm" onclick="APP.openMod(\'notif\',{mid:\''+m.id+'\'})">📧<\/button>':'')
-        +(isVM(loge.id)&&otherLoges.length
-          ?'<select class="btn ghost sm" style="padding:4px 6px" onchange="APP.setBiApp(\''+m.id+'\',this.value)">'
-            +'<option value="">⇔ Bi-appart.</option>'
-            +(biLogeId?'<option value="">— Retirer</option>':'')
-            +otherLoges.filter(function(ol){return ol.id!==biLogeId;}).map(function(ol){return'<option value="'+ol.id+'">'+ol.nom+'</option>';}).join('')
-            +'</select>':'')
+        +(isPrimary&&isVM(loge.id)&&otherLoges.length&&!m.secondLogeId
+          ?'<button class="btn ghost sm" onclick="APP.openMod(\'biAppartForm\',{mid:\''+m.id+'\',lid:\''+loge.id+'\'})">⇔ Bi-appart.<\/button>':'')
+        +(isGS()&&m.secondLogeId
+          ?'<button class="btn dng sm" onclick="APP.retirerBiApp(\''+m.id+'\')">Retirer bi-app.<\/button>':'')
         +'</td>':'')
       +'</tr>';
   });
@@ -2717,10 +2789,12 @@ var MODS={
   assignOff:function(d){
     var loge=gLoge(d.lid);if(!loge)return'';
     var off=loge.officiers.find(function(o){return o.id===d.oid;});if(!off)return'';
-    var elig=lMbrs(d.lid).filter(function(m){return m.grade==='Maitre'||m.grade==='Compagnon';});
+    var elig=lMbrs(d.lid).filter(function(m){return m.grade==='Maitre'&&m.statut==='actif';});
     return mhdr('Affecter : '+off.titre)
-      +'<div class="fg"><label class="fl">Choisir un frère</label><select id="mSel" onchange="APP.previewMbr(this.value)"><option value="">— Sélectionner —</option>'
-      +elig.map(function(m){return'<option value="'+m.id+'">'+m.nom+' ('+m.matricule+') · '+gLbl(m.grade)+'<\/option>';}).join('')+'<\/select></div>'
+      +'<div class="alert a-i" style="margin-bottom:10px;font-size:12px">Seuls les Maîtres peuvent occuper un poste d\'officier.</div>'
+      +'<div class="fg"><label class="fl">Choisir un Frère Maître</label><select id="mSel" onchange="APP.previewMbr(this.value)"><option value="">— Sélectionner —</option>'
+      +elig.map(function(m){return'<option value="'+m.id+'">'+m.nom+' ('+m.matricule+')<\/option>';}).join('')+'<\/select></div>'
+      +(elig.length===0?'<div class="alert a-e">Aucun Frère Maître disponible dans cette loge.</div>':'')
       +'<div id="mPrev" style="display:none" class="prev"><div class="ava" id="mPrevAva">?</div><div id="mPrevInfo"></div></div>'
       +'<div class="mact"><button class="btn gold full" onclick="APP.doAssignOff(\''+d.lid+'\',\''+d.oid+'\')">Affecter<\/button><button class="btn ghost full" onclick="APP.closeMod()">Annuler<\/button></div>';
   },
@@ -2731,10 +2805,22 @@ var MODS={
   },
   assignGO:function(d){
     var go=D.grandOff.find(function(g){return g.id===d.gid;});if(!go)return'';
-    var masters=D.membres.filter(function(m){return m.grade==='Maitre'&&m.statut==='actif';});
+    var isGMPost=go.titre==='Grand Maître'||go.titre==='Vénérable Grand Maître';
+    var masters=D.membres.filter(function(m){
+      if(m.grade!=='Maitre'||m.statut!=='actif')return false;
+      if(isGMPost){
+        // Grand Maître: Maître sans aucune fonction d'officier dans les loges
+        var hasFunction=D.loges.some(function(l){return l.officiers.some(function(o){return o.mid===m.id;});});
+        return !hasFunction;
+      }
+      return true; // Autres postes: tous les Maîtres y compris VM
+    });
     return mhdr('Affecter : '+go.titre)
-      +'<div class="fg"><label class="fl">Choisir un Maître</label><select id="mSel" onchange="APP.previewMbr(this.value)"><option value="">— Sélectionner —</option>'
+      +(isGMPost?'<div class="alert a-w" style="margin-bottom:12px;font-size:12px"><div class="a-t">Poste de Grand Maître</div>Ce poste est réservé à un Frère Maître <strong>sans aucune fonction</strong> dans les loges (ne peut pas être VM ou officier).</div>'
+                :'<div class="alert a-i" style="margin-bottom:10px;font-size:12px">Les VM et officiers peuvent occuper les postes de Grands Officiers (sauf Grand Maître).</div>')
+      +'<div class="fg"><label class="fl">Choisir un Frère Maître</label><select id="mSel" onchange="APP.previewMbr(this.value)"><option value="">— Sélectionner —</option>'
       +masters.map(function(m){var l=gLoge(m.logeId);return'<option value="'+m.id+'">'+m.nom+' ('+m.matricule+')'+(l?' · '+l.nom:'')+'<\/option>';}).join('')+'<\/select></div>'
+      +(masters.length===0?'<div class="alert a-e">Aucun frère éligible pour ce poste actuellement.</div>':'')
       +'<div id="mPrev" style="display:none" class="prev"><div class="ava" id="mPrevAva">?</div><div id="mPrevInfo"></div></div>'
       +'<div class="mact"><button class="btn gold full" onclick="APP.doAssignGO(\''+d.gid+'\')">Affecter<\/button><button class="btn ghost full" onclick="APP.closeMod()">Annuler<\/button></div>';
   },
@@ -2819,6 +2905,21 @@ MODS.notifAssid=function(d){
     +'<div class="fg"><label class="fl">Canal</label><select id="notifCanal"><option value="email">Email ('+m.email+')</option><option value="whatsapp">WhatsApp ('+m.tel+')</option></select></div>'
     +'<div class="fg"><label class="fl">Message</label><textarea id="notifMsg">Frère '+m.nom+', votre taux d\'assiduité ('+ass.pct+'%) est insuffisant. Votre présence est attendue aux prochaines tenues. Fraternellement, GLUC.</textarea></div>'
     +'<div class="mact"><button class="btn gold full" onclick="APP.envoyerNotif(\''+m.id+'\')">Envoyer<\/button><button class="btn ghost full" onclick="APP.closeMod()">Annuler<\/button></div>';
+};
+MODS.biAppartForm=function(d){
+  var m=gMbr(d.mid);if(!m)return'';
+  var otherLoges=D.loges.filter(function(l){return l.id!==d.lid&&l.statut==='active';});
+  return mhdr('Demande de Bi-appartenance')
+    +'<div class="alert a-i" style="margin-bottom:12px">La demande sera soumise au Grand Secrétaire pour validation. Le frère pourra accéder à sa 2e loge après approbation.</div>'
+    +'<div class="card" style="margin-bottom:14px;text-align:center">'
+    +'<div style="font-weight:900;font-size:15px;margin-bottom:6px">'+m.nom+'</div>'
+    +gCh(m.grade)+' '+ch(m.matricule,'cg')
+    +'</div>'
+    +'<div class="fg"><label class="fl">2e Loge demandée</label><select id="biLoge2"><option value="">— Choisir une loge —</option>'
+    +otherLoges.map(function(l){return'<option value="'+l.id+'">N°'+l.numero+' — '+l.nom+'</option>';}).join('')
+    +'</select></div>'
+    +'<div class="fg"><label class="fl">Motif de la demande</label><textarea id="biMotif" placeholder="Expliquez les raisons de la bi-appartenance..." rows="3"></textarea></div>'
+    +'<div class="mact"><button class="btn gold full" onclick="APP.soumettreBiApp(\''+d.mid+'\',\''+d.lid+'\')">Soumettre au Grand Secrétaire<\/button><button class="btn ghost full" onclick="APP.closeMod()">Annuler<\/button></div>';
 };
 MODS.newPlanche=function(d){
   var ms=lMbrs(d.lid);
@@ -2996,6 +3097,9 @@ APP.doAssignOff=function(lid,oid){
   var sel=G('mSel');if(!sel||!sel.value)return;
   var loge=gLoge(lid);if(!loge)return;
   var o=loge.officiers.find(function(x){return x.id===oid;});if(!o)return;
+  // Grade check: only Maîtres can be officers
+  var cand=gMbr(sel.value);
+  if(!cand||cand.grade!=='Maitre'){alert('Seuls les Frères Maîtres peuvent occuper un poste d\'officier.');return;}
   // Cumul check
   if(!canHoldOffice(sel.value,o.titre,loge)){
     alert('Ce membre occupe déjà un poste dans cette loge. Cumul de fonctions non autorisé (sauf Secrétaire + Député/Député Adjoint).');return;
@@ -3047,7 +3151,18 @@ APP.revokeOff=function(lid,oid){
 };
 APP.delOff=function(lid,oid){var loge=gLoge(lid);if(!loge)return;loge.officiers=loge.officiers.filter(function(o){return o.id!==oid;});R();};
 APP.createGO=function(){var t=G('mTitre').value.trim();if(!t)return;D.grandOff.push({id:uid(),titre:t,mid:null});APP.closeMod();};
-APP.doAssignGO=function(gid){var sel=G('mSel');if(!sel||!sel.value)return;var g=D.grandOff.find(function(x){return x.id===gid;});if(g)g.mid=sel.value;APP.closeMod();};
+APP.doAssignGO=function(gid){
+  var sel=G('mSel');if(!sel||!sel.value)return;
+  var g=D.grandOff.find(function(x){return x.id===gid;});if(!g)return;
+  var cand=gMbr(sel.value);
+  if(!cand||cand.grade!=='Maitre'){alert('Seuls les Frères Maîtres peuvent être Grand Officier.');return;}
+  var isGMPost=g.titre==='Grand Maître'||g.titre==='Vénérable Grand Maître';
+  if(isGMPost){
+    var hasFunction=D.loges.some(function(l){return l.officiers.some(function(o){return o.mid===cand.id;});});
+    if(hasFunction){alert('Le Grand Maître doit être un Frère Maître sans aucune fonction dans les loges (pas VM, pas officier).');return;}
+  }
+  g.mid=sel.value;APP.closeMod();
+};
 APP.revokeGO=function(gid){var g=D.grandOff.find(function(x){return x.id===gid;});if(g)g.mid=null;R();};
 APP.payCap=function(id){var c=D.caps.find(function(x){return x.id===id;});if(c){c.st='Payé';c.date=tdStr();}R();};
 APP.payVL=function(id){var v=D.versements.find(function(x){return x.id===id;});if(v){v.st='Payé';v.date=tdStr();}R();};
