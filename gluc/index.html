@@ -716,11 +716,16 @@ APP.saveLogeInfo=function(lid,key,val){var l=gLoge(lid);if(l)l[key]=val;};
 APP.saveAllLogeInfo=function(lid){
   var l=gLoge(lid);if(!l)return;
   var em=G('logeEmail');if(em)l.email=em.value;
-  var tc=G('logeCap');if(tc)l.tauxCap=parseInt(tc.value)||D.tauxCap;
+  var tc=G('logeCap');
+  if(tc){
+    var newTaux=parseInt(tc.value)||D.tauxCap;
+    l.tauxCap=newTaux;
+    D.caps.forEach(function(c){if(c.lid===lid&&c.st!=='Payé')c.mnt=newTaux;});
+  }
   R();
   var t=document.createElement('div');
   t.style.cssText='position:fixed;bottom:24px;left:50%;transform:translateX(-50%);background:#1b5e20;color:#fff;padding:11px 28px;border-radius:8px;font-size:14px;font-weight:700;z-index:9999;box-shadow:0 4px 16px rgba(0,0,0,0.25)';
-  t.textContent='✓ Informations de la loge enregistrées';
+  t.textContent='✓ Informations et capitations mises à jour';
   document.body.appendChild(t);setTimeout(function(){t.remove();},2800);
 };
 
@@ -802,12 +807,21 @@ APP.saveObInfo=function(key,val){D.obInfo[key]=val;};
 APP.saveObTaux=function(){
   var tc=parseInt(G('obTauxCap')?G('obTauxCap').value:'');
   var tl=parseInt(G('obTauxLoge')?G('obTauxLoge').value:'');
-  if(tc>0)D.tauxCap=tc;
-  if(tl>0)D.tauxLoge=tl;
+  if(tc>0){
+    D.tauxCap=tc;
+    D.caps.forEach(function(c){
+      var lg=gLoge(c.lid);
+      if(c.st!=='Payé'&&(!lg||!lg.tauxCap))c.mnt=tc;
+    });
+  }
+  if(tl>0){
+    D.tauxLoge=tl;
+    D.versements.forEach(function(v){if(v.st!=='Payé')v.mnt=tl;});
+  }
   R();
   var t=document.createElement('div');
   t.style.cssText='position:fixed;bottom:24px;left:50%;transform:translateX(-50%);background:#1b5e20;color:#fff;padding:11px 28px;border-radius:8px;font-size:14px;font-weight:700;z-index:9999;box-shadow:0 4px 16px rgba(0,0,0,0.25)';
-  t.textContent='✓ Taux globaux enregistrés';
+  t.textContent='✓ Taux enregistrés — capitations mises à jour';
   document.body.appendChild(t);setTimeout(function(){t.remove();},2800);
 };
 APP.saveAllObInfo=function(){
