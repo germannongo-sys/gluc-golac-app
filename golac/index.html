@@ -181,7 +181,7 @@ tr:hover td{background:#fafafa;}
 'use strict';
 var APP={};window.APP=APP;
 var GRADES=['Apprenti','Compagnon','Maitre'];
-var TODAY=new Date('2026-04-20');
+var TODAY=new Date();
 var MFR=['Janvier','Février','Mars','Avril','Mai','Juin','Juillet','Août','Septembre','Octobre','Novembre','Décembre'];
 var DEF_OFFS=['VM','1er Surveillant','2ème Surveillant','Secrétaire','Orateur','Expert','Maître de Cérémonie','Hospitalier','Trésorier','Couvreur','Maître de Banquet','Maître Colonne Harmonie','Député','Député Adjoint'];
 var LOGO=null;
@@ -225,6 +225,15 @@ function nxtLNum(ls){return String(Math.max.apply(null,[0].concat(ls.map(functio
 function nxtLId(ls){return'L'+String(Math.max.apply(null,[0].concat(ls.map(function(l){return+l.id.replace('L','');})))+1).padStart(3,'0');}
 function fmt(n){return Number(n).toLocaleString('fr-FR');}
 function sumA(arr,fn){return arr.reduce(function(s,x){return s+(fn?fn(x):x);},0);}
+function cleanText(v){return String(v===null||v===undefined?'':v).replace(/[<>]/g,'').replace(/[\u0000-\u0008\u000B\u000C\u000E-\u001F\u007F]/g,'').trim();}
+function sanitizeData(x){
+  if(Array.isArray(x)){x.forEach(sanitizeData);return x;}
+  if(x&&typeof x==='object'){
+    Object.keys(x).forEach(function(k){x[k]=sanitizeData(x[k]);});
+    return x;
+  }
+  return typeof x==='string'?cleanText(x):x;
+}
 
 function getAvances(mid,lid){if(!D.avances)D.avances=[];return D.avances.filter(function(a){return a.mid===mid&&a.lid===lid;});}
 function getSolde(mid,lid){
@@ -1085,6 +1094,7 @@ var LS_LOGE_LOGOS = 'golac_loge_logos';
 
 function saveState() {
   try {
+    sanitizeData(D);
     // Save main data (exclude functions)
     var toSave = JSON.parse(JSON.stringify(D));
     localStorage.setItem(LS_KEY, JSON.stringify(toSave));
@@ -1129,6 +1139,7 @@ function loadState() {
       if(parsed.customPerms) D.customPerms = parsed.customPerms;
       if(parsed.smsConfig)   D.smsConfig   = parsed.smsConfig;
       if(parsed.logoObedience) D.logoObedience = parsed.logoObedience;
+      sanitizeData(D);
     }
     // Restore logos
     var savedLogo = localStorage.getItem(LS_LOGO);
@@ -1238,8 +1249,9 @@ function vLogin(){
   return'<div class="lpg"><div class="lbox">'
     +'<div class="llogo">'+logo+'</div>'
     +'<div class="ltit">GOLAC</div><div class="lsub">Grand Orient et Loges Associées du Congo</div><div style="font-size:10px;color:#aaa;letter-spacing:1px;margin-top:4px">⚥ LOGE MIXTE</div>'
+    +'<div class="alert a-w" style="font-size:11px;margin-bottom:14px">Version statique : les données et mots de passe restent dans ce navigateur. Ne publiez pas de données sensibles sans backend sécurisé.</div>'
     +'<div class="fg"><label class="fl">Matricule</label>'
-    +'<input id="lM" placeholder="Ex: F-001 ou GOLAC-00" autocomplete="off" onkeydown="if(event.key===\'Enter\')G(\'lP\').focus()"/></div>'
+    +'<input id="lM" placeholder="Ex: M-001 ou GOLAC-00" autocomplete="off" onkeydown="if(event.key===\'Enter\')G(\'lP\').focus()"/></div>'
     +'<div class="fg"><label class="fl">Mot de passe</label>'
     +'<div class="pwr"><input id="lP" type="password" placeholder="••••••" onkeydown="if(event.key===\'Enter\')APP.doLogin()"/>'
     +'<button class="pwe" onclick="APP.togglePw()">👁</button></div></div>'
@@ -1395,13 +1407,13 @@ function vAtelier(){
   var cards='';
   D.loges.filter(function(l){return l.statut==='active';}).forEach(function(l){
     var ms=lMbrs(l.id),canEnter=isGO()||S.user.logeId===l.id;
-    var next=l.agenda.slice().sort(function(a,b){return a.date.localeCompare(b.date);}).find(function(e){return e.date>='2026-04-20';});
+    var next=l.agenda.slice().sort(function(a,b){return a.date.localeCompare(b.date);}).find(function(e){return e.date>=tdStr();});
     cards+='<div class="acard" onclick="'+(canEnter?'APP.enterLoge(\''+l.id+'\')':'')+'" style="'+(canEnter?'':'opacity:.4;cursor:default;')+'">'
       +'<div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:10px">'
       +'<div><div style="color:#c9a227;font-weight:900;font-size:14px">⬡ Loge N°'+l.numero+'</div>'
       +'<div style="color:#111;font-weight:700;font-size:15px;margin-top:2px">'+l.nom+'</div>'
       +'<div style="color:#888;font-size:12px;margin-top:2px">📍 '+l.ville+'</div></div>'
-      +ch(ms.length+'membres','cgreen')+'</div>'
+      +ch(ms.length+' membres','cgreen')+'</div>'
       +(next?'<div style="background:#f5f5f5;border-radius:7px;padding:6px 10px;font-size:12px;font-weight:600">Prochaine tenue : '+next.date+'</div>':'')
       +'</div>';
   });
@@ -1508,7 +1520,7 @@ function tLoges(){
     var ms=lMbrs(l.id);
     var paid=D.caps.filter(function(c){return c.lid===l.id&&c.st==='Payé';}).length;
     var pct=ms.length?Math.round(paid/ms.length*100):0;
-    var next=l.agenda.slice().sort(function(a,b){return a.date.localeCompare(b.date);}).find(function(e){return e.date>='2026-04-20';});
+    var next=l.agenda.slice().sort(function(a,b){return a.date.localeCompare(b.date);}).find(function(e){return e.date>=tdStr();});
     h+='<div class="card cardx" onclick="APP.enterLoge(\''+l.id+'\')">'
       +'<div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:10px">'
       +'<div><div style="font-weight:900;font-size:14px">Loge N°'+l.numero+'</div>'

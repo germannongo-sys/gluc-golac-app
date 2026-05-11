@@ -16,5 +16,10 @@
   to = "/golac/index.html"
   status = 301
 
-[build.environment]
-  NODE_VERSION = "18"
+[[headers]]
+  for = "/*"
+  [headers.values]
+    X-Content-Type-Options = "nosniff"
+    X-Frame-Options = "DENY"
+    Referrer-Policy = "strict-origin-when-cross-origin"
+    Permissions-Policy = "camera=(), microphone=(), geolocation=()"
