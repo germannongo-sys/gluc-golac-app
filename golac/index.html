@@ -251,6 +251,14 @@ function getAssiduite(mid,lid){
   var pres=(D.presences||[]).filter(function(p){return p.mid===mid&&p.lid===lid&&p.present;}).length;
   return{total:total,present:pres,pct:total?Math.round(pres/total*100):0};
 }
+function getPlanchesCount(mid,lid){
+  var m=gMbr(mid),loge=gLoge(lid);if(!m||!loge)return 0;
+  var nom=cleanText(m.nom).toLowerCase();
+  return (loge.agenda||[]).concat(loge.instruction||[]).filter(function(ev){
+    return cleanText(ev.planche).length>0&&cleanText(ev.presentateur).toLowerCase()===nom;
+  }).length;
+}
+function isPromotionOK(m,lid){return isPropGrade(m)&&isCapOK(m,lid)&&getPlanchesCount(m.id,lid)>=3;}
 
 // ── PERMISSIONS ──
 function hasPerm(permKey,scope){
@@ -1340,6 +1348,7 @@ function vMonEspace(){
       +'<span>Solde : <strong style="color:'+(sd.solde<=0?'#1b5e20':'#b71c1c')+'">'+fmt(sd.solde)+' FCFA</strong></span>'
       +'<span><strong>'+sd.pct+'%</strong></span></div>'
       +'<div class="pbar"><div class="pfill" style="width:'+sd.pct+'%;background:'+pfB+'"></div></div></div>'
+      +(sd.solde<=0?'<div style="margin-top:10px"><button class="btn ok sm" onclick="APP.printRecu(\''+cap.id+'\')">Imprimer reçu<\/button></div>':'')
       +(cap.st!=='Payé'?'<div class="alert a-w" style="margin-top:10px;font-size:12px;padding:9px 12px">Pour régler votre cotisation, contactez le Trésorier ou le Secrétaire de votre loge.</div>':'')
       +'</div>';
   }else{h+='<div style="color:#aaa;padding:12px">Aucune cotisation enregistrée.</div>';}
@@ -1857,11 +1866,11 @@ function lMbrs2(loge,ms,off){
     +'<th>Matricule</th><th>Nom</th><th>Grade</th><th>Durée</th><th>Assiduité</th><th>Situation</th><th>Rôle</th>'
     +(off?'<th>Actions</th>':'')+'</tr></thead><tbody>';
   ms.forEach(function(m){
-    var mo=moAt(m.dateGrade),propG=isPropGrade(m),capOK=isCapOK(m,loge.id);
+    var mo=moAt(m.dateGrade),propG=isPropGrade(m),capOK=isCapOK(m,loge.id),plOK=getPlanchesCount(m.id,loge.id)>=3;
     var ass=getAssiduite(m.id,loge.id);
-    var propFull=propG&&capOK;
+    var propFull=propG&&capOK&&plOK;
     var dur=m.grade==='Maitre'?'—':mo+'/12 mois';
-    var badge=propFull?ch('✓ Proposable','cgreen'):propG&&!capOK?ch('Cotisation req.','cred'):'';
+    var badge=propFull?ch('✓ Proposable','cgreen'):propG&&!capOK?ch('Cotisation req.','cred'):propG&&!plOK?ch('3 planches req.','cred'):'';
     h+='<tr>'
       +'<td>'+ch(m.matricule,'cg')+'</td>'
       +'<td style="font-weight:700">'+m.nom+(m.affiliation?'<br><span style="font-size:10px;color:#888">Affilié(e)</span>':'')+'<br>'+genreChip(m)+'</td>'
@@ -1980,6 +1989,7 @@ function lCaps2(loge,caps,off){
         +(c.st!=='Payé'?'<button class="btn inf sm" onclick="APP.openMod(\'avance\',{mid:\''+c.mid+'\',lid:\''+c.lid+'\',solde:'+sd.solde+'})">+ Versement<\/button>':'')
         +(c.st!=='Payé'?'<button class="btn gold sm" onclick="APP.payCap(\''+c.id+'\')">✓ Payé intégral<\/button>':'')
         +(c.st!=='Payé'?'<button class="btn warn-btn sm" onclick="APP.openMod(\'notif\',{mid:\''+(m?m.id:'')+'\'})">📧 Relancer<\/button>':'')
+        +(sd.solde<=0?'<button class="btn ok sm" onclick="APP.printRecu(\''+c.id+'\')">Imprimer reçu<\/button>':'')
         +(c.st==='Payé'?'<span style="color:#1b5e20;font-size:12px;font-weight:700">✓ Soldé</span>':'')
         +'</div>':'')
       +'</div>';
@@ -2015,7 +2025,7 @@ function lFin(loge,caps){
 function lAlerts(loge,ms,props,retards){
   var h='<div class="sec">Alertes</div>';
   if(!props.length&&!retards.length)return h+'<div class="alert a-ok">✓ Tout est en ordre.</div>';
-  if(props.length){h+='<div class="alert a-w"><div class="a-t">Propositions de grade ('+props.length+')</div>';props.forEach(function(m){var ok=isCapOK(m,loge.id);h+='<div class="arow"><span style="font-weight:700">'+m.nom+'</span>'+gCh(m.grade)+'<span style="color:#888;font-size:12px">'+moAt(m.dateGrade)+' mois → '+gLbl(nxtG(m.grade))+'</span>'+(ok?ch('Éligible','cgreen'):ch('Cotisation req.','cred'))+(ok?'<button class="btn ok sm" onclick="APP.openMod(\'promote\',{mid:\''+m.id+'\'})">Promouvoir<\/button>':'')+'</div>';});h+='</div>';}
+  if(props.length){h+='<div class="alert a-w"><div class="a-t">Propositions de grade ('+props.length+')</div>';props.forEach(function(m){var capOK=isCapOK(m,loge.id),pl=getPlanchesCount(m.id,loge.id),ok=capOK&&pl>=3;h+='<div class="arow"><span style="font-weight:700">'+m.nom+'</span>'+gCh(m.grade)+'<span style="color:#888;font-size:12px">'+moAt(m.dateGrade)+' mois → '+gLbl(nxtG(m.grade))+'</span>'+(capOK?ch('Capitation OK','cgreen'):ch('Cotisation req.','cred'))+(pl>=3?ch(pl+' planches','cgreen'):ch(pl+'/3 planches','cred'))+(ok?'<button class="btn ok sm" onclick="APP.openMod(\'promote\',{mid:\''+m.id+'\'})">Promouvoir<\/button>':'')+'</div>';});h+='</div>';}
   if(retards.length){h+='<div class="alert a-e"><div class="a-t">Capitations en retard ('+retards.length+')</div>';retards.forEach(function(c){var m=gMbr(c.mid);h+='<div class="arow"><span style="font-weight:700">'+(m?m.nom:'—')+'</span>'+(m?ch(m.matricule,'cg'):'')+'<span style="color:#b71c1c;font-weight:700">'+fmt(c.mnt)+' F</span><button class="btn ok sm" onclick="APP.payCap(\''+c.id+'\')">Marquer payé<\/button><button class="btn warn-btn sm" onclick="APP.openMod(\'notif\',{mid:\''+(m?m.id:'')+'\'})">📧 Relancer<\/button></div>';});h+='</div>';}
   return h;
 }
@@ -2079,15 +2089,15 @@ var MODS={
   },
   promote:function(d){
     var m=gMbr(d.mid);if(!m)return'';
-    var ng=nxtG(m.grade)||'';var capOK=isCapOK(m,m.logeId);
+    var ng=nxtG(m.grade)||'',capOK=isCapOK(m,m.logeId),pl=getPlanchesCount(m.id,m.logeId),plOK=pl>=3,ok=capOK&&plOK;
     return mhdr('Promotion de Grade')
       +'<div class="card" style="text-align:center;margin-bottom:18px">'
       +'<div style="font-weight:900;font-size:15px;margin-bottom:10px">'+m.nom+'</div>'
       +'<div style="display:flex;align-items:center;gap:16px;justify-content:center">'+gCh(m.grade)+'<span style="color:#ccc;font-size:22px">→</span>'+gCh(ng)+'</div>'
       +'<div style="color:#888;font-size:12px;margin-top:10px">'+gLbl(m.grade)+' depuis <strong>'+moAt(m.dateGrade)+' mois</strong></div>'
-      +'<div style="margin-top:8px">'+(capOK?ch('✓ Cotisation à jour','cgreen'):ch('✗ Cotisation non réglée','cred'))+'</div></div>'
-      +(capOK?'<div class="mact"><button class="btn gold full" onclick="APP.promote(\''+d.mid+'\')">Confirmer<\/button><button class="btn ghost full" onclick="APP.closeMod()">Annuler<\/button></div>'
-             :mnote('Réglez la cotisation avant de promouvoir.','e')+'<div class="mact"><button class="btn ghost full" onclick="APP.closeMod()">Fermer<\/button></div>');
+      +'<div style="margin-top:8px">'+(capOK?ch('✓ Capitation à jour','cgreen'):ch('✗ Capitation non réglée','cred'))+(plOK?ch('✓ '+pl+' planches','cgreen'):ch('✗ '+pl+'/3 planches','cred'))+'</div></div>'
+      +(ok?'<div class="mact"><button class="btn gold full" onclick="APP.promote(\''+d.mid+'\')">Confirmer<\/button><button class="btn ghost full" onclick="APP.closeMod()">Annuler<\/button></div>'
+             :mnote('Promotion impossible : le frère doit être à jour de ses capitations et avoir présenté au minimum 3 planches.','e')+'<div class="mact"><button class="btn ghost full" onclick="APP.closeMod()">Fermer<\/button></div>');
   },
   avance:function(d){
     var m=gMbr(d.mid);
@@ -2335,7 +2345,12 @@ APP.validerAffil=function(id){
   alert('Affiliation validée. Frère '+a.nom+' créé ('+mat+'). MDP : 1234');R();
 };
 APP.rejeterAffil=function(id){if(!confirm('Rejeter cette affiliation ?'))return;D.affiliationsPending=D.affiliationsPending.filter(function(x){return x.id!==id;});R();};
-APP.promote=function(mid){var m=D.membres.find(function(x){return x.id===mid;});if(!m)return;if(!isCapOK(m,m.logeId)){alert('Cotisation non réglée.');return;}var ng=nxtG(m.grade);if(ng){m.grade=ng;m.dateGrade=tdStr();}APP.closeMod();};
+APP.promote=function(mid){
+  var m=D.membres.find(function(x){return x.id===mid;});if(!m)return;
+  if(!isCapOK(m,m.logeId)){alert('Promotion impossible : capitation non réglée.');return;}
+  if(getPlanchesCount(m.id,m.logeId)<3){alert('Promotion impossible : minimum 3 planches présentées requis.');return;}
+  var ng=nxtG(m.grade);if(ng){m.grade=ng;m.dateGrade=tdStr();}APP.closeMod();
+};
 APP.radier=function(mid){
   if(!confirm('Soumettre une demande de radiation au Grand Secrétaire ?'))return;
   var m=D.membres.find(function(x){return x.id===mid;});if(!m)return;
@@ -2416,6 +2431,35 @@ APP.doAssignGO=function(gid){var sel=G('mSel');if(!sel||!sel.value)return;var g=
 APP.revokeGO=function(gid){var g=D.grandOff.find(function(x){return x.id===gid;});if(g)g.mid=null;R();};
 APP.payCap=function(id){var c=D.caps.find(function(x){return x.id===id;});if(c){c.st='Payé';c.date=tdStr();}R();};
 APP.payVL=function(id){var v=D.versements.find(function(x){return x.id===id;});if(v){v.st='Payé';v.date=tdStr();}R();};
+APP.printRecu=function(id){
+  var c=D.caps.find(function(x){return x.id===id;});if(!c)return;
+  var m=gMbr(c.mid),loge=gLoge(c.lid),sd=getSolde(c.mid,c.lid);
+  if(sd.solde>0){alert('Reçu indisponible : le solde n\'est pas encore réglé.');return;}
+  var ref='RC-'+(loge?loge.numero:'000')+'-'+(m?m.matricule:'NA')+'-'+(c.annee||new Date().getFullYear());
+  var w=window.open('','_blank','width=760,height=720'),autoPrint=false;
+  if(!w){
+    var fr=document.createElement('iframe');
+    fr.style.position='fixed';fr.style.right='0';fr.style.bottom='0';fr.style.width='0';fr.style.height='0';fr.style.border='0';
+    document.body.appendChild(fr);w=fr.contentWindow;autoPrint=true;
+  }
+  w.document.write('<!DOCTYPE htm'+'l><html><head><meta charset="UTF-8"><title>Reçu '+ref+'</title>'
+    +'<sty'+'le>body{font-family:Georgia,serif;color:#111;padding:32px;max-width:720px;margin:0 auto;}'
+    +'.box{border:2px solid #111;padding:26px;}h1{text-align:center;font-size:22px;margin:4px 0 8px;text-transform:uppercase;}'
+    +'.sub{text-align:center;color:#555;font-size:12px;margin-bottom:22px}.row{display:flex;justify-content:space-between;border-bottom:1px solid #eee;padding:9px 0;font-size:14px}.lbl{color:#555}.val{font-weight:700;text-align:right}.total{font-size:18px;border-top:2px solid #111;margin-top:14px;padding-top:12px}.sign{display:flex;justify-content:space-between;margin-top:44px;font-size:12px;color:#555}.foot{text-align:center;margin-top:26px;font-size:11px;color:#777}@media print{button{display:none!important}@page{margin:12mm}}</sty'+'le></head><body>'
+    +'<div class="box"><h1>Reçu de capitation</h1><div class="sub">Grand Orient et Loges Associées du Congo · '+tdStr()+' · Réf. '+ref+'</div>'
+    +'<div class="row"><span class="lbl">Membre</span><span class="val">'+(m?m.nom:'—')+'</span></div>'
+    +'<div class="row"><span class="lbl">Matricule</span><span class="val">'+(m?m.matricule:'—')+'</span></div>'
+    +'<div class="row"><span class="lbl">Loge</span><span class="val">'+(loge?('N°'+loge.numero+' '+loge.nom):'—')+'</span></div>'
+    +'<div class="row"><span class="lbl">Exercice</span><span class="val">'+(c.annee||new Date().getFullYear())+'</span></div>'
+    +'<div class="row"><span class="lbl">Montant dû</span><span class="val">'+fmt(sd.du)+' FCFA</span></div>'
+    +'<div class="row"><span class="lbl">Montant versé</span><span class="val">'+fmt(sd.verse)+' FCFA</span></div>'
+    +'<div class="row total"><span class="lbl">Solde</span><span class="val">0 FCFA</span></div>'
+    +'<div class="sign"><span>Le Trésorier</span><span>Signature</span></div><div class="foot">Document généré par l\'application GOLAC</div></div>'
+    +'<div style="text-align:center;margin-top:18px"><button onclick="window.print()" style="background:#111;color:#fff;border:none;padding:10px 22px;border-radius:7px;cursor:pointer">Imprimer</button></div>'
+    +'</bod'+'y><\/html>');
+  w.document.close();
+  if(autoPrint){setTimeout(function(){w.focus();w.print();},250);}
+};
 APP.createLoge=function(){
   var nom=G('mNom').value.trim(),ville=G('mVille').value.trim();if(!nom||!ville)return;
   var email=G('mLogeEmail')?G('mLogeEmail').value.trim():'';
