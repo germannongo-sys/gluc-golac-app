@@ -403,9 +403,10 @@ function buildData(){
     superAdmin:{id:'SADM',matricule:'SADM-01',nom:'Super Administrateur',role:'Super Admin',pwd:'superadmin2026',email:'admin@golac.cg'},
     obInfo:{name:'Grand Orient et Loges Associées du Congo',acronym:'GOLAC',siege:'Brazzaville',ville:'Brazzaville',fondation:'1995',adresse:'Avenue de la Paix, Brazzaville',patente:'PAT-GOLAC-2026',tel:'+242 06 000 0000',email:'contact@golac.cg',description:'Obédience maçonnique de la République du Congo',welcomeMsg:'À la Gloire du Grand Architecte de l\'Univers. {titre} {nom}, nous vous souhaitons la bienvenue dans l\'espace de travail de la Grand Orient et Loges Associées du Congo.',scrollMsg:'Prochain Grand Orient — 15 Août 2026 · Rappel cotisations 2026 ouvertes · Bienvenue à tous les nouveaux membres initiés · Loge mixte — Fraternité universelle'},
     grandeLogeTenues:[
-      {id:'gl1',titre:'Tenue de Grand Orient Ordinaire',date:'2026-06-01',heure:'10h00',type:'Grand Orient',lieu:'Temple GOLAC Brazzaville',compteRendu:null,participants:[]},
+      {id:'gl1',titre:'Tenue de Grande Loge Ordinaire',date:'2026-06-01',heure:'10h00',type:'Grande Loge',lieu:'Temple GOLAC Brazzaville',compteRendu:null,participants:[]},
       {id:'gl2',titre:'Tenue Blanche Ouverte',date:'2026-09-20',heure:'15h00',type:'Tenue Blanche',lieu:'Hôtel Olympique, Pointe-Noire',compteRendu:null,participants:[]},
     ],
+    convocationsGO:[],
     documents:[
       {id:'doc1',titre:'Règlement Général GOLAC',type:'Règlement',grade:'Tous',date:'2026-01-01',url:null,contenu:'Règlement général de la Grand Orient et Loges Associées du Congo - Version 2026'},
       {id:'doc2',titre:'Planche d\'exemple - 1er degré',type:'Planche',grade:'Apprenti',date:'2026-02-15',url:null,contenu:''},
@@ -551,7 +552,7 @@ function tGrandeLoge(){
       +'<div style="flex:1">'
       +'<div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-bottom:8px">'
       +'<span style="font-weight:900;font-size:15px">'+t.titre+'</span>'
-      +(t.type==='Tenue Blanche'?ch('Tenue Blanche','cteal2'):ch('Grand Orient','cg'))
+      +(t.type==='Tenue Blanche'?ch('Tenue Blanche','cteal2'):ch('Grande Loge','cg'))
       +'</div>'
       +'<div style="font-size:13px;color:#555;margin-bottom:4px">📅 '+t.date+' à '+t.heure+'</div>'
       +'<div style="font-size:13px;color:#555;margin-bottom:8px">📍 '+t.lieu+'</div>'
@@ -565,14 +566,52 @@ function tGrandeLoge(){
 }
 APP.createGrandeLoge=function(){
   var t=G('mTitre').value.trim(),d=G('mDate').value;if(!t||!d)return;
-  D.grandeLogeTenues.push({id:uid(),titre:t,date:d,heure:G('mHeure')?G('mHeure').value:'',type:G('mTypeGL')?G('mTypeGL').value:'Grand Orient',lieu:G('mLieu')?G('mLieu').value.trim():'',compteRendu:null,participants:[]});
+  D.grandeLogeTenues.push({id:uid(),titre:t,date:d,heure:G('mHeure')?G('mHeure').value:'',type:G('mTypeGL')?G('mTypeGL').value:'Grande Loge',lieu:G('mLieu')?G('mLieu').value.trim():'',compteRendu:null,participants:[]});
   APP.closeMod();
+};
+APP.createConvocation=function(){
+  var d=G('convDate')?G('convDate').value:'';if(!d){alert('Veuillez indiquer une date.');return;}
+  if(!D.convocationsGO)D.convocationsGO=[];
+  D.convocationsGO.push({id:uid(),date:d,heure:G('convHeure')?G('convHeure').value:'',lieu:G('convLieu')?G('convLieu').value.trim():'',ordreJour:G('convOdj')?G('convOdj').value.trim():'',st:'Planifié',cr:null});
+  APP.closeMod();
+};
+APP.supprimerConvocation=function(id){
+  if(!confirm('Supprimer cette convocation ?'))return;
+  D.convocationsGO=(D.convocationsGO||[]).filter(function(x){return x.id!==id;});R();
 };
 APP.saveCR=function(id){
   var t=D.grandeLogeTenues.find(function(x){return x.id===id;});
   if(t&&G('crText'))t.compteRendu=G('crText').value.trim();
   APP.closeMod();
 };
+
+// ── COLLÈGE DES GRANDS OFFICIERS ──
+function tCollegeGO(){
+  var convs=(D.convocationsGO||[]).slice().sort(function(a,b){return b.date.localeCompare(a.date);});
+  var h='<div style="display:flex;align-items:center;margin-bottom:18px">'
+    +'<div class="sec" style="margin:0">⚖ Collège des Grands Officiers</div><div style="flex:1"></div>'
+    +(isGO()||isSuperAdmin()?'<button class="btn gold" onclick="APP.openMod(\'newConvocation\',{})">+ Créer une convocation<\/button>':'')
+    +'</div>'
+    +'<div class="alert a-i" style="margin-bottom:18px;font-size:12px">Le Collège des Grands Officiers se réunit sur convocation du Grand Maître. Seuls les Grands Officiers et l\'Obédience peuvent créer et consulter les convocations.</div>';
+  if(!convs.length)return h+'<div style="color:#aaa;text-align:center;padding:28px;font-size:14px">Aucune convocation enregistrée.</div>';
+  convs.forEach(function(c){
+    var stCls=c.st==='Tenu'?'cgreen':c.st==='Annulé'?'cr':'cor';
+    h+='<div class="card" style="margin-bottom:14px">'
+      +'<div style="display:flex;align-items:flex-start;justify-content:space-between;gap:12px;flex-wrap:wrap">'
+      +'<div style="flex:1">'
+      +'<div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-bottom:8px">'
+      +'<span style="font-weight:900;font-size:15px">Collège des Grands Officiers</span>'
+      +ch(c.st,''+stCls)
+      +'</div>'
+      +'<div style="font-size:13px;color:#555;margin-bottom:3px">📅 '+c.date+' à '+(c.heure||'—')+'</div>'
+      +'<div style="font-size:13px;color:#555;margin-bottom:8px">📍 '+(c.lieu||'—')+'</div>'
+      +(c.ordreJour?'<div style="font-size:12px;background:#f5f5f5;border-radius:7px;padding:9px 13px;border-left:3px solid #c9a227"><div style="font-weight:700;font-size:11px;text-transform:uppercase;letter-spacing:.4px;color:#888;margin-bottom:5px">Ordre du jour</div>'+c.ordreJour.replace(/\n/g,'<br>')+'</div>':'')
+      +'</div>'
+      +(isGO()||isSuperAdmin()?'<div style="display:flex;flex-direction:column;gap:6px"><button class="btn dng sm" onclick="APP.supprimerConvocation(\''+c.id+'\')">Supprimer<\/button><\/div>':'')
+      +'</div></div>';
+  });
+  return h;
+}
 
 // ── DOCUMENTS ──
 function tDocuments(scope,lid){
@@ -1444,6 +1483,7 @@ function loadState() {
       if(parsed.notifLog)    D.notifLog    = parsed.notifLog;
       if(parsed.smsLog)      D.smsLog      = parsed.smsLog;
       if(parsed.grandeLogeTenues) D.grandeLogeTenues = parsed.grandeLogeTenues;
+      if(parsed.convocationsGO)   D.convocationsGO   = parsed.convocationsGO;
       if(parsed.documents)   D.documents   = parsed.documents;
       if(parsed.troncVeuve)  D.troncVeuve  = parsed.troncVeuve;
       if(parsed.obInfo)      D.obInfo      = parsed.obInfo;
@@ -1711,11 +1751,11 @@ function vMonEspace(){
       if(!otEvts.length)return;
       h+='<div style="margin-bottom:18px"><div style="font-weight:700;font-size:13px;margin-bottom:8px">⬡ N°'+ol.numero+' — '+ol.nom+' ('+ol.ville+')</div>';
       h+='<div style="border:1.5px solid #e5e5e5;border-radius:9px;overflow:hidden">'
-        +'<div style="display:grid;grid-template-columns:90px 60px 80px 1fr 1fr;background:#111">'
+        +'<div style="display:grid;grid-template-columns:90px 60px 120px 1fr 1fr;background:#111">'
         +['Date','Heure','Type','Thème / Planche','Présentateur'].map(function(t){return'<div style="padding:8px 10px;color:#fff;font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.3px">'+t+'</div>';}).join('')
         +'</div>';
       otEvts.slice(0,6).forEach(function(e){
-        h+='<div style="display:grid;grid-template-columns:90px 60px 80px 1fr 1fr;border-top:1px solid #f0f0f0">'
+        h+='<div style="display:grid;grid-template-columns:90px 60px 120px 1fr 1fr;border-top:1px solid #f0f0f0">'
           +'<div style="padding:8px 10px;font-size:12px;font-weight:700">'+e.date+'</div>'
           +'<div style="padding:8px 10px;font-size:12px;color:#666">'+e.heure+'</div>'
           +'<div style="padding:8px 10px">'+tCh(e.type||'Tenue')+'</div>'
@@ -1731,11 +1771,11 @@ function vMonEspace(){
   if(glT.length){
     h+='<div class="sec" style="margin-top:20px">📅 Tenues de l\'Obédience — '+D.obInfo.acronym+'</div>';
     h+='<div style="border:1.5px solid #e5e5e5;border-radius:9px;overflow:hidden;margin-bottom:16px">'
-      +'<div style="display:grid;grid-template-columns:90px 60px 80px 1fr 1fr;background:#111">'
+      +'<div style="display:grid;grid-template-columns:90px 60px 120px 1fr 1fr;background:#111">'
       +['Date','Heure','Type','Titre','Lieu'].map(function(t){return'<div style="padding:8px 10px;color:#fff;font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.3px">'+t+'</div>';}).join('')
       +'</div>';
     glT.forEach(function(t){
-      h+='<div style="display:grid;grid-template-columns:90px 60px 80px 1fr 1fr;border-top:1px solid #f0f0f0">'
+      h+='<div style="display:grid;grid-template-columns:90px 60px 120px 1fr 1fr;border-top:1px solid #f0f0f0">'
         +'<div style="padding:8px 10px;font-size:12px;font-weight:700">'+t.date+'</div>'
         +'<div style="padding:8px 10px;font-size:12px;color:#666">'+t.heure+'</div>'
         +'<div style="padding:8px 10px">'+ch(t.type||'Grand Orient','cteal2')+'</div>'
@@ -1790,7 +1830,8 @@ function vObedience(){
     {id:'loges',lbl:'Loges ('+D.loges.length+')',restricted:!isGO()&&!isSuperAdmin()},
     {id:'dossiers',lbl:'Dossiers',badge:pend||''},
     {id:'affiliations',lbl:'Affiliations',badge:aff||''},
-    {id:'grandeloge',lbl:'Grand Orient'},
+    {id:'grandeloge',lbl:'Grande Loge'},
+    {id:'college_go',lbl:'CO — Collège GO'},
     {id:'infos',lbl:'Informations'},
     {id:'grand_off',lbl:'Grands Officiers'},
     {id:'documents',lbl:'Documents'},
@@ -1807,6 +1848,7 @@ function vObedience(){
   else if(S.tab==='infos')c=tInfos();
   else if(S.tab==='grand_off')c=tGrandOff();
   else if(S.tab==='grandeloge')c=tGrandeLoge();
+  else if(S.tab==='college_go')c=tCollegeGO();
   else if(S.tab==='documents')c=tDocuments('obedience',null);
   else if(S.tab==='admin')c=tAdmin();
   else if(S.tab==='paramsob')c=tParamsOb();
@@ -2867,12 +2909,19 @@ var MODS={
 };
 
 MODS.newGrandeLoge=function(d){
-  return mhdr('Nouvelle Tenue de Grand Orient')
-    +'<div class="fg"><label class="fl">Titre</label><input id="mTitre" placeholder="Ex: Tenue Solennelle de Grand Orient"/></div>'
+  return mhdr('Nouvelle Tenue de Grande Loge')
+    +'<div class="fg"><label class="fl">Titre</label><input id="mTitre" placeholder="Ex: Tenue Solennelle de Grande Loge"/></div>'
     +'<div class="frow"><div class="fg"><label class="fl">Date</label><input id="mDate" type="date"/></div><div class="fg"><label class="fl">Heure</label><input id="mHeure" placeholder="10h00"/></div></div>'
     +'<div class="fg"><label class="fl">Type</label><select id="mTypeGL"><option value="Grande Loge">Tenue de Grande Loge</option><option value="Tenue Blanche">Tenue Blanche Ouverte</option></select></div>'
     +'<div class="fg"><label class="fl">Lieu</label><input id="mLieu" placeholder="Ex: Temple GOLAC Brazzaville"/></div>'
     +'<div class="mact"><button class="btn gold full" onclick="APP.createGrandeLoge()">Créer<\/button><button class="btn ghost full" onclick="APP.closeMod()">Annuler<\/button></div>';
+};
+MODS.newConvocation=function(d){
+  return mhdr('Nouvelle Convocation — Collège des GO')
+    +'<div class="frow"><div class="fg"><label class="fl">Date</label><input id="convDate" type="date" value="'+tdStr()+'"/></div><div class="fg"><label class="fl">Heure</label><input id="convHeure" placeholder="09h00"/></div></div>'
+    +'<div class="fg"><label class="fl">Lieu</label><input id="convLieu" placeholder="Ex: Temple — Salle du Conseil"/></div>'
+    +'<div class="fg"><label class="fl">Ordre du jour</label><textarea id="convOdj" rows="6" placeholder="1. Ouverture des travaux&#10;2. Points à l\'ordre du jour&#10;3. Divers"></textarea></div>'
+    +'<div class="mact"><button class="btn gold full" onclick="APP.createConvocation()">Créer la convocation<\/button><button class="btn ghost full" onclick="APP.closeMod()">Annuler<\/button></div>';
 };
 MODS.attachCR=function(d){
   return mhdr('Attacher un Compte Rendu')
