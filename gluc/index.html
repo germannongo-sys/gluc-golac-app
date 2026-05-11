@@ -164,6 +164,7 @@ tr:hover td{background:#fafafa;}
 @media print{.hdr,.tabbar,.lbar,.no-print{display:none!important;}.cont{padding:0;max-width:100%;}}
 
 </style>
+<style id="themeStyle"></style>
 </head>
 <body>
 <div id="app"></div>
@@ -251,20 +252,20 @@ function getAssiduite(mid,lid){
   var pres=(D.presences||[]).filter(function(p){return p.mid===mid&&p.lid===lid&&p.present;}).length;
   return{total:total,present:pres,pct:total?Math.round(pres/total*100):0};
 }
+function getInstrAssiduite(mid,lid){
+  var loge=gLoge(lid);if(!loge)return{total:0,present:0,pct:0};
+  var total=(loge.instruction||[]).length;if(!total)return{total:0,present:0,pct:0};
+  var pres=(D.presences||[]).filter(function(p){return p.mid===mid&&p.lid===lid&&p.present&&(loge.instruction||[]).some(function(ev){return ev.id===p.evtId;});}).length;
+  return{total:total,present:pres,pct:total?Math.round(pres/total*100):0};
+}
 function getPlanchesCount(mid,lid){
   var m=gMbr(mid),loge=gLoge(lid);if(!m||!loge)return 0;
   var nom=cleanText(m.nom).toLowerCase();
-  var fromEvts=(loge.agenda||[]).concat(loge.instruction||[]).filter(function(ev){
+  return (loge.agenda||[]).concat(loge.instruction||[]).filter(function(ev){
     if(!cleanText(ev.planche||'').length)return false;
     if(cleanText(ev.presentateur||'').toLowerCase()!==nom)return false;
     return !ev.planStatus||(ev.planStatus==='Présentée');
   }).length;
-  var fromStandalone=(loge.planches||[]).filter(function(p){
-    var pNom=p.mid?(gMbr(p.mid)?cleanText(gMbr(p.mid).nom).toLowerCase():''):cleanText(p.presentateur||'').toLowerCase();
-    if(pNom!==nom)return false;
-    return !p.planStatus||(p.planStatus==='Présentée');
-  }).length;
-  return fromEvts+fromStandalone;
 }
 function isPromotionOK(m,lid){return isPropGrade(m)&&isCapOK(m,lid)&&getPlanchesCount(m.id,lid)>=3;}
 
@@ -299,6 +300,20 @@ function _userIsOfficer(u){
     return l.officiers.some(function(o){return o.mid===u.id;});
   });
 }
+function isBiAppartenant(lid){
+  if(!S.user)return false;
+  var m=gMbr(S.user.id);
+  return m&&m.secondLogeId===lid;
+}
+function canAccessLoge(lid){
+  if(!S.user)return false;
+  if(isGO()||isSuperAdmin())return true;
+  if(S.user.logeId===lid)return true;
+  if(isBiAppartenant(lid))return true;
+  // Officer assigned to this loge
+  var loge=gLoge(lid);
+  return loge&&loge.officiers.some(function(o){return o.mid===S.user.id;});
+}
 function isFrereSimple(){
   if(!S.user)return false;
   var restrictedRoles=['Frère'];
@@ -313,6 +328,7 @@ function buildData(){
   return{
     name:'Grande Loge Unie du Congo',acronym:'GLUC',siege:'Brazzaville',fondation:'1995',
     tauxCap:50000,tauxLoge:200000,
+    themeColors:{gold:'#c9a227',dark:'#111',bg:'#f0f2f5'},
     grandOff:[
       {id:'go1',titre:'Grand Maître',mid:'ADM'},{id:'go2',titre:'Grand Secrétaire',mid:'GS1'},
       {id:'go3',titre:'Grand Orateur',mid:null},{id:'go4',titre:'Grand Trésorier',mid:null},
@@ -584,7 +600,51 @@ function tDocuments(scope,lid){
     });
   });
   h+='</div>';
+  // ── Rapport section (sous-menu de Documents) ──
+  h+='<div style="border-top:2px solid #eee;margin-top:28px;padding-top:20px">';
+  if(scope==='obedience'){
+    h+='<div style="display:flex;align-items:center;gap:10px;margin-bottom:16px">'
+      +'<div class="sec" style="margin:0">📊 Rapport Global</div><div style="flex:1"></div>'
+      +'<button class="btn gold" onclick="APP.printRapportGlobal()">📄 Imprimer / PDF<\/button>'
+      +'</div>';
+    h+=tRapportGlobal_inline();
+  } else if(lid){
+    var loge=gLoge(lid);
+    if(loge){
+      var ms=lMbrs(lid);
+      var caps=D.caps.filter(function(c){return c.lid===lid;});
+      h+='<div style="display:flex;align-items:center;gap:10px;margin-bottom:16px">'
+        +'<div class="sec" style="margin:0">📊 Rapport d\'Activité</div><div style="flex:1"></div>'
+        +'<button class="btn outline sm" onclick="APP.exportRapportExcel(\''+lid+'\')">📊 Excel<\/button>'
+        +' <button class="btn gold" onclick="APP.printRapport(\''+lid+'\')">📄 PDF<\/button>'
+        +'</div>';
+      h+=lRapportInline(loge,ms,caps);
+    }
+  }
+  h+='</div>';
   return h;
+}
+function lRapportInline(loge,ms,caps){
+  var paid=sumA(caps.filter(function(c){return c.st==='Payé';}),function(c){return c.mnt;});
+  var tot=sumA(caps,function(c){return c.mnt;});
+  var pct=tot?Math.round(paid/tot*100):0;
+  return'<div class="g3" style="margin-bottom:16px">'
+    +[['Frères actifs',ms.length],['Tenues',loge.agenda.length],['Capitations',pct+'%'],['Officiers',loge.officiers.filter(function(o){return o.mid;}).length]].map(function(x){
+      return'<div class="sc"><div class="sc-l">'+x[0]+'</div><div class="sc-v">'+x[1]+'</div></div>';}).join('')
+    +'</div><div class="alert a-i">Utilisez les boutons pour exporter en PDF ou Excel.</div>';
+}
+function tRapportGlobal_inline(){
+  var h='';
+  D.loges.forEach(function(l){
+    var ms=lMbrs(l.id);var caps=D.caps.filter(function(c){return c.lid===l.id;});
+    var paid=caps.filter(function(c){return c.st==='Payé';}).length;
+    var pct=caps.length?Math.round(paid/caps.length*100):0;
+    h+='<div class="card" style="margin-bottom:10px;display:flex;align-items:center;gap:12px">'
+      +'<div style="flex:1"><div style="font-weight:700">'+l.nom+'</div>'
+      +'<div style="font-size:12px;color:#888;margin-top:3px">'+ms.length+' frères · '+l.agenda.length+' tenues · Capitations '+pct+'%</div></div>'
+      +'</div>';
+  });
+  return h||'<div class="alert a-i">Aucune loge enregistrée.</div>';
 }
 APP.filterDocs=function(type){};
 APP.viewDoc=function(id){
@@ -768,6 +828,31 @@ function tParamsOb(){
     +'<div class="fg"><label class="fl">Versement annuel par loge (FCFA)</label><input id="obTauxLoge" type="number" value="'+D.tauxLoge+'"/></div>'
     +'<button class="btn gold" style="width:100%;margin-top:4px" onclick="APP.saveObTaux()">💾 Enregistrer les taux</button>'
     +'</div>'
+    +'<div style="font-size:14px;font-weight:900;margin-bottom:12px">🎨 Thème couleur</div>'
+    +'<div class="card" style="margin-bottom:14px">'
+    +'<div style="font-size:12px;color:#555;margin-bottom:12px">Personnalisez les couleurs de l\'interface. Cliquez sur la palette pour choisir.</div>'
+    +(function(){var tc=D.themeColors||{gold:'#c9a227',dark:'#111111',bg:'#f0f2f5'};
+      return'<div class="fg"><label class="fl">Couleur principale (dorée)</label>'
+        +'<div style="display:flex;align-items:center;gap:10px"><input type="color" id="thGold" value="'+(tc.gold||'#c9a227')+'" style="width:52px;height:38px;padding:2px;border-radius:6px;cursor:pointer;border:1.5px solid #ddd"/>'
+        +'<input type="text" id="thGoldTxt" value="'+(tc.gold||'#c9a227')+'" style="width:100px;font-family:monospace" oninput="G(\'thGold\').value=this.value" /></div></div>'
+        +'<div class="fg"><label class="fl">Couleur sombre (fond entête)</label>'
+        +'<div style="display:flex;align-items:center;gap:10px"><input type="color" id="thDark" value="'+(tc.dark||'#111111')+'" style="width:52px;height:38px;padding:2px;border-radius:6px;cursor:pointer;border:1.5px solid #ddd"/>'
+        +'<input type="text" id="thDarkTxt" value="'+(tc.dark||'#111111')+'" style="width:100px;font-family:monospace" oninput="G(\'thDark\').value=this.value" /></div></div>'
+        +'<div class="fg"><label class="fl">Couleur de fond de page</label>'
+        +'<div style="display:flex;align-items:center;gap:10px"><input type="color" id="thBg" value="'+(tc.bg||'#f0f2f5')+'" style="width:52px;height:38px;padding:2px;border-radius:6px;cursor:pointer;border:1.5px solid #ddd"/>'
+        +'<input type="text" id="thBgTxt" value="'+(tc.bg||'#f0f2f5')+'" style="width:100px;font-family:monospace" oninput="G(\'thBg\').value=this.value" /></div></div>'
+        +'<div style="font-size:11px;color:#888;margin-bottom:10px">Palettes rapides :</div>'
+        +'<div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:12px">'
+        +[['Or & Noir','#c9a227','#111111','#f0f2f5'],['Bleu Royal','#1565c0','#0d1b2a','#f0f4f8'],['Vert Forêt','#2e7d32','#1a2710','#f1f8f0'],['Bordeaux','#7b1fa2','#1a0a1e','#f5f0f8'],['Cuivre','#bf6400','#1a1000','#fdf8f0']].map(function(p){
+          return'<button class="btn ghost sm" onclick="APP.applyPalette(\''+p[1]+'\',\''+p[2]+'\',\''+p[3]+'\')" style="border-left:4px solid '+p[1]+'">'+p[0]+'</button>';
+        }).join('')
+        +'</div>'
+        +'<div style="display:flex;gap:8px">'
+        +'<button class="btn gold" style="flex:1" onclick="APP.saveTheme()">💾 Appliquer le thème</button>'
+        +'<button class="btn ghost" onclick="APP.resetTheme()">↺ Défaut</button>'
+        +'</div>';
+    })()
+    +'</div>'
     +'</div>'
     // Right: Welcome + Droits
     +'<div>'
@@ -833,6 +918,67 @@ APP.saveAllObInfo=function(){
   t.style.cssText='position:fixed;bottom:24px;left:50%;transform:translateX(-50%);background:#1b5e20;color:#fff;padding:11px 28px;border-radius:8px;font-size:14px;font-weight:700;z-index:9999;box-shadow:0 4px 16px rgba(0,0,0,0.25)';
   t.textContent='✓ Informations de l\'obédience enregistrées';
   document.body.appendChild(t);setTimeout(function(){t.remove();},2800);
+};
+APP.applyTheme=function(){
+  var tc=D.themeColors||{gold:'#c9a227',dark:'#111',bg:'#f0f2f5'};
+  var gold=tc.gold||'#c9a227',dark=tc.dark||'#111',bg=tc.bg||'#f0f2f5';
+  var st=G('themeStyle');if(!st)return;
+  st.textContent=
+    'body{background:'+bg+'!important}'
+    +'.hdr{background:'+dark+'!important;border-bottom-color:'+gold+'!important}'
+    +'.hdr-gluc{color:'+gold+'!important}'
+    +'.hdr-logo{background:'+gold+'!important}'
+    +'.tabbar{background:#1a1a1a!important}'
+    +'.tab.on{color:'+gold+'!important;border-bottom-color:'+gold+'!important}'
+    +'.gold{background:'+gold+'!important}'
+    +'.ok{background:'+dark+'!important}'
+    +'.outline{color:'+dark+'!important;border-color:'+dark+'!important}'
+    +'.cteal2{background:'+dark+'!important;color:'+gold+'!important;border-color:'+gold+'!important}'
+    +'.cg{background:'+_hex2light(gold)+'!important;color:'+_hex2dark(gold)+'!important;border-color:'+gold+'!important}'
+    +'input:focus,select:focus{border-color:'+gold+'!important}'
+    +'.mbox{border-color:'+gold+'!important}'
+    +'.lbox{border-color:'+gold+'!important}'
+    +'.llogo{border-color:'+gold+'!important}'
+    +'.ltit{color:'+dark+'!important}'
+    +'.tab{background:none!important}'
+    +'th{background:'+dark+'!important}'
+    +'.lnum{background:'+dark+'!important;color:'+gold+'!important}'
+    +'.cap-card.attente{border-left-color:'+gold+'!important}'
+    +'.sc-v{color:'+dark+'!important}'
+    +'.cardx:hover{border-color:'+gold+'!important}'
+    +'.toggle.on{background:'+dark+'!important}'
+    +'.acard:hover{border-color:'+gold+'!important}';
+};
+function _hex2light(hex){try{var r=parseInt(hex.slice(1,3),16),g=parseInt(hex.slice(3,5),16),b=parseInt(hex.slice(5,7),16);return'rgba('+r+','+g+','+b+',0.12)';}catch(e){return'#fff8e1';}}
+function _hex2dark(hex){try{var r=parseInt(hex.slice(1,3),16),g=parseInt(hex.slice(3,5),16),b=parseInt(hex.slice(5,7),16);var lum=0.299*r+0.587*g+0.114*b;return lum>128?'#3a2800':'#fff';}catch(e){return'#5a3e00';}}
+APP.saveTheme=function(){
+  var gold=G('thGold')?G('thGold').value:'#c9a227';
+  var dark=G('thDark')?G('thDark').value:'#111111';
+  var bg=G('thBg')?G('thBg').value:'#f0f2f5';
+  D.themeColors={gold:gold,dark:dark,bg:bg};
+  APP.applyTheme();R();
+  var t=document.createElement('div');
+  t.style.cssText='position:fixed;bottom:24px;left:50%;transform:translateX(-50%);background:'+gold+';color:#fff;padding:11px 28px;border-radius:8px;font-size:14px;font-weight:700;z-index:9999;box-shadow:0 4px 16px rgba(0,0,0,0.25)';
+  t.textContent='🎨 Thème enregistré';
+  document.body.appendChild(t);setTimeout(function(){t.remove();},2800);
+};
+APP.resetTheme=function(){
+  D.themeColors={gold:'#c9a227',dark:'#111',bg:'#f0f2f5'};
+  APP.applyTheme();R();
+};
+APP.setBiApp=function(mid,lid){
+  var m=D.membres.find(function(x){return x.id===mid;});if(!m)return;
+  if(!lid){delete m.secondLogeId;}else{m.secondLogeId=lid;}
+  R();
+  var loge=lid?gLoge(lid):null;
+  var t=document.createElement('div');
+  t.style.cssText='position:fixed;bottom:24px;left:50%;transform:translateX(-50%);background:#006064;color:#fff;padding:11px 28px;border-radius:8px;font-size:14px;font-weight:700;z-index:9999;box-shadow:0 4px 16px rgba(0,0,0,0.25)';
+  t.textContent=lid?'⇔ '+m.nom+' bi-appartenant — '+loge.nom:'✓ Bi-appartenance retirée pour '+m.nom;
+  document.body.appendChild(t);setTimeout(function(){t.remove();},2800);
+};
+APP.applyPalette=function(gold,dark,bg){
+  D.themeColors={gold:gold,dark:dark,bg:bg};
+  APP.applyTheme();R();
 };
 APP.saveSecretQuestions=function(){
   ['Apprenti','Compagnon','Maitre'].forEach(function(grade){
@@ -1247,6 +1393,7 @@ function loadState() {
       if(parsed.docLogoSource) D.docLogoSource = parsed.docLogoSource;
       if(parsed.tauxCap) D.tauxCap = parsed.tauxCap;
       if(parsed.tauxLoge) D.tauxLoge = parsed.tauxLoge;
+      if(parsed.themeColors) D.themeColors = parsed.themeColors;
       // Migration : garantir les champs planches et customOfficerPerms sur chaque loge
       D.loges.forEach(function(l){
         if(!l.planches)l.planches=[];
@@ -1291,6 +1438,7 @@ function initAutoSave() {
   };
   // Load on startup
   loadState();
+  APP.applyTheme();
 }
 
 APP.render=function(){
@@ -1523,14 +1671,15 @@ function vMonEspace(){
 function vAtelier(){
   var cards='';
   D.loges.filter(function(l){return l.statut==='active';}).forEach(function(l){
-    var ms=lMbrs(l.id),canEnter=isGO()||S.user.logeId===l.id;
+    var ms=lMbrs(l.id),canEnter=canAccessLoge(l.id);
+    var isBiApp=isBiAppartenant(l.id);
     var next=l.agenda.slice().sort(function(a,b){return a.date.localeCompare(b.date);}).find(function(e){return e.date>=tdStr();});
     cards+='<div class="acard" onclick="'+(canEnter?'APP.enterLoge(\''+l.id+'\')':'')+'" style="'+(canEnter?'':'opacity:.4;cursor:default;')+'">'
       +'<div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:10px">'
       +'<div><div style="color:#c9a227;font-weight:900;font-size:14px">⬡ Loge N°'+l.numero+'</div>'
       +'<div style="color:#111;font-weight:700;font-size:15px;margin-top:2px">'+l.nom+'</div>'
       +'<div style="color:#888;font-size:12px;margin-top:2px">📍 '+l.ville+'</div></div>'
-      +ch(ms.length+' frères','cgreen')+'</div>'
+      +'<div style="display:flex;flex-direction:column;align-items:flex-end;gap:4px">'+ch(ms.length+' frères','cgreen')+(isBiApp?ch('Bi-appartenant','cteal'):'')+'</div></div>'
       +(next?'<div style="background:#f5f5f5;border-radius:7px;padding:6px 10px;font-size:12px;font-weight:600">Prochaine tenue : '+next.date+'</div>':'')
       +'</div>';
   });
@@ -1555,7 +1704,6 @@ function vObedience(){
     {id:'dossiers',lbl:'Dossiers',badge:pend||''},
     {id:'affiliations',lbl:'Affiliations',badge:aff||''},
     {id:'grandeloge',lbl:'Grande Loge'},
-    {id:'rapportglobal',lbl:'Rapport Global'},
     {id:'infos',lbl:'Informations'},
     {id:'grand_off',lbl:'Grands Officiers'},
     {id:'documents',lbl:'Documents'},
@@ -1572,7 +1720,6 @@ function vObedience(){
   else if(S.tab==='infos')c=tInfos();
   else if(S.tab==='grand_off')c=tGrandOff();
   else if(S.tab==='grandeloge')c=tGrandeLoge();
-  else if(S.tab==='rapportglobal')c=tRapportGlobal();
   else if(S.tab==='documents')c=tDocuments('obedience',null);
   else if(S.tab==='admin')c=tAdmin();
   else if(S.tab==='paramsob')c=tParamsOb();
@@ -1910,7 +2057,6 @@ function vLoge(){
     {id:'tronc',lbl:'Tronc Veuve',min:5,offOnly:true},
     {id:'hospitalier',lbl:'Hospitalier',min:5,offOnly:true},
     {id:'alertes',lbl:'Alertes',min:7,badge:an||'',offOnly:true},
-    {id:'rapport',lbl:'Rapport',min:10,offOnly:true},
     {id:'paramsLoge',lbl:'⚙ Paramètres',min:10,offOnly:true},
   ];
   var tabs=allTabs.filter(function(t){
@@ -1951,9 +2097,13 @@ function vLoge(){
       +(hasTronc?'<button class="tab'+(S.tab==='tronc'?' on':'')+'" onclick="APP.setTab(\'tronc\')">🕊 Tronc Veuve</button>':'')
       +'</div>';
   }
-  var bar='<div class="lbar"><div class="lnum">N°'+loge.numero+'</div>'
+  var logeLogo=loge.logo?'<img src="'+loge.logo+'" style="width:36px;height:36px;border-radius:50%;object-fit:cover;border:2px solid #c9a227;flex-shrink:0"/>':'';
+  var obLogo=LOGO?'<img src="'+LOGO+'" style="width:36px;height:36px;border-radius:50%;object-fit:cover;border:2px solid #ddd;flex-shrink:0"/>':'';
+  var bar='<div class="lbar">'
+    +(logeLogo&&obLogo?'<div style="display:flex;align-items:center;gap:4px">'+obLogo+logeLogo+'</div>':logeLogo||obLogo||'<div class="lnum">N°'+loge.numero+'</div>')
+    +'<div style="display:flex;align-items:center;gap:8px">'+(logeLogo&&obLogo?'<div class="lnum" style="flex-shrink:0">N°'+loge.numero+'</div>':'')
     +'<div><div style="font-weight:900;font-size:15px">'+loge.nom+'</div>'
-    +'<div style="color:#888;font-size:12px">📍 '+loge.ville+' · '+ms.length+' frères · '+ch(tCount+'/3 min.',tCount>=3?'cgreen':'cred')+'</div></div>'
+    +'<div style="color:#888;font-size:12px">📍 '+loge.ville+' · '+ms.length+' frères · '+ch(tCount+'/3 min.',tCount>=3?'cgreen':'cred')+'</div></div></div>'
     +'<div style="flex:1"></div>'
     +(off?'<button class="btn outline sm" onclick="APP.openMod(\'newEvt\',{lid:\''+loge.id+'\'})">+ Tenue<\/button>'
        +'<button class="btn ok sm" onclick="APP.openMod(\'affiliationForm\',{lid:\''+loge.id+'\'})">+ Affiliation<\/button>'
@@ -1973,7 +2123,6 @@ function vLoge(){
   else if(S.tab==='capitations')c=lCaps2(loge,caps,off);
   else if(S.tab==='tronc')c=lTroncVeuve(loge,off);
   else if(S.tab==='alertes'&&off)c=lAlerts(loge,ms,props,retards);
-  else if(S.tab==='rapport'&&off)c=lRapport(loge,ms,caps);
   else if(S.tab==='hospitalier')c=lRapportHospitalier(loge);
   else if(S.tab==='paramsLoge'&&off)c=lParams(loge,off);
   var userPost2=getUserPost(loge.id);
@@ -1994,7 +2143,8 @@ function vLoge(){
 function lProg(loge,off){
   var evts=loge.agenda.slice().sort(function(a,b){return a.date.localeCompare(b.date);});
   var tC=evts.filter(function(e){return e.type==='Tenue'||e.type==='Cérémonie';}).length;
-  return'<div style="display:flex;align-items:center;gap:10px;margin-bottom:16px;flex-wrap:wrap">'
+  var glTenues=(D.grandeLogeTenues||[]).slice().sort(function(a,b){return a.date.localeCompare(b.date);});
+  var h='<div style="display:flex;align-items:center;gap:10px;margin-bottom:16px;flex-wrap:wrap">'
     +'<div class="sec" style="margin:0">Programme — 9 mois</div>'
     +ch(tC+' tenue(s)',tC>=3?'cgreen':'cred')
     +'<div style="flex:1"></div>'
@@ -2002,6 +2152,28 @@ function lProg(loge,off){
     +'</div>'
     +(tC<3?'<div class="alert a-w" style="margin-bottom:14px"><div class="a-t">Programme incomplet</div>'+tC+' tenue(s) sur 3 minimum requis.</div>':'')
     +buildProgTable(evts,false,loge.id);
+  // Tenues de Grande Loge (visibles dans l'atelier)
+  if(glTenues.length){
+    h+='<div style="border-top:2px solid #eee;margin-top:24px;padding-top:18px">'
+      +'<div style="display:flex;align-items:center;gap:10px;margin-bottom:14px">'
+      +'<div class="sec" style="margin:0">📅 Tenues de l\'Obédience</div>'
+      +ch(glTenues.length+' tenue(s)','cteal2')
+      +'</div>'
+      +'<div style="border:1.5px solid #e5e5e5;border-radius:10px;overflow:hidden">'
+      +'<div style="display:grid;grid-template-columns:90px 70px 1fr 1fr;background:#111">'
+      +['Date','Heure','Titre','Lieu'].map(function(t){return'<div style="padding:8px 11px;font-size:10px;font-weight:700;color:#fff;text-transform:uppercase;letter-spacing:.4px">'+t+'</div>';}).join('')
+      +'</div>';
+    glTenues.forEach(function(t){
+      h+='<div style="display:grid;grid-template-columns:90px 70px 1fr 1fr;border-top:1px solid #f0f0f0">'
+        +'<div style="padding:8px 11px;font-size:12px;font-weight:700">'+t.date+'</div>'
+        +'<div style="padding:8px 11px;font-size:12px;color:#666">'+t.heure+'</div>'
+        +'<div style="padding:8px 11px;font-size:12px">'+t.titre+' '+ch(t.type,'cteal2')+'</div>'
+        +'<div style="padding:8px 11px;font-size:12px;color:#888">'+t.lieu+'</div>'
+        +'</div>';
+    });
+    h+='</div></div>';
+  }
+  return h;
 }
 
 function lInstr(loge,off){
@@ -2025,10 +2197,6 @@ function lPlanches(loge,ms,off){
       allPl.push({id:ev.id,titre:ev.planche||'Sans titre',presentateur:ev.presentateur||'—',date:ev.date,source:'instruction',evTitre:ev.titre,typeSrc:'Instruction',notes:'',planStatus:ev.planStatus||'Non présentée'});
     }
   });
-  (loge.planches||[]).forEach(function(p){
-    var m=p.mid?gMbr(p.mid):null;
-    allPl.push({id:p.id,titre:p.titre,presentateur:m?m.nom:p.presentateur||'—',date:p.date,source:'standalone',evTitre:'—',typeSrc:p.type||'Planche',notes:p.notes||'',planStatus:p.planStatus||'Non présentée'});
-  });
   allPl.sort(function(a,b){return b.date.localeCompare(a.date);});
   var byPres={};
   allPl.forEach(function(p){var k=p.presentateur||'—';if(!byPres[k])byPres[k]=[];byPres[k].push(p);});
@@ -2036,9 +2204,9 @@ function lPlanches(loge,ms,off){
     +'<div class="sec" style="margin:0">Planches & Thèmes</div>'
     +ch(allPl.length+' planche(s)','cteal')
     +'<div style="flex:1"></div>'
-    +(off?'<button class="btn gold" onclick="APP.openMod(\'newPlanche\',{lid:\''+loge.id+'\'})">+ Planche<\/button>':'')
-    +'</div>';
-  if(!allPl.length)return h+'<div class="alert a-i">Aucune planche ou thème enregistré. Ajoutez des thèmes lors de la création des tenues, ou créez une planche autonome.</div>';
+    +'</div>'
+    +'<div class="alert a-i" style="margin-bottom:14px;font-size:12px">Les planches sont liées aux tenues ordinaires et d\'instruction. Pour ajouter une planche, définissez-la lors de la création ou modification d\'une tenue.</div>';
+  if(!allPl.length)return h+'<div class="alert a-i">Aucune planche ou thème enregistré. Ajoutez des thèmes lors de la création ou modification des tenues.</div>';
   // Résumé par présentateur
   h+='<div style="font-size:13px;font-weight:900;margin-bottom:10px;color:#555;text-transform:uppercase;letter-spacing:.4px">Récapitulatif par Présentateur</div>'
     +'<div class="g3" style="margin-bottom:22px">';
@@ -2155,6 +2323,7 @@ APP.syncPresSel=function(sel){
 };
 
 function lMbrs2(loge,ms,off){
+  var otherLoges=D.loges.filter(function(l){return l.id!==loge.id&&l.statut==='active';});
   var h='<div class="sec">Frères de la Loge</div><div class="tw"><table><thead><tr>'
     +'<th>Matricule</th><th>Nom</th><th>Grade</th><th>Durée</th><th>Assiduité</th><th>Situation</th><th>Rôle</th>'
     +(off?'<th>Actions</th>':'')+'</tr></thead><tbody>';
@@ -2165,17 +2334,28 @@ function lMbrs2(loge,ms,off){
     var dur=m.grade==='Maitre'?'—':mo+'/12 mois';
     var badge=propFull?ch('✓ Proposable','cgreen'):propG&&!capOK?ch('Cotisation req.','cred'):propG&&!plOK?ch('3 planches req.','cred'):'';
     h+='<tr>'
+      var biLogeId=m.secondLogeId||null;
+      var biLoge=biLogeId?gLoge(biLogeId):null;
       +'<td>'+ch(m.matricule,'cg')+'</td>'
-      +'<td style="font-weight:700">'+m.nom+(m.affiliation?'<br><span style="font-size:10px;color:#888">Affilié</span>':'')+'</td>'
+      +'<td style="font-weight:700">'+m.nom
+        +(m.affiliation?'<br><span style="font-size:10px;color:#888">Affilié</span>':'')
+        +(biLoge?'<br>'+ch('⇔ '+biLoge.nom,'cteal'):'')
+        +'</td>'
       +'<td>'+gCh(m.grade)+'</td>'
       +'<td><span style="font-size:12px;color:'+(propG&&!capOK?'#b71c1c':propG?'#1b5e20':mo>=9?'#5a3e00':'#888')+'">'+dur+'</span></td>'
       +'<td><span style="font-size:12px;font-weight:700;color:'+(ass.pct>=70?'#1b5e20':ass.pct>=40?'#5a3e00':'#b71c1c')+'">'+ass.pct+'%</span><span style="font-size:11px;color:#aaa"> ('+ass.present+'/'+ass.total+')</span></td>'
       +'<td>'+(badge||ch('Régulier','cgr'))+'</td>'
       +'<td>'+rCh(m.role)+'</td>'
-      +(off?'<td style="white-space:nowrap">'
-        +(propFull&&isVM(loge.id)?'<button class="btn ok sm" onclick="APP.openMod(\'promote\',{mid:\''+m.id+'\'})">Promouvoir<\/button>':'')
+      +(off?'<td style="white-space:nowrap;display:flex;flex-wrap:wrap;gap:4px">'
+        +((propFull||(!plOK&&isVM(loge.id)&&capOK))&&isVM(loge.id)?'<button class="btn ok sm" onclick="APP.openMod(\'promote\',{mid:\''+m.id+'\'})">Promouvoir<\/button>':'')
         +(isVM(loge.id)&&!propG?'<button class="btn dng sm" onclick="APP.radier(\''+m.id+'\')">Radier<\/button>':'')
         +(off?'<button class="btn inf sm" onclick="APP.openMod(\'notif\',{mid:\''+m.id+'\'})">📧<\/button>':'')
+        +(isVM(loge.id)&&otherLoges.length
+          ?'<select class="btn ghost sm" style="padding:4px 6px" onchange="APP.setBiApp(\''+m.id+'\',this.value)">'
+            +'<option value="">⇔ Bi-appart.</option>'
+            +(biLogeId?'<option value="">— Retirer</option>':'')
+            +otherLoges.filter(function(ol){return ol.id!==biLogeId;}).map(function(ol){return'<option value="'+ol.id+'">'+ol.nom+'</option>';}).join('')
+            +'</select>':'')
         +'</td>':'')
       +'</tr>';
   });
@@ -2391,15 +2571,28 @@ var MODS={
   },
   promote:function(d){
     var m=gMbr(d.mid);if(!m)return'';
-    var ng=nxtG(m.grade)||'',capOK=isCapOK(m,m.logeId),pl=getPlanchesCount(m.id,m.logeId),plOK=pl>=3,ok=capOK&&plOK;
+    var lid=m.logeId;
+    var ng=nxtG(m.grade)||'',capOK=isCapOK(m,lid),pl=getPlanchesCount(m.id,lid),plOK=pl>=3,ok=capOK&&plOK;
+    var vmMode=isVM(lid)&&capOK&&!plOK;
+    var ordAss=getAssiduite(m.id,lid),instrAss=getInstrAssiduite(m.id,lid);
+    var canForce=vmMode&&ordAss.pct>60&&instrAss.pct>60;
     return mhdr('Promotion de Grade')
       +'<div class="card" style="text-align:center;margin-bottom:18px">'
       +'<div style="font-weight:900;font-size:15px;margin-bottom:10px">'+m.nom+'</div>'
       +'<div style="display:flex;align-items:center;gap:16px;justify-content:center">'+gCh(m.grade)+'<span style="color:#ccc;font-size:22px">→</span>'+gCh(ng)+'</div>'
       +'<div style="color:#888;font-size:12px;margin-top:10px">'+gLbl(m.grade)+' depuis <strong>'+moAt(m.dateGrade)+' mois</strong></div>'
-      +'<div style="margin-top:8px">'+(capOK?ch('✓ Capitation à jour','cgreen'):ch('✗ Capitation non réglée','cred'))+(plOK?ch('✓ '+pl+' planches','cgreen'):ch('✗ '+pl+'/3 planches','cred'))+'</div></div>'
-      +(ok?'<div class="mact"><button class="btn gold full" onclick="APP.promote(\''+d.mid+'\')">Confirmer<\/button><button class="btn ghost full" onclick="APP.closeMod()">Annuler<\/button></div>'
-             :mnote('Promotion impossible : le frère doit être à jour de ses capitations et avoir présenté au minimum 3 planches.','e')+'<div class="mact"><button class="btn ghost full" onclick="APP.closeMod()">Fermer<\/button></div>');
+      +'<div style="margin-top:8px;display:flex;flex-wrap:wrap;justify-content:center;gap:4px">'
+      +(capOK?ch('✓ Capitation à jour','cgreen'):ch('✗ Capitation non réglée','cred'))
+      +(plOK?ch('✓ '+pl+' planches','cgreen'):ch('✗ '+pl+'/3 planches','cred'))
+      +(vmMode?ch('Assiduité tenues '+ordAss.pct+'%',ordAss.pct>60?'cgreen':'cred'):'')
+      +(vmMode?ch('Assiduité instruction '+instrAss.pct+'%',instrAss.pct>60?'cgreen':'cred'):'')
+      +'</div></div>'
+      +(ok?'<div class="mact"><button class="btn gold full" onclick="APP.promote(\''+d.mid+'\')">✓ Confirmer la promotion<\/button><button class="btn ghost full" onclick="APP.closeMod()">Annuler<\/button></div>'
+        :canForce
+          ?'<div class="alert a-w" style="margin-bottom:10px"><div class="a-t">⚠ Dérogation VM</div>Le frère n\'a présenté que '+pl+'/3 planches requises. En tant que VM, vous pouvez forcer la promotion car le frère est à jour et présent à plus de 60% en tenues ordinaires et d\'instruction.</div>'
+            +'<div class="mact"><button class="btn gold full" onclick="APP.forcePromote(\''+d.mid+'\')">⚡ Forcer la promotion (VM)<\/button><button class="btn ghost full" onclick="APP.closeMod()">Annuler<\/button></div>'
+          :mnote('Promotion impossible : '+(!capOK?'capitation non réglée. ':'')+(plOK?'':'planches insuffisantes ('+pl+'/3). ')+(vmMode&&ordAss.pct<=60?'Assiduité tenues insuffisante. ':'')+(vmMode&&instrAss.pct<=60?'Assiduité instruction insuffisante. ':''),'e')
+            +'<div class="mact"><button class="btn ghost full" onclick="APP.closeMod()">Fermer<\/button></div>');
   },
   avance:function(d){
     var m=gMbr(d.mid);
@@ -2718,6 +2911,18 @@ APP.promote=function(mid){
   if(!isCapOK(m,m.logeId)){alert('Promotion impossible : capitation non réglée.');return;}
   if(getPlanchesCount(m.id,m.logeId)<3){alert('Promotion impossible : minimum 3 planches présentées requis.');return;}
   var ng=nxtG(m.grade);if(ng){m.grade=ng;m.dateGrade=tdStr();}APP.closeMod();
+};
+APP.forcePromote=function(mid){
+  var m=D.membres.find(function(x){return x.id===mid;});if(!m)return;
+  if(!isVM(m.logeId)){alert('Réservé au Vénérable Maître.');return;}
+  if(!isCapOK(m,m.logeId)){alert('Promotion impossible : capitation non réglée.');return;}
+  var ord=getAssiduite(m.id,m.logeId),instr=getInstrAssiduite(m.id,m.logeId);
+  if(ord.pct<=60||instr.pct<=60){alert('Promotion impossible : assiduité insuffisante (>60% requis en tenues ordinaires et d\'instruction).');return;}
+  var ng=nxtG(m.grade);if(ng){m.grade=ng;m.dateGrade=tdStr();m.promotionForcee=true;}APP.closeMod();
+  var t=document.createElement('div');
+  t.style.cssText='position:fixed;bottom:24px;left:50%;transform:translateX(-50%);background:#5a3e00;color:#fff;padding:11px 28px;border-radius:8px;font-size:14px;font-weight:700;z-index:9999;box-shadow:0 4px 16px rgba(0,0,0,0.25)';
+  t.textContent='⚡ Promotion forcée par le VM — '+m.nom+' promu '+gLbl(ng);
+  document.body.appendChild(t);setTimeout(function(){t.remove();},3200);
 };
 APP.radier=function(mid){
   if(!confirm('Soumettre une demande de radiation au Grand Secrétaire ?'))return;
