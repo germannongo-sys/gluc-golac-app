@@ -967,11 +967,6 @@ APP.resetTheme=function(){
   D.themeColors={gold:'#c9a227',dark:'#111',bg:'#f0f2f5'};
   APP.applyTheme();R();
 };
-APP.setBiApp=function(mid,lid){
-  var m=D.membres.find(function(x){return x.id===mid;});if(!m)return;
-  if(!lid){delete m.secondLogeId;}else{m.secondLogeId=lid;}
-  R();
-};
 APP.soumettreBiApp=function(mid,lid){
   var l2=G('biLoge2')?G('biLoge2').value:'';
   if(!l2){alert('Veuillez choisir une 2e loge.');return;}
@@ -1007,7 +1002,9 @@ APP.validerBiApp=function(id){
 APP.rejeterBiApp=function(id){
   if(!confirm('Rejeter cette demande de bi-appartenance ?'))return;
   if(!D.biAppartPending)return;
-  D.biAppartPending=D.biAppartPending.filter(function(x){return x.id!==id;});R();
+  var req=D.biAppartPending.find(function(x){return x.id===id;});
+  if(req)req.st='Rejeté';
+  R();
 };
 APP.retirerBiApp=function(mid){
   if(!confirm('Retirer la bi-appartenance de ce frère ?'))return;
@@ -1966,8 +1963,8 @@ function tAffiliations(){
         +'<td>'+(l2?'N°'+l2.numero+' '+l2.nom:'—')+'</td>'
         +'<td style="font-size:12px;color:#888">'+(r.motif||'—')+'</td>'
         +'<td style="font-size:12px;color:#888">'+r.date+'</td>'
-        +'<td>'+ch('En attente','cor')+'</td>'
-        +'<td>'+(isGS()?'<button class="btn ok sm" onclick="APP.validerBiApp(\''+r.id+'\')">Valider<\/button> <button class="btn dng sm" onclick="APP.rejeterBiApp(\''+r.id+'\')">Rejeter<\/button>':'')+'</td>'
+        +'<td>'+(r.st==='Confirmé'?ch('Validé','cgreen'):r.st==='Rejeté'?ch('Rejeté','cr'):ch('En attente','cor'))+'</td>'
+        +'<td>'+(r.st==='En attente'&&isGS()?'<button class="btn ok sm" onclick="APP.validerBiApp(\''+r.id+'\')">Valider<\/button> <button class="btn dng sm" onclick="APP.rejeterBiApp(\''+r.id+'\')">Rejeter<\/button>':'')+'</td>'
         +'</tr>';
     });
     h+='</tbody></table></div>';
