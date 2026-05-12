@@ -1754,6 +1754,7 @@ APP.updatePortalQuestion = function(g){
 APP.submitPortal = function(){
   var g = G('portalGrade') ? G('portalGrade').value : (S_PORTAL_GRADE||'Apprenti');
   var ans = G('portalAnswer') ? G('portalAnswer').value : '';
+  if(!ans.trim()){ var e=G('portalErr'); if(e){e.textContent='Veuillez saisir une réponse.';e.style.display='block';} return; }
   var sq = D.secretQuestions[g];
   if(!sq){ S.view='login'; R(); return; }
   function norm(s){ return s.toLowerCase().trim().replace(/[àáâ]/g,'a').replace(/[éèêë]/g,'e').replace(/[îï]/g,'i').replace(/[ôö]/g,'o').replace(/[ùûü]/g,'u'); }
@@ -1769,13 +1770,6 @@ APP.submitPortal = function(){
 // ── LOGIN ──
 function vLogin(){
   var logo=LOGO?'<img src="'+LOGO+'" style="width:70px;height:70px;object-fit:cover;border-radius:50%;"/>':logoImg(70);
-  var rows=[['GOLAC-00','admin2026','Grand Maître'],['GOLAC-GS','gs2026','Grande Secrétaire'],
-    ['M-001','vm1234','VM — Liberté'],['M-004','vm4321','VM — Égalité'],
-    ['M-002','off1234','Officière'],['M-003','1234','Apprenti']];
-  var demos=rows.map(function(x){
-    return'<button class="db" onclick="G(\'lM\').value=\''+x[0]+'\';G(\'lP\').value=\''+x[1]+'\'">'
-      +'<span class="dm">'+x[0]+'</span>'+x[2]+'</button>';
-  }).join('');
   return'<div class="lpg"><div class="lbox">'
     +'<div class="llogo">'+logo+'</div>'
     +'<div class="ltit">'+D.obInfo.acronym+'</div><div class="lsub">'+D.obInfo.name+'</div><div style="font-size:10px;color:#aaa;letter-spacing:1px;margin-top:4px">⚥ LOGE MIXTE</div>'
@@ -1786,9 +1780,6 @@ function vLogin(){
     +'<input id="lP" type="password" placeholder="••••••" autocomplete="current-password" onkeydown="if(event.key===\'Enter\')APP.doLogin()"/></div>'
     +'<div id="lE" class="lerr">Matricule ou mot de passe incorrect.</div>'
     +'<button class="btn gold lg full" onclick="APP.doLogin()" style="margin-bottom:8px">Se connecter</button>'
-    +'<div class="div"></div>'
-    +'<div style="color:#aaa;font-size:10px;text-align:center;margin-bottom:10px;font-weight:700;text-transform:uppercase">Comptes démo</div>'
-    +'<div class="dg">'+demos+'</div>'
     +'</div></div>';
 }
 APP.doLogin=function(){
