@@ -263,7 +263,9 @@ function getPlanchesCount(mid,lid){
   var nom=cleanText(m.nom).toLowerCase();
   return (loge.agenda||[]).concat(loge.instruction||[]).filter(function(ev){
     if(!cleanText(ev.planche||'').length)return false;
-    if(cleanText(ev.presentateur||'').toLowerCase()!==nom)return false;
+    var inIds=ev.presIds&&ev.presIds.indexOf(mid)!==-1;
+    var inStr=cleanText(ev.presentateur||'').toLowerCase().split(',').some(function(p){return p.trim()===nom;});
+    if(!inIds&&!inStr)return false;
     return !ev.planStatus||(ev.planStatus==='Présentée');
   }).length;
 }
@@ -2523,17 +2525,20 @@ function lPlanches(loge,ms,off){
   var allPl=[];
   (loge.agenda||[]).forEach(function(ev){
     if(ev.planche||ev.presentateur){
-      allPl.push({id:ev.id,titre:ev.planche||'Sans titre',presentateur:ev.presentateur||'—',date:ev.date,source:'tenue',evTitre:ev.titre,typeSrc:'Tenue',notes:'',planStatus:ev.planStatus||'Non présentée'});
+      allPl.push({id:ev.id,titre:ev.planche||'Sans titre',presentateur:ev.presentateur||'—',date:ev.date,source:'tenue',evTitre:ev.titre,typeSrc:'Tenue',typePlanche:ev.typePlanche||'',notes:'',planStatus:ev.planStatus||'Non présentée'});
     }
   });
   (loge.instruction||[]).forEach(function(ev){
     if(ev.planche||ev.presentateur){
-      allPl.push({id:ev.id,titre:ev.planche||'Sans titre',presentateur:ev.presentateur||'—',date:ev.date,source:'instruction',evTitre:ev.titre,typeSrc:'Instruction',notes:'',planStatus:ev.planStatus||'Non présentée'});
+      allPl.push({id:ev.id,titre:ev.planche||'Sans titre',presentateur:ev.presentateur||'—',date:ev.date,source:'instruction',evTitre:ev.titre,typeSrc:'Instruction',typePlanche:ev.typePlanche||'',notes:'',planStatus:ev.planStatus||'Non présentée'});
     }
   });
   allPl.sort(function(a,b){return b.date.localeCompare(a.date);});
   var byPres={};
-  allPl.forEach(function(p){var k=p.presentateur||'—';if(!byPres[k])byPres[k]=[];byPres[k].push(p);});
+  allPl.forEach(function(p){
+    var keys=(p.presentateur&&p.presentateur!=='—')?p.presentateur.split(',').map(function(n){return n.trim();}).filter(Boolean):['—'];
+    keys.forEach(function(k){if(!byPres[k])byPres[k]=[];byPres[k].push(p);});
+  });
   var h='<div style="display:flex;align-items:center;gap:10px;margin-bottom:18px;flex-wrap:wrap">'
     +'<div class="sec" style="margin:0">Planches & Thèmes</div>'
     +ch(allPl.length+' planche(s)','cteal')
@@ -2575,6 +2580,7 @@ function lPlanches(loge,ms,off){
         +'<div style="font-weight:700;font-size:13px;margin-bottom:4px">'+p.titre+'</div>'
         +'<div style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:4px">'
         +ch(p.typeSrc,'cteal')
+        +(p.typePlanche?'<span style="font-size:10px;font-weight:700;padding:2px 8px;border-radius:10px;background:#fff8e1;color:#5a3e00">'+p.typePlanche+'</span>':'')
         +'<span style="font-size:11px;color:#888;font-weight:600">📅 '+p.date+'</span>'
         +(p.evTitre&&p.evTitre!=='—'?'<span style="font-size:11px;color:#aaa">— '+p.evTitre+'</span>':'')
         +'<span style="font-size:10px;font-weight:700;padding:2px 8px;border-radius:10px;background:'+(presented?'#e8f5e9;color:#1b5e20':'#f5f5f5;color:#888')+'">'+(presented?'✓ Présentée':'Non présentée')+'</span>'
@@ -2609,13 +2615,15 @@ APP.togglePlanStatus=function(lid,pid,src){
 APP.savePlanche=function(lid){
   var loge=gLoge(lid);if(!loge)return;
   var titre=G('plTitre')?G('plTitre').value.trim():'';if(!titre)return;
-  var mid=G('plPres')?G('plPres').value:'';
-  var m=gMbr(mid);
-  var presName=m?m.nom:(G('plPresCustom')?G('plPresCustom').value.trim():'');
+  var presNames=[],presIds=[];
+  document.querySelectorAll('.presChk:checked').forEach(function(c){presIds.push(c.value);var pm=lMbrs(lid).find(function(m){return m.id===c.value;});if(pm)presNames.push(pm.nom);});
+  var extPres=G('plPresCustom')?G('plPresCustom').value.trim():'';
+  if(extPres)extPres.split(',').forEach(function(n){var tr=n.trim();if(tr)presNames.push(tr);});
+  var presName=presNames.join(', ');
   if(!loge.planches)loge.planches=[];
-  loge.planches.push({id:uid(),titre:titre,mid:mid||null,presentateur:presName,
+  loge.planches.push({id:uid(),titre:titre,presIds:presIds,presentateur:presName,
     date:G('plDate')?G('plDate').value:tdStr(),
-    type:G('plType')?G('plType').value:'Planche',
+    type:G('plType')?G('plType').value:'Ordinaire',
     planStatus:G('plStatus')?G('plStatus').value:'Non présentée',
     notes:G('plNotes')?G('plNotes').value.trim():''});
   APP.closeMod();
@@ -2984,15 +2992,14 @@ var MODS={
       +'<div class="frow"><div class="fg"><label class="fl">Date</label><input id="mDate" type="date"/></div><div class="fg"><label class="fl">Heure</label><input id="mHeure" placeholder="19h00"/></div></div>'
       +'<div class="fg"><label class="fl">Type</label><select id="mType" onchange="APP.toggleCeremonie(this.value)"><option>Tenue</option><option>Cérémonie</option><option>Agapes</option><option>Événement spécial</option></select></div>'
       +partCks
-      +'<div class="fg"><label class="fl">Thème / Planche</label><input id="mPlanche" placeholder="Ex: La Fraternité universelle"/></div>'
+      +'<div class="frow"><div class="fg" style="flex:2"><label class="fl">Thème / Planche</label><input id="mPlanche" placeholder="Ex: La Fraternité universelle"/></div>'
+      +'<div class="fg"><label class="fl">Type de planche</label><select id="mTypePlanche"><option>Ordinaire</option><option>Augmentation</option><option>Planche Libre de Maître</option><option>Cinq minutes de Symbolisme</option></select></div></div>'
       +'<div class="fg"><label class="fl">Statut de la planche</label><select id="mPlanStatus"><option value="Non présentée">Non présentée</option><option value="Présentée">Présentée</option></select></div>'
-      +'<div class="fg"><label class="fl">Présentateur</label>'
-      +'<select id="mPresId" onchange="APP.syncPresSel(this)">'
-      +'<option value="">— Sélectionner un frère/sœur —</option>'
-      +ms.map(function(m){return'<option value="'+m.nom+'">'+m.nom+' ('+gLbl(m.grade)+')<\/option>';}).join('')
-      +'<option value="__custom">Autre — saisir manuellement</option>'
-      +'<\/select></div>'
-      +'<div id="mPresManualDiv" style="display:none" class="fg"><label class="fl">Nom du présentateur</label><input id="mPresManual" placeholder="Prénom NOM"/></div>'
+      +'<div class="fg"><label class="fl">Présentateur(s)</label>'
+      +'<div style="max-height:120px;overflow-y:auto;border:1.5px solid #e0e0e0;border-radius:8px;padding:8px;margin-bottom:6px">'
+      +ms.map(function(m){return'<label style="display:flex;align-items:center;gap:8px;padding:2px 0;cursor:pointer"><input type="checkbox" value="'+m.id+'" class="presChk"/> <span>'+m.nom+' ('+gLbl(m.grade)+')<\/span><\/label>';}).join('')
+      +'<\/div>'
+      +'<input id="mPresManual" placeholder="Présentateur(s) externe(s) — séparés par virgule" style="font-size:12px"/><\/div>'
       +'<div class="mact"><button class="btn gold full" onclick="APP.createEvt(\''+d.lid+'\')">Ajouter<\/button><button class="btn ghost full" onclick="APP.closeMod()">Annuler<\/button></div>';
   },
   newInstr:function(d){
@@ -3002,13 +3009,11 @@ var MODS={
       +'<div class="frow"><div class="fg"><label class="fl">Date</label><input id="mDate" type="date"/></div><div class="fg"><label class="fl">Heure</label><input id="mHeure" placeholder="17h30"/></div></div>'
       +'<div class="fg"><label class="fl">Thème / Planche</label><input id="mPlanche" placeholder="Ex: Les Outils du 1er degré"/></div>'
       +'<div class="fg"><label class="fl">Statut de la planche</label><select id="mPlanStatus"><option value="Non présentée">Non présentée</option><option value="Présentée">Présentée</option></select></div>'
-      +'<div class="fg"><label class="fl">Présentateur</label>'
-      +'<select id="mPresId" onchange="APP.syncPresSel(this)">'
-      +'<option value="">— Sélectionner un frère/sœur —</option>'
-      +ms.map(function(m){return'<option value="'+m.nom+'">'+m.nom+' ('+gLbl(m.grade)+')<\/option>';}).join('')
-      +'<option value="__custom">Autre — saisir manuellement</option>'
-      +'<\/select></div>'
-      +'<div id="mPresManualDiv" style="display:none" class="fg"><label class="fl">Nom du présentateur</label><input id="mPresManual" placeholder="Prénom NOM"/></div>'
+      +'<div class="fg"><label class="fl">Présentateur(s)</label>'
+      +'<div style="max-height:120px;overflow-y:auto;border:1.5px solid #e0e0e0;border-radius:8px;padding:8px;margin-bottom:6px">'
+      +ms.map(function(m){return'<label style="display:flex;align-items:center;gap:8px;padding:2px 0;cursor:pointer"><input type="checkbox" value="'+m.id+'" class="presChk"/> <span>'+m.nom+' ('+gLbl(m.grade)+')<\/span><\/label>';}).join('')
+      +'<\/div>'
+      +'<input id="mPresManual" placeholder="Présentateur(s) externe(s) — séparés par virgule" style="font-size:12px"/><\/div>'
       +'<div class="mact"><button class="btn gold full" onclick="APP.createInstr(\''+d.lid+'\')">Ajouter<\/button><button class="btn ghost full" onclick="APP.closeMod()">Annuler<\/button></div>';
   },
   editEvt:function(d){
@@ -3016,8 +3021,11 @@ var MODS={
     var arr=d.src==='instr'?(loge.instruction||[]):loge.agenda;
     var ev=arr.find(function(x){return x.id===d.eid;});if(!ev)return'';
     var ms=lMbrs(d.lid);
-    var curPres=ev.presentateur||'';
-    var isCustom=curPres&&!ms.find(function(m){return m.nom===curPres;});
+    var curPresIds=ev.presIds||[];
+    if(!curPresIds.length&&ev.presentateur){ev.presentateur.split(',').forEach(function(n){var mx=ms.find(function(x){return x.nom===n.trim();});if(mx)curPresIds.push(mx.id);});}
+    var matchedNames=curPresIds.map(function(id){var mx=ms.find(function(x){return x.id===id;});return mx?mx.nom:'';}).filter(Boolean);
+    var allPresNames=(ev.presentateur||'').split(',').map(function(n){return n.trim();}).filter(Boolean);
+    var curExtPres=allPresNames.filter(function(n){return matchedNames.indexOf(n)===-1;}).join(', ');
     var partCks='<div id="evtParticipantsDiv" style="display:'+(ev.type==='Cérémonie'?'block':'none')+'" class="fg"><label class="fl">Participants à la cérémonie</label>'
       +'<div style="max-height:150px;overflow-y:auto;border:1.5px solid #e0e0e0;border-radius:8px;padding:8px">'
       +ms.map(function(m){var chk=(ev.participants||[]).indexOf(m.id)!==-1;return'<label style="display:flex;align-items:center;gap:8px;padding:3px 0;cursor:pointer"><input type="checkbox" value="'+m.id+'" class="evtPartCk"'+(chk?' checked':'')+'/> <span>'+m.nom+' ('+gLbl(m.grade)+')<\/span><\/label>';}).join('')
@@ -3026,12 +3034,14 @@ var MODS={
       +'<div class="fg"><label class="fl">Titre</label><input id="mTitre" value="'+(ev.titre||'')+'"/></div>'
       +'<div class="frow"><div class="fg"><label class="fl">Date</label><input id="mDate" type="date" value="'+(ev.date||'')+'" /></div><div class="fg"><label class="fl">Heure</label><input id="mHeure" value="'+(ev.heure||'')+'" placeholder="19h00"/></div></div>'
       +(d.src!=='instr'?'<div class="fg"><label class="fl">Type</label><select id="mType" onchange="APP.toggleCeremonie(this.value)"><option'+(ev.type==='Tenue'?' selected':'')+'>Tenue</option><option'+(ev.type==='Cérémonie'?' selected':'')+'>Cérémonie</option><option'+(ev.type==='Agapes'?' selected':'')+'>Agapes</option><option'+(ev.type==="Événement spécial"?' selected':'')+'>Événement spécial</option></select></div>'+partCks:'')
-      +'<div class="fg"><label class="fl">Thème / Planche</label><input id="mPlanche" value="'+(ev.planche||'')+'" placeholder="Ex: La Fraternité universelle"/></div>'
+      +'<div class="frow"><div class="fg" style="flex:2"><label class="fl">Thème / Planche</label><input id="mPlanche" value="'+(ev.planche||'')+'" placeholder="Ex: La Fraternité universelle"/></div>'
+      +'<div class="fg"><label class="fl">Type de planche</label><select id="mTypePlanche"><option'+(ev.typePlanche==='Ordinaire'||!ev.typePlanche?' selected':'')+'>Ordinaire</option><option'+(ev.typePlanche==='Augmentation'?' selected':'')+'>Augmentation</option><option'+(ev.typePlanche==='Planche Libre de Maître'?' selected':'')+'>Planche Libre de Maître</option><option'+(ev.typePlanche==='Cinq minutes de Symbolisme'?' selected':'')+'>Cinq minutes de Symbolisme</option></select></div></div>'
       +'<div class="fg"><label class="fl">Statut de la planche</label><select id="mPlanStatus"><option value="Non présentée"'+(!ev.planStatus||ev.planStatus==='Non présentée'?' selected':'')+'>Non présentée</option><option value="Présentée"'+(ev.planStatus==='Présentée'?' selected':'')+'>Présentée</option></select></div>'
-      +'<div class="fg"><label class="fl">Présentateur</label><select id="mPresId" onchange="APP.syncPresSel(this)"><option value="">— Sélectionner un frère/sœur —</option>'
-      +ms.map(function(m){return'<option value="'+m.nom+'"'+(m.nom===curPres?' selected':'')+'>'+m.nom+' ('+gLbl(m.grade)+')<\/option>';}).join('')
-      +'<option value="__custom"'+(isCustom?' selected':'')+'>Autre — saisir manuellement</option><\/select></div>'
-      +'<div id="mPresManualDiv" style="display:'+(isCustom?'block':'none')+'" class="fg"><label class="fl">Nom du présentateur</label><input id="mPresManual" value="'+(isCustom?curPres:'')+'" placeholder="Prénom NOM"/></div>'
+      +'<div class="fg"><label class="fl">Présentateur(s)</label>'
+      +'<div style="max-height:120px;overflow-y:auto;border:1.5px solid #e0e0e0;border-radius:8px;padding:8px;margin-bottom:6px">'
+      +ms.map(function(m){return'<label style="display:flex;align-items:center;gap:8px;padding:2px 0;cursor:pointer"><input type="checkbox" value="'+m.id+'" class="presChk"'+(curPresIds.indexOf(m.id)!==-1?' checked':'')+'/> <span>'+m.nom+' ('+gLbl(m.grade)+')<\/span><\/label>';}).join('')
+      +'<\/div>'
+      +'<input id="mPresManual" value="'+curExtPres+'" placeholder="Présentateur(s) externe(s) — séparés par virgule" style="font-size:12px"/><\/div>'
       +'<div class="mact"><button class="btn gold full" onclick="APP.updateEvt(\''+d.lid+'\',\''+d.eid+'\',\''+(d.src||'agenda')+'\')">Enregistrer<\/button><button class="btn ghost full" onclick="APP.closeMod()">Annuler<\/button></div>';
   },
   newVis:function(d){
@@ -3192,22 +3202,20 @@ MODS.biAppartForm=function(d){
 };
 MODS.newPlanche=function(d){
   var ms=lMbrs(d.lid);
-  return mhdr('Nouvelle Planche / Thème autonome')
+  return mhdr('Nouvelle Planche Libre / Thème')
     +'<div class="alert a-i" style="margin-bottom:12px;font-size:12px">Une planche autonome n\'est pas liée à une tenue spécifique. Pour lier une planche à une tenue, modifiez directement la tenue dans le Programme.</div>'
     +'<div class="fg"><label class="fl">Titre / Thème</label><input id="plTitre" placeholder="Ex: La Fraternité universelle"/></div>'
-    +'<div class="fg"><label class="fl">Présentateur (frère/sœur de la loge)</label>'
-    +'<select id="plPres"><option value="">— Sélectionner —</option>'
-    +ms.map(function(m){return'<option value="'+m.id+'">'+m.nom+' ('+gLbl(m.grade)+')<\/option>';}).join('')
-    +'<option value="__ext">Autre — saisir manuellement</option>'
-    +'<\/select></div>'
-    +'<div id="plPresExtDiv" style="display:none" class="fg"><label class="fl">Nom du présentateur</label><input id="plPresCustom" placeholder="Prénom NOM"/></div>'
     +'<div class="frow">'
     +'<div class="fg"><label class="fl">Date</label><input id="plDate" type="date" value="'+tdStr()+'"/></div>'
-    +'<div class="fg"><label class="fl">Type</label><select id="plType"><option>Planche</option><option>Thème</option><option>Étude</option><option>Exposé</option></select></div>'
+    +'<div class="fg"><label class="fl">Type de planche</label><select id="plType"><option>Ordinaire</option><option>Augmentation</option><option>Planche Libre de Maître</option><option>Cinq minutes de Symbolisme</option></select></div>'
     +'</div>'
+    +'<div class="fg"><label class="fl">Présentateur(s)</label>'
+    +'<div style="max-height:120px;overflow-y:auto;border:1.5px solid #e0e0e0;border-radius:8px;padding:8px;margin-bottom:6px">'
+    +ms.map(function(m){return'<label style="display:flex;align-items:center;gap:8px;padding:2px 0;cursor:pointer"><input type="checkbox" value="'+m.id+'" class="presChk"/> <span>'+m.nom+' ('+gLbl(m.grade)+')<\/span><\/label>';}).join('')
+    +'<\/div>'
+    +'<input id="plPresCustom" placeholder="Présentateur(s) externe(s) — séparés par virgule" style="font-size:12px"/><\/div>'
     +'<div class="fg"><label class="fl">Statut</label><select id="plStatus"><option value="Non présentée">Non présentée</option><option value="Présentée">Présentée</option></select></div>'
     +'<div class="fg"><label class="fl">Notes / Résumé</label><textarea id="plNotes" placeholder="Observations, résumé de la planche..."></textarea></div>'
-    +'<script>G("plPres").onchange=function(){G("plPresExtDiv").style.display=(this.value==="__ext")?"block":"none";}<\/script>'
     +'<div class="mact"><button class="btn gold full" onclick="APP.savePlanche(\''+d.lid+'\')">Enregistrer<\/button><button class="btn ghost full" onclick="APP.closeMod()">Annuler<\/button></div>';
 };
 MODS.avanceLoge=function(d){
@@ -3331,10 +3339,13 @@ APP.ajouterAvance=function(mid,lid){var mntEl=G('avMnt');if(!mntEl)return;var mn
 APP.createEvt=function(lid){
   var t=G('mTitre').value.trim(),d=G('mDate').value;if(!t||!d)return;
   var loge=gLoge(lid);if(!loge)return;
-  var presId=G('mPresId')?G('mPresId').value:'';
-  var pres=presId==='__custom'?(G('mPresManual')?G('mPresManual').value.trim():''):presId;
+  var presNames=[],presIds=[];
+  document.querySelectorAll('.presChk:checked').forEach(function(c){presIds.push(c.value);var pm=lMbrs(lid).find(function(m){return m.id===c.value;});if(pm)presNames.push(pm.nom);});
+  var extPres=G('mPresManual')?G('mPresManual').value.trim():'';
+  if(extPres)extPres.split(',').forEach(function(n){var tr=n.trim();if(tr)presNames.push(tr);});
+  var pres=presNames.join(', ');
   var parts=[];document.querySelectorAll('.evtPartCk:checked').forEach(function(c){parts.push(c.value);});
-  loge.agenda.push({id:uid(),titre:t,date:d,heure:G('mHeure')?G('mHeure').value:'',type:G('mType')?G('mType').value:'Tenue',planche:G('mPlanche')?G('mPlanche').value.trim():'',planStatus:G('mPlanStatus')?G('mPlanStatus').value:'Non présentée',presentateur:pres,participants:parts});
+  loge.agenda.push({id:uid(),titre:t,date:d,heure:G('mHeure')?G('mHeure').value:'',type:G('mType')?G('mType').value:'Tenue',planche:G('mPlanche')?G('mPlanche').value.trim():'',typePlanche:G('mTypePlanche')?G('mTypePlanche').value:'Ordinaire',planStatus:G('mPlanStatus')?G('mPlanStatus').value:'Non présentée',presentateur:pres,presIds:presIds,participants:parts});
   APP.closeMod();
 };
 APP.toggleCeremonie=function(val){var d=G('evtParticipantsDiv');if(d)d.style.display=(val==='Cérémonie')?'block':'none';};
@@ -3343,21 +3354,28 @@ APP.updateEvt=function(lid,eid,src){
   var loge=gLoge(lid);if(!loge)return;
   var arr=src==='instr'?(loge.instruction||[]):loge.agenda;
   var ev=arr.find(function(x){return x.id===eid;});if(!ev)return;
-  var presId=G('mPresId')?G('mPresId').value:'';
-  var pres=presId==='__custom'?(G('mPresManual')?G('mPresManual').value.trim():''):presId;
+  var presNames=[],presIds=[];
+  document.querySelectorAll('.presChk:checked').forEach(function(c){presIds.push(c.value);var pm=lMbrs(lid).find(function(m){return m.id===c.value;});if(pm)presNames.push(pm.nom);});
+  var extPres=G('mPresManual')?G('mPresManual').value.trim():'';
+  if(extPres)extPres.split(',').forEach(function(n){var tr=n.trim();if(tr)presNames.push(tr);});
+  var pres=presNames.join(', ');
   var parts=[];document.querySelectorAll('.evtPartCk:checked').forEach(function(c){parts.push(c.value);});
   ev.titre=t;ev.date=d;ev.heure=G('mHeure')?G('mHeure').value:'';ev.type=G('mType')?G('mType').value:'Tenue';
-  ev.planche=G('mPlanche')?G('mPlanche').value.trim():'';ev.planStatus=G('mPlanStatus')?G('mPlanStatus').value:'Non présentée';
-  ev.presentateur=pres;ev.participants=parts;
+  ev.planche=G('mPlanche')?G('mPlanche').value.trim():'';ev.typePlanche=G('mTypePlanche')?G('mTypePlanche').value:'Ordinaire';
+  ev.planStatus=G('mPlanStatus')?G('mPlanStatus').value:'Non présentée';
+  ev.presentateur=pres;ev.presIds=presIds;ev.participants=parts;
   APP.closeMod();
 };
 APP.createInstr=function(lid){
   var d=G('mDate').value;if(!d)return;
   var loge=gLoge(lid);if(!loge)return;
   if(!loge.instruction)loge.instruction=[];
-  var presId=G('mPresId')?G('mPresId').value:'';
-  var pres=presId==='__custom'?(G('mPresManual')?G('mPresManual').value.trim():''):presId;
-  loge.instruction.push({id:uid(),titre:G('mTitre')?G('mTitre').value.trim()||"Tenue d'instruction":'',date:d,heure:G('mHeure')?G('mHeure').value:'',planche:G('mPlanche')?G('mPlanche').value.trim():'',planStatus:G('mPlanStatus')?G('mPlanStatus').value:'Non présentée',presentateur:pres});
+  var presNames=[],presIds=[];
+  document.querySelectorAll('.presChk:checked').forEach(function(c){presIds.push(c.value);var pm=lMbrs(lid).find(function(m){return m.id===c.value;});if(pm)presNames.push(pm.nom);});
+  var extPres=G('mPresManual')?G('mPresManual').value.trim():'';
+  if(extPres)extPres.split(',').forEach(function(n){var tr=n.trim();if(tr)presNames.push(tr);});
+  var pres=presNames.join(', ');
+  loge.instruction.push({id:uid(),titre:G('mTitre')?G('mTitre').value.trim()||"Tenue d'instruction":'',date:d,heure:G('mHeure')?G('mHeure').value:'',planche:G('mPlanche')?G('mPlanche').value.trim():'',planStatus:G('mPlanStatus')?G('mPlanStatus').value:'Non présentée',presentateur:pres,presIds:presIds});
   APP.closeMod();
 };
 APP.createVis=function(lid){var nom=G('mNom').value.trim(),loge=G('mLoge').value.trim();if(!nom||!loge)return;D.visiteurs.push({id:uid(),lid:lid,nom:nom,loge:loge,grade:G('mGrade').value,motif:G('mMotif').value.trim(),date:G('mDate').value});APP.closeMod();};
