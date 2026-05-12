@@ -427,6 +427,7 @@ function buildData(){
     },
 
     smsConfig:{provider:'demo',user:'',apiKey:'',mode:'demo'},
+    portalConfig:{enabled:true},
     customPerms:null,
   };
 }
@@ -934,6 +935,17 @@ function tParamsOb(){
         +'</div>';
     }).join('')
     +'<button class="btn gold" onclick="APP.saveSecretQuestions()">Enregistrer les questions</button>';
+  // Portail captif
+  var pc2=D.portalConfig||{};
+  h+='<div style="font-size:14px;font-weight:900;margin:22px 0 12px">🔐 Portail Captif</div>'
+    +'<div class="alert a-i" style="margin-bottom:14px;font-size:12px">Le portail captif est le premier écran affiché à l\'ouverture de l\'application. Il demande à l\'utilisateur de sélectionner son grade et de répondre à la question secrète correspondante avant de pouvoir accéder à la page de connexion.</div>'
+    +'<div class="card" style="margin-bottom:14px">'
+    +'<label style="display:flex;align-items:center;gap:10px;font-size:13px;cursor:pointer;padding:6px 0">'
+    +'<input type="checkbox" id="portalEnabled"'+(pc2.enabled?' checked':'')+' style="width:auto;margin:0;accent-color:#c9a227"/>'
+    +'<span><strong>Activer le portail captif</strong><br><span style="color:#888;font-size:11px">Les frères et sœurs devront répondre à leur question secrète avant d\'accéder à la page de connexion.</span></span>'
+    +'</label>'
+    +'<button class="btn gold sm" style="margin-top:10px" onclick="APP.savePortalConfig()">💾 Enregistrer</button>'
+    +'</div>';
   // Mail config section
   var mc=D.mailConfig||{};
   h+='<div style="font-size:14px;font-weight:900;margin:22px 0 12px">📧 Configuration Email</div>'
@@ -1150,6 +1162,15 @@ APP.saveSecretQuestions=function(){
     if(q&&a)D.secretQuestions[grade]={q:q,a:a,variants:variants};
   });
   alert('Questions secrètes enregistrées.');
+};
+APP.savePortalConfig=function(){
+  var en=G('portalEnabled')?G('portalEnabled').checked:true;
+  if(!D.portalConfig)D.portalConfig={};
+  D.portalConfig.enabled=en;
+  var t=document.createElement('div');
+  t.style.cssText='position:fixed;bottom:24px;left:50%;transform:translateX(-50%);background:#1b5e20;color:#fff;padding:11px 28px;border-radius:8px;font-size:14px;font-weight:700;z-index:9999;box-shadow:0 4px 16px rgba(0,0,0,.25)';
+  t.textContent=en?'✓ Portail captif activé':'✓ Portail captif désactivé';
+  document.body.appendChild(t);setTimeout(function(){t.remove();},2500);
 };
 APP.saveWelcomeMsg=function(){
   D.obInfo.welcomeMsg=G('obWelcomeMsg')?G('obWelcomeMsg').value:'';
@@ -1569,6 +1590,7 @@ function loadState() {
       if(parsed.grandeLogeTenues) D.grandeLogeTenues = parsed.grandeLogeTenues;
       if(parsed.convocationsGO)   D.convocationsGO   = parsed.convocationsGO;
       if(parsed.mailConfig)       D.mailConfig       = parsed.mailConfig;
+      if(parsed.portalConfig)     D.portalConfig     = parsed.portalConfig;
       if(parsed.documents)   D.documents   = parsed.documents;
       if(parsed.troncVeuve)  D.troncVeuve  = parsed.troncVeuve;
       if(parsed.obInfo)      D.obInfo      = parsed.obInfo;
@@ -1623,18 +1645,20 @@ function initAutoSave() {
   };
   // Load on startup
   loadState();
+  // Set initial view: captive portal if enabled
+  S.view = (D.portalConfig && D.portalConfig.enabled) ? 'portal' : 'login';
   APP.applyTheme();
 }
 
 APP.render=function(){
   var h='';
-  if(S.view==='login')h=vLogin();
+  if(S.view==='portal')h=vPortal();
+  else if(S.view==='login')h=vLogin();
   else if(S.view==='secretQ')h=vSecretQuestion();
   else if(S.view==='atelierSelect')h=vAtelier();
   else if(S.view==='monEspace')h=vMonEspace();
   else if(S.view==='obedience')h=vObedience();
   else if(S.view==='loge')h=vLoge();
-  else if(S.view==='secretQ')h=vSecretQuestion();
   // Append welcome modal if pending
   if(S.pendingWelcome&&S.view!=='login'&&S.view!=='secretQ'){
     h+=renderWelcomeModal();
@@ -1683,6 +1707,65 @@ function modH(){if(!S.modal)return'';var f=MODS[S.modal];if(!f)return'';return'<
 function mhdr(t){return'<div class="mhdr"><div class="mtit">'+t+'</div><button class="mcls" onclick="APP.closeMod()">✕</button></div>';}
 function mnote(t,c){return'<div class="alert a-'+(c||'i')+'" style="margin-bottom:11px;font-size:12px">'+t+'</div>';}
 
+// ── PORTAIL CAPTIF ──
+var S_PORTAL_GRADE = 'Apprenti';
+
+function vPortal(){
+  var pc = D.portalConfig||{};
+  if(!pc.enabled){ S.view='login'; return vLogin(); }
+  var grade = S_PORTAL_GRADE||'Apprenti';
+  var sq = D.secretQuestions[grade]||null;
+  var logo = LOGO||D.logoObedience
+    ? '<img src="'+(LOGO||D.logoObedience)+'" style="width:68px;height:68px;object-fit:cover;border-radius:50%;"/>'
+    : '<span style="font-size:30px;color:#c9a227">⬡</span>';
+  var h = '<div class="lpg"><div class="lbox">'
+    +'<div class="llogo">'+logo+'</div>'
+    +'<div class="ltit">'+D.obInfo.acronym+'</div>'
+    +'<div class="lsub">Portail d\'Accès Frères & Sœurs</div>'
+    +'<div style="background:#fff8e1;border:1.5px solid #c9a227;border-radius:10px;padding:12px 14px;margin-bottom:18px;font-size:12px;color:#555;text-align:center;line-height:1.6">'
+    +'<span style="font-size:16px">🔐</span><br>Zone réservée aux membres de l\'Obédience.<br>'
+    +'Sélectionnez votre grade et répondez à la question de votre degré pour accéder.'
+    +'</div>'
+    +'<div class="fg"><label class="fl">Votre grade</label>'
+    +'<select id="portalGrade" onchange="APP.updatePortalQuestion(this.value)">'
+    +['Apprenti','Compagnon','Maitre'].map(function(g){
+      return'<option value="'+g+'"'+(grade===g?' selected':'')+'>'+gLbl(g)+'</option>';
+    }).join('')
+    +'</select></div>';
+  if(sq){
+    h+='<div style="background:#f5f5f5;border:1.5px solid #ddd;border-radius:10px;padding:14px;margin-bottom:14px;font-size:14px;font-weight:600;color:#111;line-height:1.5">'+sq.q+'</div>'
+      +'<div class="fg"><label class="fl">Votre réponse</label>'
+      +'<input id="portalAnswer" placeholder="Répondez ici..." autocomplete="off" onkeydown="if(event.key===\'Enter\')APP.submitPortal()"/></div>'
+      +'<div id="portalErr" style="display:none" class="lerr">Réponse incorrecte — vous n\'êtes pas autorisé à accéder à cet espace.</div>'
+      +'<button class="btn gold lg full" onclick="APP.submitPortal()">Entrer →</button>';
+  } else {
+    h+='<div style="color:#aaa;font-size:12px;margin-bottom:14px;text-align:center">Aucune question configurée pour ce grade.</div>'
+      +'<button class="btn gold lg full" onclick="APP.submitPortal()">Entrer →</button>';
+  }
+  h+='</div></div>';
+  return h;
+}
+
+APP.updatePortalQuestion = function(g){
+  S_PORTAL_GRADE = g||'Apprenti';
+  R();
+};
+
+APP.submitPortal = function(){
+  var g = G('portalGrade') ? G('portalGrade').value : (S_PORTAL_GRADE||'Apprenti');
+  var ans = G('portalAnswer') ? G('portalAnswer').value : '';
+  var sq = D.secretQuestions[g];
+  if(!sq){ S.view='login'; R(); return; }
+  function norm(s){ return s.toLowerCase().trim().replace(/[àáâ]/g,'a').replace(/[éèêë]/g,'e').replace(/[îï]/g,'i').replace(/[ôö]/g,'o').replace(/[ùûü]/g,'u'); }
+  var nAns = norm(ans);
+  var ok = sq.variants.concat([sq.a]).some(function(v){
+    var nv = norm(v);
+    return nAns===nv || nAns.indexOf(nv)!==-1 || nv.indexOf(nAns)!==-1;
+  });
+  if(!ok){ var e=G('portalErr'); if(e)e.style.display='block'; return; }
+  S.view='login'; R();
+};
+
 // ── LOGIN ──
 function vLogin(){
   var logo=LOGO?'<img src="'+LOGO+'" style="width:70px;height:70px;object-fit:cover;border-radius:50%;"/>':logoImg(70);
@@ -1700,8 +1783,7 @@ function vLogin(){
     +'<div class="fg"><label class="fl">Matricule</label>'
     +'<input id="lM" placeholder="Ex: M-001 ou GOLAC-00" autocomplete="off" onkeydown="if(event.key===\'Enter\')G(\'lP\').focus()"/></div>'
     +'<div class="fg"><label class="fl">Mot de passe</label>'
-    +'<div class="pwr"><input id="lP" type="password" placeholder="••••••" onkeydown="if(event.key===\'Enter\')APP.doLogin()"/>'
-    +'<button class="pwe" onclick="APP.togglePw()">👁</button></div></div>'
+    +'<input id="lP" type="password" placeholder="••••••" autocomplete="current-password" onkeydown="if(event.key===\'Enter\')APP.doLogin()"/></div>'
     +'<div id="lE" class="lerr">Matricule ou mot de passe incorrect.</div>'
     +'<button class="btn gold lg full" onclick="APP.doLogin()" style="margin-bottom:8px">Se connecter</button>'
     +'<div class="div"></div>'
@@ -1732,7 +1814,6 @@ APP.doLogin=function(){
   S.pendingWelcome=true;
   R();
 };
-APP.togglePw=function(){var i=G('lP');i.type=i.type==='password'?'text':'password';};
 APP.logout=function(){S.user=null;S.view='login';S.lid=null;S.tab='membres';R();};
 APP.changeAtelier=function(){S.view='atelierSelect';R();};
 APP.setTab=function(t){S.tab=t;R();};
