@@ -1,0 +1,735 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+<title>MasonApp — Modélisation UI</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0;}
+body{background:#0f0f13;color:#e2e8f0;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;font-size:14px;}
+
+/* ── NAV MOCKUP ── */
+.nav{background:#0f0f13;border-bottom:1px solid #1e2235;padding:0 32px;display:flex;align-items:center;gap:24px;height:56px;position:sticky;top:0;z-index:100;}
+.nav-brand{font-size:13px;font-weight:900;letter-spacing:3px;color:#c9a227;text-transform:uppercase;}
+.nav-links{display:flex;gap:4px;margin-left:auto;}
+.nav-link{background:none;border:none;color:#64748b;font-size:12px;padding:6px 14px;border-radius:6px;cursor:pointer;transition:all .15s;}
+.nav-link.on,.nav-link:hover{background:#1e2235;color:#e2e8f0;}
+.badge-new{background:#c9a227;color:#111;font-size:9px;font-weight:900;padding:2px 5px;border-radius:4px;margin-left:5px;letter-spacing:.5px;}
+
+/* ── SECTIONS ── */
+.section{padding:48px 32px;border-bottom:1px solid #1a1f30;}
+.section-title{font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:2px;color:#c9a227;margin-bottom:6px;}
+.section-desc{font-size:13px;color:#64748b;margin-bottom:32px;}
+.screen-label{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:1.5px;color:#334155;margin-bottom:12px;}
+
+/* ── GRID ── */
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:24px;}
+.grid3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:24px;}
+.grid4{display:grid;grid-template-columns:repeat(4,1fr);gap:16px;}
+@media(max-width:900px){.grid2,.grid3,.grid4{grid-template-columns:1fr;}}
+
+/* ── FRAME ── */
+.frame{border-radius:14px;overflow:hidden;background:#fff;box-shadow:0 8px 40px rgba(0,0,0,.5);}
+.frame-dark{background:#0a0a0f;}
+.frame-label{background:#1a1f2e;padding:10px 16px;display:flex;align-items:center;gap:8px;}
+.dots{display:flex;gap:5px;}
+.dot{width:10px;height:10px;border-radius:50%;}
+.dot-r{background:#ef4444;}.dot-y{background:#f59e0b;}.dot-g{background:#22c55e;}
+.frame-url{font-size:10px;color:#475569;margin-left:8px;font-family:monospace;}
+
+/* ════════════════════════════════
+   SCREEN 1 — LOGIN
+════════════════════════════════ */
+.s-login{
+  min-height:380px;display:flex;align-items:center;justify-content:center;padding:32px 20px;
+  background:linear-gradient(135deg,#4a0e8f 0%,#0891b2 100%);
+  position:relative;overflow:hidden;
+}
+.s-login-bub{position:absolute;inset:0;pointer-events:none;}
+.lbub{position:absolute;border-radius:50%;background:rgba(255,255,255,.07);border:1px solid rgba(255,255,255,.15);animation:bub linear infinite;}
+@keyframes bub{0%{transform:translateY(0) scale(1);opacity:0;}6%{opacity:1;}88%{opacity:.4;}100%{transform:translateY(-500px) scale(.85);opacity:0;}}
+.s-lbox{background:#fff;border-radius:20px;padding:32px 28px;width:100%;max-width:320px;position:relative;z-index:2;box-shadow:0 16px 60px rgba(0,0,0,.35);}
+.s-llogo{width:56px;height:56px;border-radius:14px;background:#fff;box-shadow:0 4px 18px rgba(0,0,0,.12);display:flex;align-items:center;justify-content:center;margin:0 auto 16px;font-size:24px;}
+.s-ltit{color:#1e2d4a;font-size:20px;font-weight:700;text-align:center;margin-bottom:4px;}
+.s-lsub{color:#8a95a3;font-size:11px;text-align:center;margin-bottom:22px;}
+.s-inp{width:100%;background:#fff;border:1.5px solid #dde2ea;border-radius:50px;padding:10px 16px;color:#1e2d4a;font-size:13px;outline:none;margin-bottom:10px;}
+.s-btn{width:100%;background:#1a2845;color:#fff;border:none;border-radius:10px;padding:11px;font-size:13px;font-weight:700;cursor:pointer;margin-top:4px;}
+.s-link{display:block;text-align:center;color:#94a3b8;font-size:11px;margin-top:12px;}
+
+/* ════════════════════════════════
+   SCREEN 2 — TOPBAR + DASHBOARD
+════════════════════════════════ */
+.s-hdr{background:#1e293b;border-bottom:3px solid #c9a227;padding:10px 16px;display:flex;align-items:center;gap:10px;}
+.s-hdr-logo{width:30px;height:30px;border-radius:8px;background:#c9a227;display:flex;align-items:center;justify-content:center;font-size:14px;}
+.s-hdr-name{color:#c9a227;font-size:13px;font-weight:900;letter-spacing:1.5px;}
+.s-hdr-right{margin-left:auto;display:flex;align-items:center;gap:8px;}
+.s-avatar{width:28px;height:28px;border-radius:50%;background:#334155;display:flex;align-items:center;justify-content:center;font-size:10px;color:#94a3b8;}
+
+.s-tabbar{background:#fff;border-bottom:1px solid #e2e8f0;padding:0 16px;display:flex;gap:0;}
+.s-tab{padding:8px 12px;border:none;border-bottom:2.5px solid transparent;background:none;color:#94a3b8;font-size:11px;font-weight:500;cursor:pointer;white-space:nowrap;margin-bottom:-1px;}
+.s-tab.on{color:#c9a227;border-bottom-color:#c9a227;font-weight:800;}
+
+.s-cont{background:#f0f4f8;padding:16px;}
+.s-stats{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:14px;}
+.s-sc{background:#fff;border:1.5px solid #e2e8f0;border-radius:10px;padding:12px;box-shadow:0 1px 3px rgba(0,0,0,.04);}
+.s-sc-l{color:#94a3b8;font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:.6px;margin-bottom:4px;}
+.s-sc-v{font-size:20px;font-weight:900;color:#1e293b;}
+.s-sc-d{font-size:9px;color:#22c55e;margin-top:2px;}
+
+.s-cards{display:grid;grid-template-columns:1fr 1fr;gap:10px;}
+.s-card{background:#fff;border:1.5px solid #e2e8f0;border-radius:10px;padding:12px;box-shadow:0 1px 3px rgba(0,0,0,.04);position:relative;overflow:hidden;}
+.s-card-stripe{height:3px;position:absolute;top:0;left:0;right:0;border-radius:10px 10px 0 0;}
+.s-card-acro{font-size:14px;font-weight:900;color:#1e293b;letter-spacing:1px;margin-top:4px;}
+.s-card-name{font-size:11px;color:#64748b;margin-top:2px;}
+.s-card-meta{font-size:10px;color:#94a3b8;margin-top:6px;line-height:1.8;}
+.s-card-actions{display:flex;gap:4px;margin-top:8px;flex-wrap:wrap;}
+.s-btn-sm{border:none;border-radius:5px;padding:3px 8px;font-size:10px;font-weight:700;cursor:pointer;}
+
+/* ════════════════════════════════
+   SCREEN 3 — MEMBRES TABLE
+════════════════════════════════ */
+.s-table-wrap{background:#fff;border-radius:10px;border:1.5px solid #e2e8f0;overflow:hidden;box-shadow:0 1px 4px rgba(0,0,0,.05);}
+.s-table{width:100%;border-collapse:collapse;}
+.s-table th{background:#1e293b;color:#fff;padding:8px 10px;font-size:9px;font-weight:900;text-transform:uppercase;letter-spacing:.5px;text-align:left;}
+.s-table td{padding:8px 10px;border-bottom:1px solid #f1f5f9;font-size:11px;color:#1e293b;vertical-align:middle;}
+.s-table tr:last-child td{border:none;}
+.s-table tr:hover td{background:#f8fafc;}
+.s-ava{width:26px;height:26px;border-radius:50%;background:#1e293b;display:inline-flex;align-items:center;justify-content:center;color:#c9a227;font-size:9px;font-weight:900;margin-right:6px;}
+
+/* ════════════════════════════════
+   SCREEN 4 — MODALE
+════════════════════════════════ */
+.s-ovl{background:rgba(15,23,42,.7);display:flex;align-items:center;justify-content:center;padding:20px;min-height:340px;}
+.s-modal{background:#fff;border:1.5px solid #e2e8f0;border-radius:16px;padding:24px;width:100%;max-width:340px;box-shadow:0 20px 60px rgba(0,0,0,.3);}
+.s-modal-hdr{display:flex;align-items:center;justify-content:space-between;margin-bottom:18px;}
+.s-modal-tit{font-size:14px;font-weight:900;color:#c9a227;}
+.s-modal-x{background:none;border:none;color:#94a3b8;font-size:18px;cursor:pointer;}
+.s-fg{margin-bottom:10px;}
+.s-fl{display:block;font-size:9px;font-weight:700;text-transform:uppercase;color:#64748b;letter-spacing:.5px;margin-bottom:3px;}
+.s-fi{width:100%;background:#f8fafc;border:1.5px solid #e2e8f0;border-radius:8px;padding:8px 12px;font-size:12px;color:#1e293b;}
+
+/* ════════════════════════════════
+   COMPOSANTS — DESIGN SYSTEM
+════════════════════════════════ */
+.ds-row{display:flex;gap:10px;align-items:center;flex-wrap:wrap;margin-bottom:18px;}
+.ds-title{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:1.5px;color:#475569;margin-bottom:10px;}
+
+/* BUTTONS */
+.btn{display:inline-flex;align-items:center;gap:6px;padding:8px 16px;border-radius:8px;font-size:12px;font-weight:700;border:none;cursor:pointer;transition:opacity .15s;}
+.btn-gold{background:#c9a227;color:#fff;}
+.btn-navy{background:#1a2845;color:#fff;}
+.btn-outline{background:#fff;color:#1e293b;border:2px solid #1e293b;}
+.btn-ghost{background:#f0f4f8;color:#1e293b;border:1.5px solid #e2e8f0;}
+.btn-ok{background:#f0fdf4;color:#16a34a;}
+.btn-dng{background:#fef2f2;color:#dc2626;}
+.btn-info{background:#eff6ff;color:#2563eb;}
+.btn-warn{background:#fffbeb;color:#d97706;}
+.btn-sm-v{padding:5px 10px;font-size:11px;}
+
+/* CHIPS */
+.chip{display:inline-flex;align-items:center;padding:3px 10px;border-radius:20px;font-size:10px;font-weight:700;border:1.5px solid;white-space:nowrap;}
+.cg{background:#fff8e1;color:#5a3e00;border-color:#c9a227;}
+.cb{background:#e3f2fd;color:#0d47a1;border-color:#90caf9;}
+.cgr{background:#f5f5f5;color:#444;border-color:#bbb;}
+.cgreen{background:#e8f5e9;color:#1b5e20;border-color:#81c784;}
+.cred{background:#ffebee;color:#b71c1c;border-color:#ef9a9a;}
+.cpur{background:#f3e5f5;color:#4a148c;border-color:#ce93d8;}
+.cteal{background:#e0f7fa;color:#006064;border-color:#80deea;}
+.cnavy{background:#1e293b;color:#c9a227;border-color:#c9a227;}
+
+/* ALERTS */
+.alert{border-radius:10px;padding:12px 14px;margin-bottom:8px;font-size:12px;}
+.a-ok{background:#e8f5e9;border:2px solid #81c784;color:#1b5e20;}
+.a-w{background:#fff8e1;border:2px solid #c9a227;color:#5a3e00;}
+.a-e{background:#ffebee;border:2px solid #ef9a9a;color:#b71c1c;}
+.a-i{background:#f5f5f5;border:2px solid #ccc;color:#333;}
+.a-t{font-weight:900;margin-bottom:4px;}
+
+/* PROGRESS BAR */
+.pbar-wrap{background:#f0f4f8;border-radius:4px;height:8px;overflow:hidden;margin-bottom:4px;}
+.pbar-fill{height:100%;border-radius:4px;transition:width .4s;}
+
+/* TOGGLE */
+.toggle-wrap{display:flex;align-items:center;gap:10px;}
+.toggle{width:38px;height:20px;border-radius:10px;background:#ddd;border:none;cursor:pointer;position:relative;transition:background .2s;flex-shrink:0;}
+.toggle.on{background:#1e293b;}
+.toggle::after{content:'';width:16px;height:16px;border-radius:50%;background:#fff;position:absolute;top:2px;left:2px;transition:left .2s;}
+.toggle.on::after{left:20px;}
+
+/* CARD MEMBRE */
+.mbr-card{background:#fff;border:1.5px solid #e2e8f0;border-radius:12px;padding:14px;box-shadow:0 1px 4px rgba(0,0,0,.05);display:flex;align-items:center;gap:12px;}
+.mbr-ava{width:42px;height:42px;border-radius:50%;background:#1e293b;display:flex;align-items:center;justify-content:center;color:#c9a227;font-weight:900;font-size:13px;flex-shrink:0;}
+.mbr-name{font-size:13px;font-weight:700;color:#1e293b;}
+.mbr-meta{font-size:10px;color:#64748b;margin-top:2px;}
+
+/* STAT CARD GRANDE */
+.big-sc{background:#fff;border:1.5px solid #e2e8f0;border-radius:14px;padding:20px;box-shadow:0 1px 4px rgba(0,0,0,.05);}
+.big-sc-icon{width:42px;height:42px;border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:20px;margin-bottom:12px;}
+.big-sc-v{font-size:28px;font-weight:900;color:#1e293b;line-height:1;}
+.big-sc-l{font-size:11px;color:#64748b;margin-top:4px;}
+.big-sc-trend{font-size:11px;font-weight:700;margin-top:8px;}
+.trend-up{color:#16a34a;}.trend-dn{color:#dc2626;}
+
+/* CAPITATION CARD */
+.cap-card{background:#fff;border:1.5px solid #e2e8f0;border-radius:10px;padding:12px;margin-bottom:8px;box-shadow:0 1px 3px rgba(0,0,0,.04);}
+.cap-card.retard{border-left:4px solid #c0392b;}
+.cap-card.attente{border-left:4px solid #c9a227;}
+.cap-card.paye{border-left:4px solid #27ae60;}
+
+/* ── ACCOUNT SELECT ── */
+.s-apg{background:#f0f4f8;padding:32px 20px;display:flex;flex-direction:column;align-items:center;gap:10px;min-height:300px;justify-content:center;}
+.s-acard{background:#fff;border:1.5px solid #e2e8f0;border-radius:12px;padding:14px 18px;width:100%;max-width:300px;cursor:pointer;display:flex;align-items:center;gap:12px;box-shadow:0 1px 4px rgba(0,0,0,.05);transition:all .2s;}
+.s-acard:hover{border-color:#c9a227;transform:translateY(-2px);box-shadow:0 6px 20px rgba(0,0,0,.1);}
+.s-acard-icon{width:38px;height:38px;border-radius:9px;background:#1e293b;display:flex;align-items:center;justify-content:center;color:#c9a227;font-size:16px;flex-shrink:0;}
+.s-acard-name{font-size:13px;font-weight:700;color:#1e293b;}
+.s-acard-role{font-size:10px;color:#64748b;}
+
+/* ── NOTIFICATION TOAST ── */
+.toast{background:#1b5e20;color:#fff;padding:11px 20px;border-radius:10px;font-size:13px;font-weight:700;display:inline-flex;align-items:center;gap:8px;box-shadow:0 4px 20px rgba(0,0,0,.2);}
+.toast-w{background:#5a3e00;}
+.toast-e{background:#7f1d1d;}
+.toast-i{background:#1e293b;}
+
+/* MOBILE FRAME */
+.mobile-frame{width:260px;margin:0 auto;border-radius:28px;border:8px solid #1e293b;overflow:hidden;box-shadow:0 20px 60px rgba(0,0,0,.5);}
+.mobile-notch{background:#1e293b;height:26px;display:flex;align-items:center;justify-content:center;}
+.mobile-notch-dot{width:60px;height:8px;border-radius:4px;background:#0f0f13;}
+</style>
+</head>
+<body>
+
+<!-- NAV -->
+<nav class="nav">
+  <span class="nav-brand">⬡ MasonApp</span>
+  <div class="nav-links">
+    <button class="nav-link on" onclick="scrollTo(0,0)">Login</button>
+    <button class="nav-link" onclick="document.getElementById('s2').scrollIntoView({behavior:'smooth'})">Dashboard</button>
+    <button class="nav-link" onclick="document.getElementById('s3').scrollIntoView({behavior:'smooth'})">Membres</button>
+    <button class="nav-link" onclick="document.getElementById('s4').scrollIntoView({behavior:'smooth'})">Modale</button>
+    <button class="nav-link" onclick="document.getElementById('s5').scrollIntoView({behavior:'smooth'})">Design System <span class="badge-new">NEW</span></button>
+    <button class="nav-link" onclick="document.getElementById('s6').scrollIntoView({behavior:'smooth'})">Mobile</button>
+  </div>
+</nav>
+
+<!-- ══════════════════════════════
+  SECTION 1 — LOGIN
+══════════════════════════════ -->
+<div class="section">
+  <div class="section-title">01 — Écran de connexion</div>
+  <div class="section-desc">Page d'accès avec fond animé dégradé + bulles flottantes. Configurable depuis le panel admin.</div>
+
+  <div class="grid2">
+    <!-- LOGIN GLUC -->
+    <div>
+      <div class="screen-label">GLUC — connexion membre</div>
+      <div class="frame">
+        <div class="frame-label"><div class="dots"><div class="dot dot-r"></div><div class="dot dot-y"></div><div class="dot dot-g"></div></div><span class="frame-url">masonapp.netlify.app/gluc</span></div>
+        <div class="s-login">
+          <div class="s-login-bub" id="bub1"></div>
+          <div class="s-lbox">
+            <div class="s-llogo">⬡</div>
+            <div class="s-ltit">GLUC</div>
+            <div class="s-lsub">Grande Loge Unie du Congo</div>
+            <div class="s-fg"><label style="display:block;font-size:9px;font-weight:700;text-transform:uppercase;color:#6b7a8d;margin-bottom:4px;">Matricule</label>
+              <input class="s-inp" placeholder="Ex: M-001" readonly/></div>
+            <div class="s-fg" style="margin-top:0"><label style="display:block;font-size:9px;font-weight:700;text-transform:uppercase;color:#6b7a8d;margin-bottom:4px;">Mot de passe</label>
+              <input class="s-inp" type="password" placeholder="••••••" readonly/></div>
+            <button class="s-btn">Connexion →</button>
+            <a class="s-link">Mot de passe oublié ?</a>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- LOGIN GOLAC -->
+    <div>
+      <div class="screen-label">GOLAC — question secrète</div>
+      <div class="frame">
+        <div class="frame-label"><div class="dots"><div class="dot dot-r"></div><div class="dot dot-y"></div><div class="dot dot-g"></div></div><span class="frame-url">masonapp.netlify.app/golac</span></div>
+        <div class="s-login" style="background:linear-gradient(135deg,#6d1b7b 0%,#0e7490 100%)">
+          <div class="s-login-bub" id="bub2"></div>
+          <div class="s-lbox">
+            <div class="s-llogo">⬡</div>
+            <div class="s-ltit">GOLAC</div>
+            <div class="s-lsub">Portail Frères &amp; Sœurs</div>
+            <div style="background:#fff8e1;border:1.5px solid #c9a227;border-radius:9px;padding:10px;margin-bottom:14px;font-size:11px;color:#555;text-align:center;line-height:1.5">🔐 Zone réservée — sélectionnez votre grade</div>
+            <div class="s-fg"><label style="display:block;font-size:9px;font-weight:700;text-transform:uppercase;color:#6b7a8d;margin-bottom:4px;">Votre grade</label>
+              <select class="s-inp" style="border-radius:50px"><option>Apprenti</option><option>Compagnon</option><option>Maître</option></select></div>
+            <div style="background:#f5f5f5;border:1.5px solid #ddd;border-radius:9px;padding:10px;margin-bottom:12px;font-size:11px;font-weight:600;color:#111;line-height:1.5">Où les apprentis francs-maçons ont-ils coutume de gagner leurs salaires ?</div>
+            <div class="s-fg"><label style="display:block;font-size:9px;font-weight:700;text-transform:uppercase;color:#6b7a8d;margin-bottom:4px;">Votre réponse</label>
+              <input class="s-inp" placeholder="Répondez ici..." readonly/></div>
+            <button class="s-btn" style="background:#1a2845">Entrer →</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- VARIANTES COULEURS -->
+  <div style="margin-top:24px">
+    <div class="screen-label">Variantes de dégradés (configurables admin)</div>
+    <div style="display:flex;gap:12px;flex-wrap:wrap;margin-top:8px;">
+      <div style="height:60px;border-radius:10px;background:linear-gradient(135deg,#4a0e8f,#0891b2);flex:1;min-width:120px;display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:700;color:#fff">Violet → Turquoise</div>
+      <div style="height:60px;border-radius:10px;background:linear-gradient(135deg,#7c1438,#c9a227);flex:1;min-width:120px;display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:700;color:#fff">Bordeaux → Or</div>
+      <div style="height:60px;border-radius:10px;background:linear-gradient(135deg,#1e3a5f,#0e7490);flex:1;min-width:120px;display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:700;color:#fff">Marine → Saphir</div>
+      <div style="height:60px;border-radius:10px;background:linear-gradient(135deg,#1a2e05,#3d7c1a);flex:1;min-width:120px;display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:700;color:#fff">Forêt → Émeraude</div>
+      <div style="height:60px;border-radius:10px;background:linear-gradient(135deg,#2d1b69,#a21caf);flex:1;min-width:120px;display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:700;color:#fff">Indigo → Magenta</div>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════
+  SECTION 2 — DASHBOARD
+══════════════════════════════ -->
+<div class="section" id="s2">
+  <div class="section-title">02 — Dashboard obédience</div>
+  <div class="section-desc">Vue principale après connexion — statistiques, onglets, grille de loges.</div>
+
+  <div class="frame">
+    <div class="frame-label"><div class="dots"><div class="dot dot-r"></div><div class="dot dot-y"></div><div class="dot dot-g"></div></div><span class="frame-url">app / vue Obédience</span></div>
+    <!-- HEADER -->
+    <div class="s-hdr">
+      <div class="s-hdr-logo">⬡</div>
+      <div><div class="s-hdr-name">GLUC</div><div style="font-size:9px;color:#64748b">Grande Loge Unie du Congo</div></div>
+      <div class="s-hdr-right">
+        <span class="chip cgreen" style="font-size:9px">● En ligne</span>
+        <div class="s-avatar">GM</div>
+        <button style="background:none;border:none;color:#64748b;cursor:pointer;font-size:16px">☰</button>
+      </div>
+    </div>
+    <!-- TABBAR -->
+    <div class="s-tabbar">
+      <button class="s-tab on">Programmes</button>
+      <button class="s-tab">Membres</button>
+      <button class="s-tab">Loges</button>
+      <button class="s-tab">Finances</button>
+      <button class="s-tab">Documents</button>
+      <button class="s-tab">Paramètres</button>
+    </div>
+    <!-- CONTENT -->
+    <div class="s-cont">
+      <!-- STATS ROW -->
+      <div class="s-stats">
+        <div class="s-sc"><div class="s-sc-l">Membres</div><div class="s-sc-v">247</div><div class="s-sc-d">↑ +12 ce mois</div></div>
+        <div class="s-sc"><div class="s-sc-l">Loges</div><div class="s-sc-v">14</div><div class="s-sc-d">↑ +1 ce mois</div></div>
+        <div class="s-sc"><div class="s-sc-l">Capitation</div><div class="s-sc-v" style="font-size:14px">87%</div><div class="s-sc-d">↑ recouvrée</div></div>
+        <div class="s-sc"><div class="s-sc-l">Trésorerie</div><div class="s-sc-v" style="font-size:13px;color:#c9a227">4,2M</div><div class="s-sc-d" style="color:#64748b">FCFA</div></div>
+      </div>
+      <!-- CARDS LOGES -->
+      <div class="s-cards">
+        <div class="s-card">
+          <div class="s-card-stripe" style="background:#c9a227"></div>
+          <div class="s-card-acro">L001</div>
+          <div class="s-card-name">Liberté et Fraternité</div>
+          <div class="s-card-meta">📍 Brazzaville · 28 membres<br>🏛 Vénérable : F∴ Makaya</div>
+          <div class="s-card-actions">
+            <span class="btn btn-ok btn-sm-v">● Active</span>
+            <span class="btn btn-info btn-sm-v">Voir</span>
+            <span class="btn btn-warn btn-sm-v">⚙</span>
+          </div>
+        </div>
+        <div class="s-card">
+          <div class="s-card-stripe" style="background:#3b82f6"></div>
+          <div class="s-card-acro">L002</div>
+          <div class="s-card-name">Étoile du Congo</div>
+          <div class="s-card-meta">📍 Pointe-Noire · 19 membres<br>🏛 Vénérable : F∴ Nguesso</div>
+          <div class="s-card-actions">
+            <span class="btn btn-ok btn-sm-v">● Active</span>
+            <span class="btn btn-info btn-sm-v">Voir</span>
+            <span class="btn btn-warn btn-sm-v">⚙</span>
+          </div>
+        </div>
+        <div class="s-card">
+          <div class="s-card-stripe" style="background:#22c55e"></div>
+          <div class="s-card-acro">L003</div>
+          <div class="s-card-name">Les Trois Colonnes</div>
+          <div class="s-card-meta">📍 Brazzaville · 31 membres<br>🏛 Vénérable : F∴ Moukala</div>
+          <div class="s-card-actions">
+            <span class="btn btn-warn btn-sm-v">⚠ Alerte cap.</span>
+            <span class="btn btn-info btn-sm-v">Voir</span>
+          </div>
+        </div>
+        <div class="s-card">
+          <div class="s-card-stripe" style="background:#a855f7"></div>
+          <div class="s-card-acro">L004</div>
+          <div class="s-card-name">Lumière d'Afrique</div>
+          <div class="s-card-meta">📍 Dolisie · 15 membres<br>🏛 Vénérable : F∴ Itoua</div>
+          <div class="s-card-actions">
+            <span class="btn btn-dng btn-sm-v">● En sommeil</span>
+            <span class="btn btn-info btn-sm-v">Voir</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════
+  SECTION 3 — MEMBRES
+══════════════════════════════ -->
+<div class="section" id="s3">
+  <div class="section-title">03 — Gestion des membres</div>
+  <div class="section-desc">Tableau des membres avec statuts, grades et actions rapides.</div>
+
+  <div class="grid4" style="margin-bottom:24px">
+    <div class="big-sc"><div class="big-sc-icon" style="background:#fef9ec">⬡</div><div class="big-sc-v">247</div><div class="big-sc-l">Membres actifs</div><div class="big-sc-trend trend-up">↑ +5% ce trimestre</div></div>
+    <div class="big-sc"><div class="big-sc-icon" style="background:#f0fdf4">🏛</div><div class="big-sc-v">14</div><div class="big-sc-l">Loges actives</div><div class="big-sc-trend trend-up">↑ +1 ce mois</div></div>
+    <div class="big-sc"><div class="big-sc-icon" style="background:#fef2f2">⚠</div><div class="big-sc-v">31</div><div class="big-sc-l">Capitation en retard</div><div class="big-sc-trend trend-dn">↓ à régulariser</div></div>
+    <div class="big-sc"><div class="big-sc-icon" style="background:#eff6ff">📋</div><div class="big-sc-v">8</div><div class="big-sc-l">En attente initiation</div><div class="big-sc-trend" style="color:#64748b">→ À traiter</div></div>
+  </div>
+
+  <div class="s-table-wrap">
+    <table class="s-table">
+      <thead>
+        <tr>
+          <th>Membre</th>
+          <th>Matricule</th>
+          <th>Grade</th>
+          <th>Loge</th>
+          <th>Capitation</th>
+          <th>Statut</th>
+          <th>Actions</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><span class="s-ava">AK</span>Alain Koubemba</td>
+          <td style="font-family:monospace;color:#64748b">M-001</td>
+          <td><span class="chip cnavy">Maître</span></td>
+          <td>L001 — Liberté &amp; Fraternité</td>
+          <td><div class="pbar-wrap"><div class="pbar-fill" style="width:100%;background:#22c55e"></div></div><span style="font-size:9px;color:#22c55e">✓ Payée</span></td>
+          <td><span class="chip cgreen">Actif</span></td>
+          <td><div style="display:flex;gap:4px"><button style="border:none;background:#eff6ff;color:#2563eb;border-radius:5px;padding:3px 8px;font-size:10px;font-weight:700;cursor:pointer">👁</button><button style="border:none;background:#fef9ec;color:#a07c1a;border-radius:5px;padding:3px 8px;font-size:10px;font-weight:700;cursor:pointer">✏</button></div></td>
+        </tr>
+        <tr>
+          <td><span class="s-ava">BM</span>Brice Malonga</td>
+          <td style="font-family:monospace;color:#64748b">M-002</td>
+          <td><span class="chip cb">Compagnon</span></td>
+          <td>L002 — Étoile du Congo</td>
+          <td><div class="pbar-wrap"><div class="pbar-fill" style="width:50%;background:#f59e0b"></div></div><span style="font-size:9px;color:#d97706">⏳ Partielle</span></td>
+          <td><span class="chip cgreen">Actif</span></td>
+          <td><div style="display:flex;gap:4px"><button style="border:none;background:#eff6ff;color:#2563eb;border-radius:5px;padding:3px 8px;font-size:10px;font-weight:700;cursor:pointer">👁</button><button style="border:none;background:#fef9ec;color:#a07c1a;border-radius:5px;padding:3px 8px;font-size:10px;font-weight:700;cursor:pointer">✏</button></div></td>
+        </tr>
+        <tr>
+          <td><span class="s-ava">CN</span>Cécile Nkounkou</td>
+          <td style="font-family:monospace;color:#64748b">M-003</td>
+          <td><span class="chip cg">Apprenti</span></td>
+          <td>L001 — Liberté &amp; Fraternité</td>
+          <td><div class="pbar-wrap"><div class="pbar-fill" style="width:0%;background:#ef4444"></div></div><span style="font-size:9px;color:#dc2626">✗ En retard</span></td>
+          <td><span class="chip cgr">Suspendu</span></td>
+          <td><div style="display:flex;gap:4px"><button style="border:none;background:#eff6ff;color:#2563eb;border-radius:5px;padding:3px 8px;font-size:10px;font-weight:700;cursor:pointer">👁</button><button style="border:none;background:#fef9ec;color:#a07c1a;border-radius:5px;padding:3px 8px;font-size:10px;font-weight:700;cursor:pointer">✏</button></div></td>
+        </tr>
+        <tr>
+          <td><span class="s-ava">DI</span>David Itoua</td>
+          <td style="font-family:monospace;color:#64748b">M-004</td>
+          <td><span class="chip cnavy">Maître</span></td>
+          <td>L003 — Les Trois Colonnes</td>
+          <td><div class="pbar-wrap"><div class="pbar-fill" style="width:100%;background:#22c55e"></div></div><span style="font-size:9px;color:#22c55e">✓ Payée</span></td>
+          <td><span class="chip cgreen">Actif</span></td>
+          <td><div style="display:flex;gap:4px"><button style="border:none;background:#eff6ff;color:#2563eb;border-radius:5px;padding:3px 8px;font-size:10px;font-weight:700;cursor:pointer">👁</button><button style="border:none;background:#fef9ec;color:#a07c1a;border-radius:5px;padding:3px 8px;font-size:10px;font-weight:700;cursor:pointer">✏</button></div></td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+</div>
+
+<!-- ══════════════════════════════
+  SECTION 4 — MODALES
+══════════════════════════════ -->
+<div class="section" id="s4">
+  <div class="section-title">04 — Modales &amp; formulaires</div>
+  <div class="section-desc">Fenêtres contextuelles pour édition, confirmation et saisie.</div>
+
+  <div class="grid3">
+    <!-- MODAL MEMBRE -->
+    <div>
+      <div class="screen-label">Édition membre</div>
+      <div class="frame">
+        <div class="s-ovl">
+          <div class="s-modal">
+            <div class="s-modal-hdr"><div class="s-modal-tit">✏ Modifier le membre</div><button class="s-modal-x">✕</button></div>
+            <div class="s-fg"><label class="s-fl">Prénom &amp; Nom</label><input class="s-fi" value="Alain Koubemba" readonly/></div>
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px">
+              <div class="s-fg"><label class="s-fl">Matricule</label><input class="s-fi" value="M-001" readonly/></div>
+              <div class="s-fg"><label class="s-fl">Grade</label><select class="s-fi"><option>Maître</option></select></div>
+            </div>
+            <div class="s-fg"><label class="s-fl">Loge</label><select class="s-fi"><option>L001 — Liberté &amp; Fraternité</option></select></div>
+            <div style="display:flex;gap:8px;margin-top:4px">
+              <button class="btn btn-gold" style="flex:1;justify-content:center">💾 Enregistrer</button>
+              <button class="btn btn-ghost">Annuler</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- MODAL CONFIRMATION -->
+    <div>
+      <div class="screen-label">Confirmation action</div>
+      <div class="frame">
+        <div class="s-ovl">
+          <div class="s-modal" style="text-align:center">
+            <div style="font-size:42px;margin-bottom:14px">⚠️</div>
+            <div style="font-size:15px;font-weight:900;color:#1e293b;margin-bottom:8px">Suspendre ce membre ?</div>
+            <div style="font-size:12px;color:#64748b;margin-bottom:22px;line-height:1.6">Cette action suspendra l'accès de <strong>Alain Koubemba</strong> jusqu'à régularisation de sa capitation.</div>
+            <div style="display:flex;gap:8px">
+              <button class="btn btn-dng" style="flex:1;justify-content:center">Confirmer</button>
+              <button class="btn btn-ghost" style="flex:1;justify-content:center">Annuler</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- MODAL CAPITATION -->
+    <div>
+      <div class="screen-label">Enregistrer un paiement</div>
+      <div class="frame">
+        <div class="s-ovl">
+          <div class="s-modal">
+            <div class="s-modal-hdr"><div class="s-modal-tit">💳 Paiement capitation</div><button class="s-modal-x">✕</button></div>
+            <div style="background:#f0fdf4;border:1.5px solid #bbf7d0;border-radius:8px;padding:10px;margin-bottom:14px;font-size:11px;color:#15803d">Membre : <strong>Alain Koubemba M-001</strong><br>Montant dû : <strong>50 000 FCFA</strong></div>
+            <div class="s-fg"><label class="s-fl">Montant reçu (FCFA)</label><input class="s-fi" value="50 000" readonly/></div>
+            <div class="s-fg"><label class="s-fl">Mode de paiement</label><select class="s-fi"><option>Espèces</option><option>Virement</option><option>Mobile Money</option></select></div>
+            <div class="s-fg"><label class="s-fl">Date</label><input class="s-fi" type="date" readonly/></div>
+            <button class="btn btn-ok" style="width:100%;justify-content:center;font-size:13px;padding:10px">✓ Valider le paiement</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════
+  SECTION 5 — DESIGN SYSTEM
+══════════════════════════════ -->
+<div class="section" id="s5">
+  <div class="section-title">05 — Design System</div>
+  <div class="section-desc">Palette, composants et tokens visuels utilisés dans toute l'application.</div>
+
+  <div class="grid2">
+    <div>
+      <!-- COULEURS -->
+      <div class="ds-title">Palette de couleurs</div>
+      <div style="display:grid;grid-template-columns:repeat(5,1fr);gap:8px;margin-bottom:28px">
+        <div><div style="height:48px;border-radius:8px;background:#1e2d4a"></div><div style="font-size:9px;color:#64748b;margin-top:4px;text-align:center">#1e2d4a<br>Navy</div></div>
+        <div><div style="height:48px;border-radius:8px;background:#c9a227"></div><div style="font-size:9px;color:#64748b;margin-top:4px;text-align:center">#c9a227<br>Or</div></div>
+        <div><div style="height:48px;border-radius:8px;background:#f0f4f8"></div><div style="font-size:9px;color:#64748b;margin-top:4px;text-align:center">#f0f4f8<br>Fond</div></div>
+        <div><div style="height:48px;border-radius:8px;background:#4a0e8f"></div><div style="font-size:9px;color:#64748b;margin-top:4px;text-align:center">#4a0e8f<br>Violet</div></div>
+        <div><div style="height:48px;border-radius:8px;background:#0891b2"></div><div style="font-size:9px;color:#64748b;margin-top:4px;text-align:center">#0891b2<br>Turquoise</div></div>
+        <div><div style="height:48px;border-radius:8px;background:#22c55e"></div><div style="font-size:9px;color:#64748b;margin-top:4px;text-align:center">#22c55e<br>Succès</div></div>
+        <div><div style="height:48px;border-radius:8px;background:#ef4444"></div><div style="font-size:9px;color:#64748b;margin-top:4px;text-align:center">#ef4444<br>Erreur</div></div>
+        <div><div style="height:48px;border-radius:8px;background:#f59e0b"></div><div style="font-size:9px;color:#64748b;margin-top:4px;text-align:center">#f59e0b<br>Avert.</div></div>
+        <div><div style="height:48px;border-radius:8px;background:#3b82f6"></div><div style="font-size:9px;color:#64748b;margin-top:4px;text-align:center">#3b82f6<br>Info</div></div>
+        <div><div style="height:48px;border-radius:8px;background:#64748b"></div><div style="font-size:9px;color:#64748b;margin-top:4px;text-align:center">#64748b<br>Muted</div></div>
+      </div>
+
+      <!-- TYPOGRAPHIE -->
+      <div class="ds-title">Typographie</div>
+      <div style="background:#fff;border-radius:10px;padding:16px;border:1.5px solid #e2e8f0;margin-bottom:28px">
+        <div style="font-size:24px;font-weight:900;color:#1e293b;margin-bottom:6px">H1 — Titre principal 900</div>
+        <div style="font-size:18px;font-weight:700;color:#1e293b;margin-bottom:6px">H2 — Titre section 700</div>
+        <div style="font-size:14px;font-weight:700;color:#1e293b;margin-bottom:6px">H3 — Sous-titre 700</div>
+        <div style="font-size:13px;color:#1e293b;margin-bottom:6px">Body — Texte courant 14px / 400</div>
+        <div style="font-size:11px;color:#64748b;margin-bottom:6px">Small — Méta et labels 11px / 400</div>
+        <div style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:1px;color:#94a3b8">CAPS — Labels formulaire 10px / 700</div>
+      </div>
+    </div>
+
+    <div>
+      <!-- BOUTONS -->
+      <div class="ds-title">Boutons</div>
+      <div class="ds-row">
+        <button class="btn btn-gold">⬡ Action principale</button>
+        <button class="btn btn-navy">Connexion →</button>
+        <button class="btn btn-outline">Outline</button>
+        <button class="btn btn-ghost">Ghost</button>
+      </div>
+      <div class="ds-row">
+        <button class="btn btn-ok btn-sm-v">✓ Valider</button>
+        <button class="btn btn-dng btn-sm-v">✗ Supprimer</button>
+        <button class="btn btn-info btn-sm-v">👁 Voir</button>
+        <button class="btn btn-warn btn-sm-v">⚙ Modifier</button>
+      </div>
+
+      <!-- CHIPS / BADGES -->
+      <div class="ds-title" style="margin-top:20px">Chips &amp; badges</div>
+      <div class="ds-row">
+        <span class="chip cg">Or / Grade</span>
+        <span class="chip cb">Info</span>
+        <span class="chip cgreen">Actif</span>
+        <span class="chip cred">Retard</span>
+        <span class="chip cpur">Spécial</span>
+        <span class="chip cteal">Trésorerie</span>
+        <span class="chip cnavy">Maître</span>
+        <span class="chip cgr">Suspendu</span>
+      </div>
+
+      <!-- ALERTES -->
+      <div class="ds-title" style="margin-top:20px">Alertes</div>
+      <div class="alert a-ok"><div class="a-t">✓ Succès</div>Le paiement a bien été enregistré.</div>
+      <div class="alert a-w"><div class="a-t">⚠ Attention</div>3 membres ont une capitation en retard.</div>
+      <div class="alert a-e"><div class="a-t">✗ Erreur</div>Matricule introuvable dans la base.</div>
+      <div class="alert a-i"><div class="a-t">ℹ Information</div>La prochaine tenue est le 15 juin 2026.</div>
+
+      <!-- TOASTS -->
+      <div class="ds-title" style="margin-top:20px">Notifications toast</div>
+      <div class="ds-row" style="flex-direction:column;align-items:flex-start">
+        <div class="toast">✓ Thème enregistré</div>
+        <div class="toast toast-w">⚠ Capitation non réglée</div>
+        <div class="toast toast-e">✗ Erreur de connexion</div>
+        <div class="toast toast-i">ℹ Synchronisation en cours…</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- CARDS MEMBRES -->
+  <div style="margin-top:24px">
+    <div class="ds-title">Cards membres</div>
+    <div class="grid4">
+      <div class="mbr-card"><div class="mbr-ava">AK</div><div><div class="mbr-name">Alain Koubemba</div><div class="mbr-meta">Maître · M-001<br>L001 — Brazzaville</div></div></div>
+      <div class="mbr-card"><div class="mbr-ava" style="background:#7c3aed">BM</div><div><div class="mbr-name">Brice Malonga</div><div class="mbr-meta">Compagnon · M-002<br>L002 — Pointe-Noire</div></div></div>
+      <div class="mbr-card"><div class="mbr-ava" style="background:#0891b2">CN</div><div><div class="mbr-name">Cécile Nkounkou</div><div class="mbr-meta">Apprenti · M-003<br>L001 — Brazzaville</div></div></div>
+      <div class="mbr-card"><div class="mbr-ava" style="background:#16a34a">DI</div><div><div class="mbr-name">David Itoua</div><div class="mbr-meta">Maître · M-004<br>L003 — Brazzaville</div></div></div>
+    </div>
+  </div>
+
+  <!-- CAPITATION CARDS -->
+  <div style="margin-top:24px">
+    <div class="ds-title">Cartes capitation</div>
+    <div class="grid3">
+      <div class="cap-card paye" style="background:#fff">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px">
+          <div style="font-size:13px;font-weight:700;color:#1e293b">Alain Koubemba</div>
+          <span class="chip cgreen" style="font-size:9px">Payé</span>
+        </div>
+        <div style="font-size:11px;color:#64748b;margin-bottom:8px">M-001 · Maître · L001</div>
+        <div class="pbar-wrap"><div class="pbar-fill" style="width:100%;background:#22c55e"></div></div>
+        <div style="display:flex;justify-content:space-between;font-size:10px;color:#64748b;margin-top:4px"><span>50 000 / 50 000 FCFA</span><span>100%</span></div>
+      </div>
+      <div class="cap-card attente" style="background:#fff">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px">
+          <div style="font-size:13px;font-weight:700;color:#1e293b">Brice Malonga</div>
+          <span class="chip cg" style="font-size:9px">Partiel</span>
+        </div>
+        <div style="font-size:11px;color:#64748b;margin-bottom:8px">M-002 · Compagnon · L002</div>
+        <div class="pbar-wrap"><div class="pbar-fill" style="width:50%;background:#c9a227"></div></div>
+        <div style="display:flex;justify-content:space-between;font-size:10px;color:#64748b;margin-top:4px"><span>25 000 / 50 000 FCFA</span><span>50%</span></div>
+      </div>
+      <div class="cap-card retard" style="background:#fff">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px">
+          <div style="font-size:13px;font-weight:700;color:#1e293b">Cécile Nkounkou</div>
+          <span class="chip cred" style="font-size:9px">En retard</span>
+        </div>
+        <div style="font-size:11px;color:#64748b;margin-bottom:8px">M-003 · Apprenti · L001</div>
+        <div class="pbar-wrap"><div class="pbar-fill" style="width:0%;background:#ef4444"></div></div>
+        <div style="display:flex;justify-content:space-between;font-size:10px;color:#dc2626;margin-top:4px"><span>0 / 50 000 FCFA</span><span>⚠ Impayé</span></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════
+  SECTION 6 — VUE MOBILE
+══════════════════════════════ -->
+<div class="section" id="s6" style="border:none">
+  <div class="section-title">06 — Vue mobile</div>
+  <div class="section-desc">Rendu responsive sur smartphone — login + sélection de compte.</div>
+
+  <div style="display:flex;gap:32px;flex-wrap:wrap;justify-content:center">
+    <!-- MOBILE LOGIN -->
+    <div>
+      <div class="screen-label" style="text-align:center;margin-bottom:10px">Écran de connexion</div>
+      <div class="mobile-frame">
+        <div class="mobile-notch"><div class="mobile-notch-dot"></div></div>
+        <div class="s-login" style="min-height:520px;padding:20px 14px;">
+          <div class="s-login-bub" id="bub3"></div>
+          <div class="s-lbox" style="padding:24px 20px">
+            <div class="s-llogo" style="width:48px;height:48px;font-size:20px">⬡</div>
+            <div class="s-ltit" style="font-size:17px">GLUC</div>
+            <div class="s-lsub" style="font-size:10px;margin-bottom:16px">Grande Loge Unie du Congo</div>
+            <div class="s-fg"><input class="s-inp" style="font-size:12px;padding:8px 14px" placeholder="Matricule" readonly/></div>
+            <div class="s-fg"><input class="s-inp" type="password" style="font-size:12px;padding:8px 14px" placeholder="••••••" readonly/></div>
+            <button class="s-btn" style="font-size:12px;padding:10px">Connexion →</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- MOBILE COMPTE -->
+    <div>
+      <div class="screen-label" style="text-align:center;margin-bottom:10px">Sélection de compte</div>
+      <div class="mobile-frame">
+        <div class="mobile-notch"><div class="mobile-notch-dot"></div></div>
+        <div class="s-apg" style="min-height:520px;gap:8px">
+          <div style="font-size:16px;font-weight:900;color:#1e293b;margin-bottom:4px">Bienvenue</div>
+          <div style="font-size:11px;color:#64748b;margin-bottom:14px">Sélectionnez un espace</div>
+          <div class="s-acard"><div class="s-acard-icon">⬡</div><div><div class="s-acard-name">Grand Maître</div><div class="s-acard-role">Administration obédience</div></div></div>
+          <div class="s-acard"><div class="s-acard-icon" style="font-size:13px">🏛</div><div><div class="s-acard-name">Vénérable</div><div class="s-acard-role">L001 — Liberté &amp; Fraternité</div></div></div>
+          <div class="s-acard"><div class="s-acard-icon" style="background:#0891b2;font-size:13px">👤</div><div><div class="s-acard-name">Mon Espace Frère</div><div class="s-acard-role">Profil personnel</div></div></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- MOBILE DASHBOARD -->
+    <div>
+      <div class="screen-label" style="text-align:center;margin-bottom:10px">Dashboard mobile</div>
+      <div class="mobile-frame">
+        <div class="mobile-notch"><div class="mobile-notch-dot"></div></div>
+        <div style="background:#f0f4f8;min-height:520px">
+          <div class="s-hdr" style="padding:8px 12px">
+            <div class="s-hdr-logo" style="width:26px;height:26px;font-size:12px">⬡</div>
+            <div style="margin-left:6px"><div class="s-hdr-name" style="font-size:11px">GLUC</div></div>
+            <div class="s-hdr-right"><div class="s-avatar" style="width:24px;height:24px;font-size:8px">GM</div></div>
+          </div>
+          <div style="overflow-x:auto;background:#fff;border-bottom:1px solid #e2e8f0;display:flex;padding:0 12px">
+            <button class="s-tab on" style="font-size:10px;padding:8px 10px">Programmes</button>
+            <button class="s-tab" style="font-size:10px;padding:8px 10px">Membres</button>
+            <button class="s-tab" style="font-size:10px;padding:8px 10px">Loges</button>
+            <button class="s-tab" style="font-size:10px;padding:8px 10px">Finances</button>
+          </div>
+          <div style="padding:12px;display:grid;grid-template-columns:1fr 1fr;gap:8px">
+            <div class="s-sc"><div class="s-sc-l" style="font-size:8px">Membres</div><div class="s-sc-v" style="font-size:18px">247</div></div>
+            <div class="s-sc"><div class="s-sc-l" style="font-size:8px">Loges</div><div class="s-sc-v" style="font-size:18px">14</div></div>
+            <div class="s-sc"><div class="s-sc-l" style="font-size:8px">Capitation</div><div class="s-sc-v" style="font-size:18px">87%</div></div>
+            <div class="s-sc"><div class="s-sc-l" style="font-size:8px">Trésorerie</div><div class="s-sc-v" style="font-size:14px;color:#c9a227">4,2M</div></div>
+          </div>
+          <div style="padding:0 12px">
+            <div class="s-card" style="margin-bottom:8px"><div class="s-card-stripe" style="background:#c9a227"></div><div class="s-card-acro" style="font-size:12px">L001</div><div class="s-card-name" style="font-size:10px">Liberté et Fraternité</div><div class="s-card-meta" style="font-size:9px">📍 Brazzaville · 28 membres</div></div>
+            <div class="s-card"><div class="s-card-stripe" style="background:#3b82f6"></div><div class="s-card-acro" style="font-size:12px">L002</div><div class="s-card-name" style="font-size:10px">Étoile du Congo</div><div class="s-card-meta" style="font-size:9px">📍 Pointe-Noire · 19 membres</div></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+// Génération des bulles pour chaque conteneur
+function makeBubbles(containerId){
+  var c=document.getElementById(containerId);
+  if(!c)return;
+  var d=[[28,6,13,0],[44,14,16,-5],[62,24,11,-10],[19,36,19,-3],[52,50,14,-8],[34,62,12,-12],[72,74,17,-1],[16,84,14,-6],[42,91,21,-9],[38,18,10,-2],[58,40,18,-7],[24,56,13,-11],[68,68,15,-4],[30,80,16,-13]];
+  d.forEach(function(b){
+    var el=document.createElement('div');
+    el.className='lbub';
+    el.style.cssText='width:'+b[0]+'px;height:'+b[0]+'px;left:'+b[1]+'%;bottom:-80px;animation-duration:'+b[2]+'s;animation-delay:'+b[3]+'s';
+    c.appendChild(el);
+  });
+}
+makeBubbles('bub1');makeBubbles('bub2');makeBubbles('bub3');
+
+// Nav scroll active
+window.addEventListener('scroll',function(){
+  var sections=['s2','s3','s4','s5','s6'];
+  var links=document.querySelectorAll('.nav-link');
+  var active=0;
+  sections.forEach(function(id,i){
+    var el=document.getElementById(id);
+    if(el&&el.getBoundingClientRect().top<100)active=i+1;
+  });
+  links.forEach(function(l,i){l.classList.toggle('on',i===active);});
+});
+</script>
+</body>
+</html>
