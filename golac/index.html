@@ -44,6 +44,14 @@ textarea{min-height:60px;resize:vertical;}
 .tab{padding:10px 14px;background:none;border:none;border-bottom:2.5px solid transparent;color:#64748b;font-size:13px;cursor:pointer;white-space:nowrap;transition:color .15s;font-weight:500;margin-bottom:-1px;}
 .tab.on{color:#c9a227;border-bottom-color:#c9a227;font-weight:800;}
 .tab .bdg{background:#e53935;color:#fff;border-radius:10px;font-size:10px;font-weight:700;padding:1px 5px;margin-left:4px;}
+/* ── DROPDOWN SOUS-MENU ── */
+.tab-wrap{position:relative;display:inline-flex;flex-shrink:0;}
+.tab-drop{position:absolute;top:calc(100% + 4px);left:0;background:#fff;border:1.5px solid #e2e8f0;border-radius:10px;box-shadow:0 8px 28px rgba(0,0,0,.13);z-index:300;min-width:195px;padding:5px;display:none;}
+.tab-drop.open{display:block;}
+.tab-drop button{display:flex;align-items:center;gap:9px;padding:9px 13px;border-radius:7px;font-size:13px;color:#475569;cursor:pointer;border:none;background:none;width:100%;text-align:left;white-space:nowrap;font-family:inherit;transition:background .1s,color .1s;}
+.tab-drop button:hover{background:#f5f1ff;color:#1e293b;}
+.tab-drop button.on{color:#c9a227;font-weight:700;background:#fffbf0;}
+.tab-drop-sep{height:1px;background:#f0f0f0;margin:4px 0;}
 .cont{padding:20px;max-width:1080px;margin:0 auto;}
 .sec{color:#111;font-size:15px;font-weight:900;margin-bottom:14px;letter-spacing:.2px;}
 .g2{display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:12px;margin-bottom:14px;}
@@ -1740,6 +1748,17 @@ APP.render=function(){
 };
 var R=APP.render;
 
+// Fermer les dropdowns au clic extérieur (listener unique)
+if(!window._dropListenerAdded){
+  window._dropListenerAdded=true;
+  document.addEventListener('click',function(){
+    ['prog-drop','fin-drop'].forEach(function(id){
+      var el=document.getElementById(id);
+      if(el)el.classList.remove('open');
+    });
+  });
+}
+
 function logoImg(sz){
   var src=null;
   if(S.view==='loge'&&S.lid){var cl=gLoge(S.lid);if(cl&&cl.logo)src=cl.logo;}
@@ -1976,8 +1995,22 @@ APP.changeAtelier=function(){
   S.view='atelierSelect';R();
 };
 APP.setTab=function(t){S.tab=t;R();};
-APP.toggleProgMenu=function(){if(['programme','instruction','planches'].indexOf(S.tab)<0){S.tab='programme';R();}};
-APP.toggleFinMenu=function(){if(['finances','capitations','tronc'].indexOf(S.tab)<0){S.tab='finances';R();}};
+APP.toggleProgMenu=function(ev){
+  if(ev)ev.stopPropagation();
+  var d=document.getElementById('prog-drop');
+  var f=document.getElementById('fin-drop');
+  if(f)f.classList.remove('open');
+  if(!d){S.tab='programme';R();return;}
+  d.classList.toggle('open');
+};
+APP.toggleFinMenu=function(ev){
+  if(ev)ev.stopPropagation();
+  var d=document.getElementById('fin-drop');
+  var p=document.getElementById('prog-drop');
+  if(p)p.classList.remove('open');
+  if(!d){S.tab='finances';R();return;}
+  d.classList.toggle('open');
+};
 APP.goOb=function(tab){S.view='obedience';S.tab=tab||'programmes';R();};
 APP.loadLogo=function(inp){var file=inp.files[0];if(!file)return;var r=new FileReader();r.onload=function(e){LOGO=e.target.result;R();};r.readAsDataURL(file);};
 
@@ -2582,36 +2615,36 @@ function vLoge(){
   });
   var inPG=['programme','instruction','planches'].indexOf(S.tab)>=0;
   var inFG=['finances','capitations','tronc'].indexOf(S.tab)>=0;
+  var hasCap=tabs.some(function(t){return t.id==='capitations';});
+  var hasTronc=tabs.some(function(t){return t.id==='tronc';});
+  var pgSubLbl=S.tab==='instruction'?' · Instruction':S.tab==='planches'?' · Planches':'';
+  var fgSubLbl=S.tab==='capitations'?' · Capitations':S.tab==='tronc'?' · Tronc Veuve':'';
   var tabBarHtml='<div class="tabbar">';
   tabs.forEach(function(t){
     if(t.id==='instruction'||t.id==='planches')return;
     if(t.id==='capitations'||t.id==='tronc')return;
     if(t.id==='programme'){
-      tabBarHtml+='<button class="tab'+(inPG?' on':'')+'" onclick="APP.toggleProgMenu()">Programme'+(inPG?' ▾':' ▸')+'</button>';
+      tabBarHtml+='<div class="tab-wrap">'
+        +'<button class="tab'+(inPG?' on':'')+'" onclick="APP.toggleProgMenu(event)">Programme'+pgSubLbl+' ▾</button>'
+        +'<div class="tab-drop" id="prog-drop">'
+        +'<button class="'+(S.tab==='programme'?'on':'')+'" onclick="APP.setTab(\'programme\');document.getElementById(\'prog-drop\').classList.remove(\'open\')">📅 Programme</button>'
+        +'<button class="'+(S.tab==='instruction'?'on':'')+'" onclick="APP.setTab(\'instruction\');document.getElementById(\'prog-drop\').classList.remove(\'open\')">📖 Instruction</button>'
+        +'<button class="'+(S.tab==='planches'?'on':'')+'" onclick="APP.setTab(\'planches\');document.getElementById(\'prog-drop\').classList.remove(\'open\')">📜 Planches & Thèmes</button>'
+        +'</div></div>';
     }else if(t.id==='finances'){
-      tabBarHtml+='<button class="tab'+(inFG?' on':'')+'" onclick="APP.toggleFinMenu()">Finances'+(inFG?' ▾':' ▸')+'</button>';
+      tabBarHtml+='<div class="tab-wrap">'
+        +'<button class="tab'+(inFG?' on':'')+'" onclick="APP.toggleFinMenu(event)">Finances'+fgSubLbl+' ▾</button>'
+        +'<div class="tab-drop" id="fin-drop">'
+        +'<button class="'+(S.tab==='finances'?'on':'')+'" onclick="APP.setTab(\'finances\');document.getElementById(\'fin-drop\').classList.remove(\'open\')">💰 Finances</button>'
+        +(hasCap?'<button class="'+(S.tab==='capitations'?'on':'')+'" onclick="APP.setTab(\'capitations\');document.getElementById(\'fin-drop\').classList.remove(\'open\')">💳 Capitations</button>':'')
+        +(hasTronc?'<div class="tab-drop-sep"></div><button class="'+(S.tab==='tronc'?'on':'')+'" onclick="APP.setTab(\'tronc\');document.getElementById(\'fin-drop\').classList.remove(\'open\')">🕊 Tronc Veuve</button>':'')
+        +'</div></div>';
     }else{
       tabBarHtml+='<button class="tab'+(S.tab===t.id?' on':'')+'" onclick="APP.setTab(\''+t.id+'\')">'
         +t.lbl+(t.badge&&t.badge!==''?'<span class="bdg">'+t.badge+'</span>':'')+'</button>';
     }
   });
   tabBarHtml+='</div>';
-  if(inPG){
-    tabBarHtml+='<div class="tabbar" style="background:#f5f1ff;border-bottom:2px solid #c9a227;border-top:1px solid #e8e0f8">'
-      +'<button class="tab'+(S.tab==='programme'?' on':'')+'" onclick="APP.setTab(\'programme\')">📅 Programme</button>'
-      +'<button class="tab'+(S.tab==='instruction'?' on':'')+'" onclick="APP.setTab(\'instruction\')">📖 Instruction</button>'
-      +'<button class="tab'+(S.tab==='planches'?' on':'')+'" onclick="APP.setTab(\'planches\')">📜 Planches & Thèmes</button>'
-      +'</div>';
-  }
-  if(inFG){
-    var hasCap=tabs.some(function(t){return t.id==='capitations';});
-    var hasTronc=tabs.some(function(t){return t.id==='tronc';});
-    tabBarHtml+='<div class="tabbar" style="background:#f5f1ff;border-bottom:2px solid #c9a227;border-top:1px solid #e8e0f8">'
-      +'<button class="tab'+(S.tab==='finances'?' on':'')+'" onclick="APP.setTab(\'finances\')">💰 Finances</button>'
-      +(hasCap?'<button class="tab'+(S.tab==='capitations'?' on':'')+'" onclick="APP.setTab(\'capitations\')">💳 Capitations</button>':'')
-      +(hasTronc?'<button class="tab'+(S.tab==='tronc'?' on':'')+'" onclick="APP.setTab(\'tronc\')">🕊 Tronc Veuve</button>':'')
-      +'</div>';
-  }
   var logeLogo=loge.logo?'<img src="'+loge.logo+'" style="width:36px;height:36px;border-radius:50%;object-fit:cover;border:2px solid #c9a227;flex-shrink:0"/>':'';
   var obLogo=LOGO?'<img src="'+LOGO+'" style="width:36px;height:36px;border-radius:50%;object-fit:cover;border:2px solid #ddd;flex-shrink:0"/>':'';
   var bar='<div class="lbar">'
