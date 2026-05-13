@@ -6,112 +6,112 @@
 <title>MasonApp — Plateforme Multi-Obédiences</title>
 <style>
 *{box-sizing:border-box;margin:0;padding:0;}
-body{background:#0a0a0a;color:#fff;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;min-height:100vh;}
+body{background:#f0f4f8;color:#1e293b;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;min-height:100vh;}
 
 /* ── LOGIN ── */
-.page-center{min-height:100vh;display:flex;align-items:center;justify-content:center;padding:20px;}
-.login-box{background:#111;border:1px solid #222;border-radius:16px;padding:44px 40px;width:100%;max-width:420px;text-align:center;}
+.page-center{min-height:100vh;display:flex;align-items:center;justify-content:center;padding:20px;background:#f0f4f8;background-image:radial-gradient(ellipse at 30% 50%,rgba(201,162,39,.08) 0%,transparent 60%);}
+.login-box{background:#fff;border:1.5px solid #e2e8f0;border-radius:16px;padding:44px 40px;width:100%;max-width:420px;text-align:center;box-shadow:0 4px 24px rgba(0,0,0,.08);}
 .logo-sym{font-size:56px;color:#c9a227;margin-bottom:18px;line-height:1;}
-.login-box h1{font-size:24px;font-weight:900;letter-spacing:3px;text-transform:uppercase;margin-bottom:6px;}
-.login-box .sub{color:#555;font-size:12px;margin-bottom:32px;letter-spacing:0.5px;}
-.login-note{color:#333;font-size:11px;margin-top:22px;line-height:1.6;}
+.login-box h1{font-size:24px;font-weight:900;letter-spacing:3px;text-transform:uppercase;margin-bottom:6px;color:#1e293b;}
+.login-box .sub{color:#94a3b8;font-size:12px;margin-bottom:32px;letter-spacing:0.5px;}
+.login-note{color:#cbd5e1;font-size:11px;margin-top:22px;line-height:1.6;}
 
 /* ── FORMS ── */
 .form-group{text-align:left;margin-bottom:14px;}
-.form-group label{display:block;font-size:10px;font-weight:700;color:#666;text-transform:uppercase;letter-spacing:0.8px;margin-bottom:6px;}
-.inp{width:100%;background:#1a1a1a;border:1px solid #2a2a2a;border-radius:8px;padding:10px 14px;color:#fff;font-size:14px;outline:none;transition:border .15s;}
-.inp:focus{border-color:#c9a227;}
-select.inp option{background:#1a1a1a;}
+.form-group label{display:block;font-size:10px;font-weight:700;color:#64748b;text-transform:uppercase;letter-spacing:0.8px;margin-bottom:6px;}
+.inp{width:100%;background:#f8fafc;border:1.5px solid #e2e8f0;border-radius:8px;padding:10px 14px;color:#1e293b;font-size:14px;outline:none;transition:border .15s;}
+.inp:focus{border-color:#c9a227;box-shadow:0 0 0 3px rgba(201,162,39,.1);}
+select.inp option{background:#fff;}
 .form-row{display:grid;grid-template-columns:1fr 1fr;gap:14px;}
 @media(max-width:600px){.form-row{grid-template-columns:1fr;}}
 .form-actions{display:flex;gap:10px;margin-top:20px;}
 
 /* ── BOUTONS ── */
-.btn-primary{background:#c9a227;color:#111;border:none;border-radius:8px;padding:11px 22px;font-size:14px;font-weight:700;cursor:pointer;transition:opacity .15s;white-space:nowrap;}
+.btn-primary{background:#c9a227;color:#fff;border:none;border-radius:8px;padding:11px 22px;font-size:14px;font-weight:700;cursor:pointer;transition:opacity .15s;white-space:nowrap;}
 .btn-primary:hover{opacity:.85;}
 .btn-primary.full{width:100%;}
 .btn-primary.sm{padding:7px 16px;font-size:12px;}
-.btn-ghost{background:transparent;color:#666;border:1px solid #2a2a2a;border-radius:8px;padding:11px 22px;font-size:14px;cursor:pointer;transition:all .15s;}
+.btn-ghost{background:transparent;color:#64748b;border:1.5px solid #e2e8f0;border-radius:8px;padding:11px 22px;font-size:14px;cursor:pointer;transition:all .15s;}
 .btn-ghost:hover{border-color:#c9a227;color:#c9a227;}
 .btn-ghost.sm{padding:7px 14px;font-size:12px;}
 
 /* ── ALERTES ── */
-.err{color:#ef4444;font-size:12px;margin-bottom:12px;padding:8px 12px;background:#ef444412;border-radius:6px;display:none;}
-.alert-ok{color:#22c55e;font-size:12px;margin-bottom:12px;padding:8px 12px;background:#22c55e12;border-radius:6px;display:none;}
+.err{color:#dc2626;font-size:12px;margin-bottom:12px;padding:8px 12px;background:#fef2f2;border:1px solid #fecaca;border-radius:6px;display:none;}
+.alert-ok{color:#16a34a;font-size:12px;margin-bottom:12px;padding:8px 12px;background:#f0fdf4;border:1px solid #bbf7d0;border-radius:6px;display:none;}
 
 /* ── TOPBAR ── */
-.topbar{background:#111;border-bottom:1px solid #1e1e1e;padding:0 24px;display:flex;align-items:center;gap:16px;height:56px;position:sticky;top:0;z-index:10;}
-.tb-brand{font-size:16px;font-weight:900;letter-spacing:2px;text-transform:uppercase;display:flex;align-items:center;gap:8px;color:#fff;}
-.tb-sub{font-size:11px;color:#444;font-weight:400;letter-spacing:0;text-transform:none;}
+.topbar{background:#1e293b;border-bottom:1px solid #334155;padding:0 24px;display:flex;align-items:center;gap:16px;height:56px;position:sticky;top:0;z-index:10;}
+.tb-brand{font-size:16px;font-weight:900;letter-spacing:2px;text-transform:uppercase;display:flex;align-items:center;gap:8px;color:#f1f5f9;}
+.tb-sub{font-size:11px;color:#64748b;font-weight:400;letter-spacing:0;text-transform:none;}
 .tb-right{margin-left:auto;display:flex;align-items:center;gap:10px;}
 
 /* ── STATS ── */
-.stats-bar{background:#111;border-bottom:1px solid #1e1e1e;padding:14px 24px;display:flex;gap:28px;}
+.stats-bar{background:#fff;border-bottom:1px solid #e2e8f0;padding:14px 24px;display:flex;gap:28px;box-shadow:0 1px 3px rgba(0,0,0,.04);}
 .stat{text-align:center;min-width:60px;}
-.stat-v{font-size:26px;font-weight:900;line-height:1;}
-.stat-l{font-size:10px;color:#555;text-transform:uppercase;letter-spacing:0.5px;margin-top:3px;}
+.stat-v{font-size:26px;font-weight:900;line-height:1;color:#1e293b;}
+.stat-l{font-size:10px;color:#94a3b8;text-transform:uppercase;letter-spacing:0.5px;margin-top:3px;}
 
 /* ── TABS ── */
-.tabs{padding:0 24px;display:flex;gap:0;border-bottom:1px solid #1e1e1e;background:#0d0d0d;}
-.tab{background:none;border:none;border-bottom:2px solid transparent;color:#555;font-size:13px;padding:12px 18px;cursor:pointer;transition:all .15s;margin-bottom:-1px;white-space:nowrap;}
+.tabs{padding:0 24px;display:flex;gap:0;border-bottom:1px solid #e2e8f0;background:#fff;}
+.tab{background:none;border:none;border-bottom:2px solid transparent;color:#94a3b8;font-size:13px;padding:12px 18px;cursor:pointer;transition:all .15s;margin-bottom:-1px;white-space:nowrap;}
 .tab.on{color:#c9a227;border-bottom-color:#c9a227;font-weight:700;}
-.tab:hover:not(.on){color:#ccc;}
+.tab:hover:not(.on){color:#475569;}
 
 /* ── FORMULAIRE NOUVELLE SOUSCRIPTION ── */
-.new-panel{background:#111;border:1px solid #1e1e1e;border-radius:12px;margin:20px 24px;padding:24px;}
+.new-panel{background:#fff;border:1.5px solid #e2e8f0;border-radius:12px;margin:20px 24px;padding:24px;box-shadow:0 1px 4px rgba(0,0,0,.06);}
 .new-panel-hdr{display:flex;align-items:center;justify-content:space-between;margin-bottom:22px;}
 .new-panel-hdr h2{font-size:15px;font-weight:700;color:#c9a227;letter-spacing:0.5px;}
-.close-btn{background:none;border:none;color:#444;font-size:20px;cursor:pointer;line-height:1;padding:0 4px;}
-.close-btn:hover{color:#fff;}
+.close-btn{background:none;border:none;color:#94a3b8;font-size:20px;cursor:pointer;line-height:1;padding:0 4px;}
+.close-btn:hover{color:#1e293b;}
 
 /* ── GRILLE TENANTS ── */
 .tenant-grid{padding:20px 24px;display:grid;grid-template-columns:repeat(auto-fill,minmax(340px,1fr));gap:16px;}
 @media(max-width:520px){.tenant-grid{padding:12px;grid-template-columns:1fr;}}
-.tenant-card{background:#111;border:1px solid #1e1e1e;border-radius:12px;padding:20px;transition:border-color .15s;position:relative;}
-.tenant-card:hover{border-color:#2a2a2a;}
+.tenant-card{background:#fff;border:1.5px solid #e2e8f0;border-radius:12px;padding:20px;transition:all .15s;position:relative;box-shadow:0 1px 4px rgba(0,0,0,.05);}
+.tenant-card:hover{border-color:#c9a227;box-shadow:0 4px 16px rgba(0,0,0,.1);}
 .tc-stripe{height:3px;border-radius:12px 12px 0 0;position:absolute;top:0;left:0;right:0;}
 .tc-head{display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:12px;margin-top:4px;}
-.tc-acro{font-size:20px;font-weight:900;letter-spacing:2px;}
+.tc-acro{font-size:20px;font-weight:900;letter-spacing:2px;color:#1e293b;}
 .tc-badges{display:flex;flex-wrap:wrap;gap:4px;}
 .badge{display:inline-block;border-radius:20px;font-size:10px;font-weight:700;padding:3px 8px;letter-spacing:0.2px;}
-.tc-name{font-size:14px;font-weight:700;margin-bottom:6px;line-height:1.4;}
-.tc-meta{font-size:11px;color:#555;line-height:1.8;}
-.tc-notes{font-size:11px;color:#444;margin-top:8px;font-style:italic;padding-top:8px;border-top:1px solid #1a1a1a;}
-.tc-actions{display:flex;flex-wrap:wrap;gap:6px;margin-top:14px;padding-top:12px;border-top:1px solid #1a1a1a;}
+.tc-name{font-size:14px;font-weight:700;margin-bottom:6px;line-height:1.4;color:#1e293b;}
+.tc-meta{font-size:11px;color:#64748b;line-height:1.8;}
+.tc-notes{font-size:11px;color:#94a3b8;margin-top:8px;font-style:italic;padding-top:8px;border-top:1px solid #f1f5f9;}
+.tc-actions{display:flex;flex-wrap:wrap;gap:6px;margin-top:14px;padding-top:12px;border-top:1px solid #f1f5f9;}
 .btn-sm{border:none;border-radius:6px;padding:5px 12px;font-size:11px;font-weight:700;cursor:pointer;text-decoration:none;display:inline-flex;align-items:center;gap:4px;transition:opacity .15s;}
 .btn-sm:hover{opacity:.8;}
-.btn-go{background:#c9a22720;color:#c9a227;}
-.btn-ok{background:#22c55e20;color:#22c55e;}
-.btn-warn{background:#f59e0b20;color:#f59e0b;}
-.btn-del{background:#ef444420;color:#ef4444;}
-.btn-info{background:#3b82f620;color:#3b82f6;}
-.btn-edit{background:#8b458920;color:#c78bc9;}
-.empty{color:#333;font-size:13px;padding:48px;text-align:center;grid-column:1/-1;}
+.btn-go{background:#fef9ec;color:#a07c1a;}
+.btn-ok{background:#f0fdf4;color:#16a34a;}
+.btn-warn{background:#fffbeb;color:#d97706;}
+.btn-del{background:#fef2f2;color:#dc2626;}
+.btn-info{background:#eff6ff;color:#2563eb;}
+.btn-edit{background:#faf5ff;color:#9333ea;}
+.empty{color:#94a3b8;font-size:13px;padding:48px;text-align:center;grid-column:1/-1;}
 
 /* ── MODALE EDITION ── */
-.ovl{position:fixed;inset:0;background:#000a;display:flex;align-items:center;justify-content:center;z-index:100;padding:16px;}
-.mbox{background:#111;border:1px solid #333;border-radius:14px;padding:28px;width:100%;max-width:560px;max-height:90vh;overflow-y:auto;}
+.ovl{position:fixed;inset:0;background:rgba(15,23,42,.6);display:flex;align-items:center;justify-content:center;z-index:100;padding:16px;}
+.mbox{background:#fff;border:1.5px solid #e2e8f0;border-radius:14px;padding:28px;width:100%;max-width:560px;max-height:90vh;overflow-y:auto;box-shadow:0 20px 60px rgba(0,0,0,.15);}
 .mhdr{display:flex;align-items:center;justify-content:space-between;margin-bottom:22px;}
 .mhdr h2{font-size:15px;font-weight:700;color:#c9a227;}
 
 /* ── CATÉGORIE SOUSCRIPTION ── */
 .cat-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:4px;}
-.cat-opt{background:#0d0d0d;border:2px solid #1e1e1e;border-radius:10px;padding:14px 16px;cursor:pointer;transition:all .15s;text-align:left;width:100%;}
-.cat-opt:hover{border-color:#333;}
-.cat-opt.on{border-color:#c9a227;background:#c9a22710;}
+.cat-opt{background:#f8fafc;border:2px solid #e2e8f0;border-radius:10px;padding:14px 16px;cursor:pointer;transition:all .15s;text-align:left;width:100%;}
+.cat-opt:hover{border-color:#c9a227;}
+.cat-opt.on{border-color:#c9a227;background:#fef9ec;}
 .cat-opt-icon{font-size:22px;margin-bottom:6px;}
-.cat-opt-lbl{font-size:13px;font-weight:700;color:#fff;margin-bottom:4px;}
-.cat-opt-desc{font-size:11px;color:#666;line-height:1.5;}
+.cat-opt-lbl{font-size:13px;font-weight:700;color:#1e293b;margin-bottom:4px;}
+.cat-opt-desc{font-size:11px;color:#64748b;line-height:1.5;}
 
 /* ── PAIEMENT ── */
-.btn-pay{background:#22c55e20;color:#22c55e;}
-.btn-overdue{background:#ef444420;color:#ef4444;}
-.pay-section{margin-top:10px;padding-top:10px;border-top:1px solid #1a1a1a;font-size:11px;display:flex;align-items:center;gap:8px;}
+.btn-pay{background:#f0fdf4;color:#16a34a;}
+.btn-overdue{background:#fef2f2;color:#dc2626;}
+.pay-section{margin-top:10px;padding-top:10px;border-top:1px solid #f1f5f9;font-size:11px;display:flex;align-items:center;gap:8px;}
 
 /* ── SCROLLBAR ── */
 ::-webkit-scrollbar{width:6px;}
-::-webkit-scrollbar-track{background:#111;}
-::-webkit-scrollbar-thumb{background:#2a2a2a;border-radius:3px;}
+::-webkit-scrollbar-track{background:#f0f4f8;}
+::-webkit-scrollbar-thumb{background:#cbd5e1;border-radius:3px;}
 </style>
 </head>
 <body id="app"></body>
