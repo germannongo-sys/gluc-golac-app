@@ -3,47 +3,761 @@
 <head>
 <meta charset="UTF-8"/>
 <meta name="viewport" content="width=device-width,initial-scale=1.0"/>
-<title>Applications Maçonniques — GLUC & GOLAC</title>
+<title>MasonApp — Plateforme Multi-Obédiences</title>
 <style>
 *{box-sizing:border-box;margin:0;padding:0;}
-body{background:#111;color:#fff;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;min-height:100vh;display:flex;align-items:center;justify-content:center;}
-.wrap{text-align:center;padding:40px 20px;max-width:700px;width:100%;}
-.symbol{font-size:64px;color:#c9a227;margin-bottom:20px;}
-h1{font-size:22px;font-weight:900;letter-spacing:3px;text-transform:uppercase;margin-bottom:8px;}
-.sub{color:#888;font-size:13px;margin-bottom:48px;letter-spacing:1px;}
-.cards{display:grid;grid-template-columns:1fr 1fr;gap:20px;margin-bottom:40px;}
-@media(max-width:500px){.cards{grid-template-columns:1fr;}}
-.card{background:#1a1a1a;border:2px solid #333;border-radius:16px;padding:32px 24px;cursor:pointer;text-decoration:none;color:#fff;transition:all .2s;display:block;}
-.card:hover{border-color:#c9a227;transform:translateY(-4px);box-shadow:0 12px 32px rgba(201,162,39,.2);}
-.card-sym{font-size:36px;margin-bottom:14px;}
-.card-name{font-size:18px;font-weight:900;color:#c9a227;margin-bottom:6px;}
-.card-full{font-size:12px;color:#888;line-height:1.5;margin-bottom:12px;}
-.card-badge{display:inline-block;background:#c9a227;color:#111;border-radius:20px;font-size:11px;font-weight:700;padding:3px 10px;}
-.card-badge.mixte{background:#8b4589;color:#fff;}
-.footer{color:#444;font-size:12px;}
-.footer span{color:#c9a227;}
+body{background:#0a0a0a;color:#fff;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;min-height:100vh;}
+
+/* ── LOGIN ── */
+.page-center{min-height:100vh;display:flex;align-items:center;justify-content:center;padding:20px;}
+.login-box{background:#111;border:1px solid #222;border-radius:16px;padding:44px 40px;width:100%;max-width:420px;text-align:center;}
+.logo-sym{font-size:56px;color:#c9a227;margin-bottom:18px;line-height:1;}
+.login-box h1{font-size:24px;font-weight:900;letter-spacing:3px;text-transform:uppercase;margin-bottom:6px;}
+.login-box .sub{color:#555;font-size:12px;margin-bottom:32px;letter-spacing:0.5px;}
+.login-note{color:#333;font-size:11px;margin-top:22px;line-height:1.6;}
+
+/* ── FORMS ── */
+.form-group{text-align:left;margin-bottom:14px;}
+.form-group label{display:block;font-size:10px;font-weight:700;color:#666;text-transform:uppercase;letter-spacing:0.8px;margin-bottom:6px;}
+.inp{width:100%;background:#1a1a1a;border:1px solid #2a2a2a;border-radius:8px;padding:10px 14px;color:#fff;font-size:14px;outline:none;transition:border .15s;}
+.inp:focus{border-color:#c9a227;}
+select.inp option{background:#1a1a1a;}
+.form-row{display:grid;grid-template-columns:1fr 1fr;gap:14px;}
+@media(max-width:600px){.form-row{grid-template-columns:1fr;}}
+.form-actions{display:flex;gap:10px;margin-top:20px;}
+
+/* ── BOUTONS ── */
+.btn-primary{background:#c9a227;color:#111;border:none;border-radius:8px;padding:11px 22px;font-size:14px;font-weight:700;cursor:pointer;transition:opacity .15s;white-space:nowrap;}
+.btn-primary:hover{opacity:.85;}
+.btn-primary.full{width:100%;}
+.btn-primary.sm{padding:7px 16px;font-size:12px;}
+.btn-ghost{background:transparent;color:#666;border:1px solid #2a2a2a;border-radius:8px;padding:11px 22px;font-size:14px;cursor:pointer;transition:all .15s;}
+.btn-ghost:hover{border-color:#c9a227;color:#c9a227;}
+.btn-ghost.sm{padding:7px 14px;font-size:12px;}
+
+/* ── ALERTES ── */
+.err{color:#ef4444;font-size:12px;margin-bottom:12px;padding:8px 12px;background:#ef444412;border-radius:6px;display:none;}
+.alert-ok{color:#22c55e;font-size:12px;margin-bottom:12px;padding:8px 12px;background:#22c55e12;border-radius:6px;display:none;}
+
+/* ── TOPBAR ── */
+.topbar{background:#111;border-bottom:1px solid #1e1e1e;padding:0 24px;display:flex;align-items:center;gap:16px;height:56px;position:sticky;top:0;z-index:10;}
+.tb-brand{font-size:16px;font-weight:900;letter-spacing:2px;text-transform:uppercase;display:flex;align-items:center;gap:8px;color:#fff;}
+.tb-sub{font-size:11px;color:#444;font-weight:400;letter-spacing:0;text-transform:none;}
+.tb-right{margin-left:auto;display:flex;align-items:center;gap:10px;}
+
+/* ── STATS ── */
+.stats-bar{background:#111;border-bottom:1px solid #1e1e1e;padding:14px 24px;display:flex;gap:28px;}
+.stat{text-align:center;min-width:60px;}
+.stat-v{font-size:26px;font-weight:900;line-height:1;}
+.stat-l{font-size:10px;color:#555;text-transform:uppercase;letter-spacing:0.5px;margin-top:3px;}
+
+/* ── TABS ── */
+.tabs{padding:0 24px;display:flex;gap:0;border-bottom:1px solid #1e1e1e;background:#0d0d0d;}
+.tab{background:none;border:none;border-bottom:2px solid transparent;color:#555;font-size:13px;padding:12px 18px;cursor:pointer;transition:all .15s;margin-bottom:-1px;white-space:nowrap;}
+.tab.on{color:#c9a227;border-bottom-color:#c9a227;font-weight:700;}
+.tab:hover:not(.on){color:#ccc;}
+
+/* ── FORMULAIRE NOUVELLE SOUSCRIPTION ── */
+.new-panel{background:#111;border:1px solid #1e1e1e;border-radius:12px;margin:20px 24px;padding:24px;}
+.new-panel-hdr{display:flex;align-items:center;justify-content:space-between;margin-bottom:22px;}
+.new-panel-hdr h2{font-size:15px;font-weight:700;color:#c9a227;letter-spacing:0.5px;}
+.close-btn{background:none;border:none;color:#444;font-size:20px;cursor:pointer;line-height:1;padding:0 4px;}
+.close-btn:hover{color:#fff;}
+
+/* ── GRILLE TENANTS ── */
+.tenant-grid{padding:20px 24px;display:grid;grid-template-columns:repeat(auto-fill,minmax(340px,1fr));gap:16px;}
+@media(max-width:520px){.tenant-grid{padding:12px;grid-template-columns:1fr;}}
+.tenant-card{background:#111;border:1px solid #1e1e1e;border-radius:12px;padding:20px;transition:border-color .15s;position:relative;}
+.tenant-card:hover{border-color:#2a2a2a;}
+.tc-stripe{height:3px;border-radius:12px 12px 0 0;position:absolute;top:0;left:0;right:0;}
+.tc-head{display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:12px;margin-top:4px;}
+.tc-acro{font-size:20px;font-weight:900;letter-spacing:2px;}
+.tc-badges{display:flex;flex-wrap:wrap;gap:4px;}
+.badge{display:inline-block;border-radius:20px;font-size:10px;font-weight:700;padding:3px 8px;letter-spacing:0.2px;}
+.tc-name{font-size:14px;font-weight:700;margin-bottom:6px;line-height:1.4;}
+.tc-meta{font-size:11px;color:#555;line-height:1.8;}
+.tc-notes{font-size:11px;color:#444;margin-top:8px;font-style:italic;padding-top:8px;border-top:1px solid #1a1a1a;}
+.tc-actions{display:flex;flex-wrap:wrap;gap:6px;margin-top:14px;padding-top:12px;border-top:1px solid #1a1a1a;}
+.btn-sm{border:none;border-radius:6px;padding:5px 12px;font-size:11px;font-weight:700;cursor:pointer;text-decoration:none;display:inline-flex;align-items:center;gap:4px;transition:opacity .15s;}
+.btn-sm:hover{opacity:.8;}
+.btn-go{background:#c9a22720;color:#c9a227;}
+.btn-ok{background:#22c55e20;color:#22c55e;}
+.btn-warn{background:#f59e0b20;color:#f59e0b;}
+.btn-del{background:#ef444420;color:#ef4444;}
+.btn-info{background:#3b82f620;color:#3b82f6;}
+.btn-edit{background:#8b458920;color:#c78bc9;}
+.empty{color:#333;font-size:13px;padding:48px;text-align:center;grid-column:1/-1;}
+
+/* ── MODALE EDITION ── */
+.ovl{position:fixed;inset:0;background:#000a;display:flex;align-items:center;justify-content:center;z-index:100;padding:16px;}
+.mbox{background:#111;border:1px solid #333;border-radius:14px;padding:28px;width:100%;max-width:560px;max-height:90vh;overflow-y:auto;}
+.mhdr{display:flex;align-items:center;justify-content:space-between;margin-bottom:22px;}
+.mhdr h2{font-size:15px;font-weight:700;color:#c9a227;}
+
+/* ── CATÉGORIE SOUSCRIPTION ── */
+.cat-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:4px;}
+.cat-opt{background:#0d0d0d;border:2px solid #1e1e1e;border-radius:10px;padding:14px 16px;cursor:pointer;transition:all .15s;text-align:left;width:100%;}
+.cat-opt:hover{border-color:#333;}
+.cat-opt.on{border-color:#c9a227;background:#c9a22710;}
+.cat-opt-icon{font-size:22px;margin-bottom:6px;}
+.cat-opt-lbl{font-size:13px;font-weight:700;color:#fff;margin-bottom:4px;}
+.cat-opt-desc{font-size:11px;color:#666;line-height:1.5;}
+
+/* ── PAIEMENT ── */
+.btn-pay{background:#22c55e20;color:#22c55e;}
+.btn-overdue{background:#ef444420;color:#ef4444;}
+.pay-section{margin-top:10px;padding-top:10px;border-top:1px solid #1a1a1a;font-size:11px;display:flex;align-items:center;gap:8px;}
+
+/* ── SCROLLBAR ── */
+::-webkit-scrollbar{width:6px;}
+::-webkit-scrollbar-track{background:#111;}
+::-webkit-scrollbar-thumb{background:#2a2a2a;border-radius:3px;}
 </style>
 </head>
-<body>
-<div class="wrap">
-  <div class="symbol">⬡</div>
-  <h1>Applications Maçonniques</h1>
-  <div class="sub">Sélectionnez votre Obédience</div>
-  <div class="cards">
-    <a class="card" href="./gluc/index.html">
-      <div class="card-sym">⬡</div>
-      <div class="card-name">GLUC</div>
-      <div class="card-full">Grande Loge Unie du Congo<br>Brazzaville, République du Congo</div>
-      <span class="card-badge">Loge régulière</span>
-    </a>
-    <a class="card" href="./golac/index.html">
-      <div class="card-sym">⚥</div>
-      <div class="card-name">GOLAC</div>
-      <div class="card-full">Grand Orient et Loges Associées du Congo<br>Brazzaville, République du Congo</div>
-      <span class="card-badge mixte">Loge mixte</span>
-    </a>
-  </div>
-  <div class="footer"><span>⬡</span> À la Gloire du Grand Architecte de l'Univers <span>⬡</span></div>
-</div>
+<body id="app"></body>
+<script>
+'use strict';
+
+// ══════════════════════════════════════════════════════════════════════════════
+// REGISTRE PLATEFORME
+// ══════════════════════════════════════════════════════════════════════════════
+var PL_KEY = 'mason_platform_registry';
+var PL = null;
+var PS = { view: 'dashboard', isAdmin: false, tab: 'all', modal: null, editId: null };
+
+function buildPlatform() {
+  return {
+    version: '1.0',
+    platformAdmin: { login: 'platform', pwd: 'MasonPlatform2026!', email: 'admin@masonapp.org' },
+    tenants: [
+      {
+        id: 'gluc', name: 'Grande Loge Unie du Congo', acronym: 'GLUC',
+        type: 'GL', plan: 'premium', status: 'active',
+        createdAt: '2024-01-01', activatedAt: '2024-01-01',
+        adminEmail: 'admin@gluc.org', maxLoges: 20, maxMembres: 500,
+        appType: 'gluc', color: '#c9a227', siege: 'Brazzaville',
+        notes: 'Obédience fondatrice — Loge régulière',
+        category: 'obedience', paymentStatus: 'free', paymentDate: null, nextDueDate: null
+      },
+      {
+        id: 'golac', name: 'Grand Orient et Loges Associées du Congo', acronym: 'GOLAC',
+        type: 'GO', plan: 'premium', status: 'active',
+        createdAt: '2024-01-01', activatedAt: '2024-01-01',
+        adminEmail: 'admin@golac.org', maxLoges: 20, maxMembres: 500,
+        appType: 'golac', color: '#8b4589', siege: 'Brazzaville',
+        notes: 'Obédience fondatrice — Loge mixte co-éducative',
+        category: 'obedience', paymentStatus: 'free', paymentDate: null, nextDueDate: null
+      }
+    ]
+  };
+}
+
+function loadPlatform() {
+  try {
+    var raw = localStorage.getItem(PL_KEY);
+    PL = raw ? JSON.parse(raw) : buildPlatform();
+    // Garantir GLUC et GOLAC présents
+    var def = buildPlatform().tenants;
+    def.forEach(function(dt) {
+      if (!PL.tenants.find(function(t){return t.id===dt.id;})) {
+        PL.tenants.unshift(dt);
+      }
+    });
+    savePlatform();
+  } catch(e) { PL = buildPlatform(); }
+}
+
+function savePlatform() {
+  localStorage.setItem(PL_KEY, JSON.stringify(PL));
+}
+
+// ══════════════════════════════════════════════════════════════════════════════
+// INITIALISATION DES DONNÉES TENANT
+// ══════════════════════════════════════════════════════════════════════════════
+function initTenantData(tenant) {
+  var key = 'mason_' + tenant.id + '_data';
+  if (localStorage.getItem(key)) return; // Données existantes — ne pas écraser
+  var today = new Date().toISOString().split('T')[0];
+  var d = {
+    name: tenant.name, acronym: tenant.acronym,
+    siege: tenant.siege || 'Brazzaville',
+    fondation: new Date().getFullYear().toString(),
+    tauxCap: 50000, tauxLoge: 200000,
+    themeColors: { gold: tenant.color || '#c9a227', dark: '#111', bg: '#f0f2f5' },
+    grandOff: [
+      {id:'go1',titre:'Grand Maître',mid:'ADMIN001'},
+      {id:'go2',titre:'Grand Secrétaire',mid:null},
+      {id:'go3',titre:'Grand Orateur',mid:null},
+      {id:'go4',titre:'Grand Trésorier',mid:null},
+      {id:'go5',titre:'Grand Expert',mid:null},
+      {id:'go6',titre:'Grand Hospitalier',mid:null},
+      {id:'go7',titre:'Grand MC',mid:null},
+      {id:'go8',titre:'Grand Couvreur',mid:null}
+    ],
+    loges: [],
+    membres: [{
+      id:'ADMIN001', matricule: tenant.acronym+'-001',
+      nom: 'Grand Maître — '+tenant.acronym, grade:'Maitre',
+      dateGrade: today, logeId: null, role:'Grand Maître',
+      pwd:'admin2026', statut:'actif', tel:'', email: tenant.adminEmail||''
+    }],
+    caps:[], avances:[], versements:[], visiteurs:[],
+    dossiersPending:[], affiliationsPending:[], radiationPending:[],
+    reintegrationPending:[], biAppartPending:[],
+    presences:[], notifLog:[], smsLog:[],
+    grandeLogeTenues:[], convocationsGO:[],
+    documents:[], troncVeuve:[],
+    superAdmin:{ matricule: tenant.acronym+'-SA', pwd:'superadmin2026' },
+    obInfo:{ name: tenant.name, acronym: tenant.acronym, siege: tenant.siege||'' },
+    mailConfig:{ provider:'demo', from: tenant.adminEmail||'', mode:'demo' },
+    portalConfig:{ enabled:false, requireSecret:true },
+    secretQuestions:{
+      Apprenti:{ question:'Quelle est votre lumière ?', reponses:['la connaissance'] },
+      Compagnon:{ question:'Quel est votre chemin ?', reponses:['la sagesse'] },
+      Maitre:{ question:'Quel est votre idéal ?', reponses:['la perfection'] }
+    },
+    smsConfig:{ provider:'demo', user:'', apiKey:'', mode:'demo' },
+    customPerms:null, logoObedience:null, docLogoSource:null
+  };
+  // Loge Autonome : crée un atelier unique, VM direct, pas de structure Grande Loge
+  if (tenant.category === 'loge_autonome') {
+    var logeId = 'loge_unique';
+    d.loges = [{
+      id: logeId, nom: tenant.name, numero: '001', ville: tenant.siege||'',
+      statut: 'active', dateConsecration: today, rite: 'REAA',
+      agenda: [], instruction: [], officiers: [], planches: [], cotisations: []
+    }];
+    d.membres[0].logeId = logeId;
+    d.membres[0].role = 'Vénérable Maître';
+    d.membres[0].nom = 'Vénérable — ' + tenant.acronym;
+    d.grandOff = [];
+    d.obInfo.logeAutonome = true;
+    d.superAdmin.matricule = tenant.acronym + '-SA';
+    d.superAdmin.nom = 'Super Admin — ' + tenant.acronym;
+  }
+  localStorage.setItem(key, JSON.stringify(d));
+}
+
+// ══════════════════════════════════════════════════════════════════════════════
+// OPÉRATIONS SUR LES TENANTS
+// ══════════════════════════════════════════════════════════════════════════════
+function slugify(str) {
+  return str.toLowerCase()
+    .replace(/[àâä]/g,'a').replace(/[éèêë]/g,'e').replace(/[îï]/g,'i')
+    .replace(/[ôö]/g,'o').replace(/[ùûü]/g,'u').replace(/ç/g,'c')
+    .replace(/[^a-z0-9]+/g,'_').replace(/^_+|_+$/g,'');
+}
+
+function genId(acronym) {
+  var base = slugify(acronym) || 'tenant';
+  var ids = PL.tenants.map(function(t){return t.id;});
+  if (ids.indexOf(base) === -1) return base;
+  var n = 2;
+  while (ids.indexOf(base+'_'+n) !== -1) n++;
+  return base+'_'+n;
+}
+
+function planLimits(plan) {
+  return plan==='premium' ? {maxLoges:50,maxMembres:1000}
+       : plan==='standard' ? {maxLoges:10,maxMembres:200}
+       : {maxLoges:3,maxMembres:50};
+}
+
+function paymentInfo(ps) {
+  if (ps==='paid')    return {label:'Payé',    bg:'#22c55e20',fg:'#22c55e'};
+  if (ps==='overdue') return {label:'En retard',bg:'#ef444420',fg:'#ef4444'};
+  if (ps==='free')    return {label:'Gratuit', bg:'#ffffff08', fg:'#555'};
+  return                     {label:'En attente',bg:'#f59e0b20',fg:'#f59e0b'};
+}
+
+function updatePaymentStatus(id, status) {
+  var t = PL.tenants.find(function(x){return x.id===id;});
+  if (!t) return;
+  t.paymentStatus = status;
+  if (status === 'paid') {
+    t.paymentDate = new Date().toISOString().split('T')[0];
+    var nd = new Date(); nd.setFullYear(nd.getFullYear()+1);
+    t.nextDueDate = nd.toISOString().split('T')[0];
+  }
+  savePlatform(); R();
+}
+
+function createTenant(f) {
+  var id = genId(f.acronym);
+  var lim = planLimits(f.plan);
+  var isLA = f.category === 'loge_autonome';
+  var t = {
+    id:id, name:f.name, acronym:f.acronym.toUpperCase().slice(0,12),
+    category: f.category || 'obedience',
+    type: isLA ? 'LA' : (f.type||'GL'), plan:f.plan, status:'pending',
+    createdAt: new Date().toISOString().split('T')[0], activatedAt:null,
+    adminEmail:f.adminEmail,
+    maxLoges: isLA ? 1 : lim.maxLoges,
+    maxMembres: isLA ? Math.min(lim.maxMembres, 100) : lim.maxMembres,
+    appType:'gluc', color:f.color||'#c9a227', siege:f.siege, notes:f.notes||'',
+    paymentStatus:'pending', paymentDate:null, nextDueDate:null
+  };
+  PL.tenants.push(t);
+  initTenantData(t);
+  savePlatform();
+  return t;
+}
+
+function activateTenant(id) {
+  var t = PL.tenants.find(function(x){return x.id===id;});
+  if (!t) return;
+  t.status = 'active';
+  t.activatedAt = new Date().toISOString().split('T')[0];
+  initTenantData(t);
+  savePlatform();
+  R();
+}
+
+function suspendTenant(id) {
+  if (id==='gluc'||id==='golac') { alert('Les obédiences fondatrices ne peuvent pas être suspendues.'); return; }
+  var t = PL.tenants.find(function(x){return x.id===id;});
+  if (!t) return;
+  t.status = 'suspended';
+  savePlatform(); R();
+}
+
+function deleteTenant(id) {
+  if (id==='gluc'||id==='golac') { alert('Les obédiences fondatrices ne peuvent pas être supprimées.'); return; }
+  if (!confirm('Supprimer définitivement la souscription «'+id+'» et toutes ses données ?')) return;
+  ['_data','_logo','_loge_logos'].forEach(function(s){
+    localStorage.removeItem('mason_'+id+s);
+  });
+  PL.tenants = PL.tenants.filter(function(t){return t.id!==id;});
+  savePlatform(); R();
+}
+
+function updateTenant(id, f) {
+  var t = PL.tenants.find(function(x){return x.id===id;});
+  if (!t) return;
+  t.name = f.name||t.name;
+  t.adminEmail = f.adminEmail||t.adminEmail;
+  t.siege = f.siege||t.siege;
+  t.color = f.color||t.color;
+  t.notes = f.notes!==undefined ? f.notes : t.notes;
+  if (f.plan && f.plan!==t.plan) {
+    t.plan = f.plan;
+    var lim = planLimits(f.plan);
+    t.maxLoges = lim.maxLoges; t.maxMembres = lim.maxMembres;
+  }
+  savePlatform();
+  PS.modal = null; R();
+}
+
+// ══════════════════════════════════════════════════════════════════════════════
+// UTILITAIRES UI
+// ══════════════════════════════════════════════════════════════════════════════
+function G(id){return document.getElementById(id);}
+function val(id){return G(id)?G(id).value.trim():'';}
+
+function fmtDate(d){ return d ? d.split('-').reverse().join('/') : '—'; }
+
+function statusInfo(s){
+  return {active:{label:'Actif',bg:'#22c55e15',fg:'#22c55e'},
+          pending:{label:'En attente',bg:'#f59e0b15',fg:'#f59e0b'},
+          suspended:{label:'Suspendu',bg:'#ef444415',fg:'#ef4444'},
+          expired:{label:'Expiré',bg:'#66666615',fg:'#666'}}[s]||{label:s,bg:'#33333315',fg:'#666'};
+}
+function planInfo(p){
+  return {premium:{label:'Premium',bg:'#c9a22720',fg:'#c9a227'},
+          standard:{label:'Standard',bg:'#3b82f620',fg:'#3b82f6'},
+          trial:{label:'Essai',bg:'#66666620',fg:'#888'}}[p]||{label:p,bg:'#33333320',fg:'#666'};
+}
+function typeLabel(t){
+  return {GL:'Grande Loge',GO:'Grand Orient',REAA:'REAA',MM:'Memphis-Misraïm',Mixte:'Mixte',Autre:'Autre',LA:'Loge Autonome'}[t]||t;
+}
+function tenantUrl(t){
+  return './'+t.appType+'/?org='+t.id;
+}
+function badge(label,bg,fg){
+  return '<span class="badge" style="background:'+bg+';color:'+fg+'">'+label+'</span>';
+}
+
+function getTenantStats(id) {
+  try {
+    var raw = localStorage.getItem('mason_'+id+'_data');
+    if (!raw) return null;
+    var d = JSON.parse(raw);
+    return { membres: (d.membres||[]).length, loges: (d.loges||[]).length };
+  } catch(e){ return null; }
+}
+
+// ══════════════════════════════════════════════════════════════════════════════
+// RENDU
+// ══════════════════════════════════════════════════════════════════════════════
+function R() {
+  document.getElementById('app').innerHTML = PS.isAdmin ? vDashboard() : vLogin();
+}
+
+// ── Login ──
+function vLogin() {
+  return '<div class="page-center">'
+    +'<div class="login-box">'
+    +'<div class="logo-sym">⬡</div>'
+    +'<h1>MasonApp</h1>'
+    +'<p class="sub">Plateforme de Gestion Multi-Obédiences</p>'
+    +'<div class="form-group"><label>Identifiant</label>'
+    +'<input id="plLogin" class="inp" type="text" placeholder="platform" autocomplete="username"/></div>'
+    +'<div class="form-group"><label>Mot de passe</label>'
+    +'<input id="plPwd" class="inp" type="password" placeholder="••••••••" autocomplete="current-password"/></div>'
+    +'<div id="plErr" class="err">Identifiants incorrects</div>'
+    +'<button class="btn-primary full" onclick="doLogin()">Connexion</button>'
+    +'<div class="login-note">Accès réservé aux administrateurs de la plateforme.<br>'
+    +'Chaque obédience se connecte directement via son lien.</div>'
+    +'</div></div>';
+}
+
+function doLogin() {
+  var l = val('plLogin'), p = G('plPwd').value;
+  if (l===PL.platformAdmin.login && p===PL.platformAdmin.pwd) {
+    PS.isAdmin = true; R();
+  } else {
+    G('plErr').style.display = 'block';
+  }
+}
+
+// ── Dashboard ──
+function vDashboard() {
+  var tab = PS.tab||'all';
+  var all = PL.tenants;
+  var filtered = tab==='all' ? all : all.filter(function(t){return t.status===tab;});
+  var counts = {
+    all: all.length,
+    active: all.filter(function(t){return t.status==='active';}).length,
+    pending: all.filter(function(t){return t.status==='pending';}).length,
+    suspended: all.filter(function(t){return t.status==='suspended';}).length
+  };
+
+  var cards = filtered.length ? filtered.map(function(t){return tenantCard(t);}).join('')
+    : '<div class="empty">Aucune souscription dans cette catégorie.</div>';
+
+  return '<div>'
+    // Topbar
+    +'<div class="topbar">'
+    +'<span style="color:#c9a227;font-size:22px">⬡</span>'
+    +'<div class="tb-brand">MasonApp <span class="tb-sub">Plateforme admin</span></div>'
+    +'<div class="tb-right">'
+    +'<button class="btn-primary sm" onclick="PS.view=\'new\';R()">+ Nouvelle souscription</button>'
+    +'<button class="btn-ghost sm" onclick="PS.isAdmin=false;R()">Déconnexion</button>'
+    +'</div></div>'
+    // Stats
+    +'<div class="stats-bar">'
+    +'<div class="stat"><div class="stat-v">'+counts.all+'</div><div class="stat-l">Total</div></div>'
+    +'<div class="stat"><div class="stat-v" style="color:#22c55e">'+counts.active+'</div><div class="stat-l">Actifs</div></div>'
+    +'<div class="stat"><div class="stat-v" style="color:#f59e0b">'+counts.pending+'</div><div class="stat-l">En attente</div></div>'
+    +'<div class="stat"><div class="stat-v" style="color:#ef4444">'+counts.suspended+'</div><div class="stat-l">Suspendus</div></div>'
+    +'</div>'
+    // Tabs
+    +'<div class="tabs">'
+    +['all','active','pending','suspended'].map(function(s){
+      var lbl = {all:'Tous',active:'Actifs',pending:'En attente',suspended:'Suspendus'}[s];
+      return '<button class="tab'+(tab===s?' on':'')+'" onclick="PS.tab=\''+s+'\';R()">'+lbl+' ('+counts[s]+')</button>';
+    }).join('')+'</div>'
+    // Formulaire nouvelle souscription (inline)
+    +(PS.view==='new' ? vNewForm() : '')
+    // Grille
+    +'<div class="tenant-grid">'+cards+'</div>'
+    // Modale édition
+    +(PS.modal==='edit' ? vEditModal() : '')
+    +(PS.modal==='newTenantEmail' ? vNewTenantEmailModal() : '')
+    +'</div>';
+}
+
+function tenantCard(t) {
+  var si = statusInfo(t.status);
+  var pi = planInfo(t.plan);
+  var pyi = paymentInfo(t.paymentStatus||'pending');
+  var isFounder = t.id==='gluc'||t.id==='golac';
+  var isLA = t.category==='loge_autonome';
+  var stats = getTenantStats(t.id);
+  var url = tenantUrl(t);
+  var catBadge = isLA
+    ? badge('◈ Loge Autonome','#3b82f620','#3b82f6')
+    : badge('⬡ Obédience','#ffffff08','#555');
+  var payBadge = badge(pyi.label, pyi.bg, pyi.fg);
+  var payActions = '';
+  if (!isFounder) {
+    if (t.paymentStatus!=='paid')
+      payActions += '<button class="btn-sm btn-pay" onclick="updatePaymentStatus(\''+t.id+'\',\'paid\')">✓ Marquer payé</button>';
+    if (t.paymentStatus==='paid')
+      payActions += '<button class="btn-sm btn-overdue" onclick="updatePaymentStatus(\''+t.id+'\',\'overdue\')">⚠ Retard</button>';
+    if (t.paymentStatus!=='pending'&&t.paymentStatus!=='paid')
+      payActions += '<button class="btn-sm" style="background:#ffffff08;color:#555" onclick="updatePaymentStatus(\''+t.id+'\',\'pending\')">↺ En attente</button>';
+  }
+  return '<div class="tenant-card">'
+    +'<div class="tc-stripe" style="background:'+t.color+'"></div>'
+    +'<div class="tc-head">'
+    +'<div class="tc-acro" style="color:'+t.color+'">'+t.acronym+'</div>'
+    +'<div class="tc-badges">'
+    +badge(si.label,si.bg,si.fg)+' '
+    +catBadge+' '
+    +badge(pi.label,pi.bg,pi.fg)
+    +(isFounder?' '+badge('Fondateur','#ffffff08','#444'):'')
+    +'</div></div>'
+    +'<div class="tc-name">'+t.name+'</div>'
+    +'<div class="tc-meta">'
+    +'<b>'+(isLA?'Loge Autonome':typeLabel(t.type))+'</b> · '+t.siege
+    +'<br>Créé le '+fmtDate(t.createdAt)+(t.activatedAt?' · Actif depuis '+fmtDate(t.activatedAt):'')
+    +'<br>'+t.adminEmail
+    +(stats?'<br><span style="color:#666">'+(isLA?'1 atelier':stats.loges+' loge'+(stats.loges!==1?'s':''))+' · '+stats.membres+' membre'+(stats.membres!==1?'s':'')+'</span>':'')
+    +'<br><span style="color:#444;font-size:10px">Max '+(isLA?'1 atelier':t.maxLoges+' loges')+' · '+t.maxMembres+' membres</span>'
+    +'</div>'
+    // Statut paiement
+    +'<div class="pay-section">'
+    +'<span style="color:#555;font-size:10px;text-transform:uppercase;letter-spacing:.5px">Paiement</span>'
+    +payBadge
+    +(t.paymentDate?'<span style="color:#444;font-size:10px">payé le '+fmtDate(t.paymentDate)+'</span>':'')
+    +(t.nextDueDate?'<span style="color:#444;font-size:10px">· échéance '+fmtDate(t.nextDueDate)+'</span>':'')
+    +'</div>'
+    +(t.notes?'<div class="tc-notes">'+t.notes+'</div>':'')
+    +'<div class="tc-actions">'
+    +(t.status==='active'?'<a class="btn-sm btn-go" href="'+url+'" target="_blank">Accéder →</a>':'')
+    +(t.status==='pending'?'<button class="btn-sm btn-ok" onclick="activateTenant(\''+t.id+'\')">✓ Activer</button>':'')
+    +(t.status==='active'&&!isFounder?'<button class="btn-sm btn-warn" onclick="suspendTenant(\''+t.id+'\')">⏸ Suspendre</button>':'')
+    +(t.status==='suspended'?'<button class="btn-sm btn-ok" onclick="activateTenant(\''+t.id+'\')">↩ Réactiver</button>':'')
+    +payActions
+    +'<button class="btn-sm btn-edit" onclick="openEdit(\''+t.id+'\')">✎ Modifier</button>'
+    +'<button class="btn-sm btn-info" onclick="showInfo(\''+t.id+'\')">ℹ Infos</button>'
+    +(!isFounder?'<button class="btn-sm btn-del" onclick="deleteTenant(\''+t.id+'\')">✕ Supprimer</button>':'')
+    +'</div></div>';
+}
+
+// ── Formulaire nouvelle souscription ──
+var _newCat = 'obedience';
+function setCat(cat) {
+  _newCat = cat;
+  var ob = document.getElementById('cat_ob');
+  var la = document.getElementById('cat_la');
+  var typeRow = document.getElementById('f_type_row');
+  var planRow = document.getElementById('f_plan_row');
+  var nameLabel = document.getElementById('f_name_label');
+  if (!ob) return;
+  ob.classList.toggle('on', cat==='obedience');
+  la.classList.toggle('on', cat==='loge_autonome');
+  typeRow.style.display = cat==='loge_autonome' ? 'none' : '';
+  nameLabel.textContent = cat==='loge_autonome' ? 'Nom de la loge *' : 'Nom de l\'obédience *';
+  // Plans Loge Autonome = 1 seul atelier, plafond membres réduit
+  var planSel = document.getElementById('f_plan');
+  if (planSel) {
+    planSel.innerHTML = cat==='loge_autonome'
+      ? '<option value="trial">Essai — 1 atelier / 30 membres</option>'
+        +'<option value="standard" selected>Standard — 1 atelier / 100 membres</option>'
+        +'<option value="premium">Premium — 1 atelier / 300 membres</option>'
+      : '<option value="trial">Essai 30 jours — 3 loges / 50 membres</option>'
+        +'<option value="standard">Standard — 10 loges / 200 membres</option>'
+        +'<option value="premium" selected>Premium — 50 loges / 1000 membres</option>';
+  }
+}
+function vNewForm() {
+  _newCat = 'obedience';
+  return '<div class="new-panel">'
+    +'<div class="new-panel-hdr"><h2>⊕ Nouvelle souscription</h2>'
+    +'<button class="close-btn" onclick="PS.view=\'dashboard\';R()">✕</button></div>'
+    // Catégorie
+    +'<div class="form-group" style="margin-bottom:20px"><label>Type de souscription *</label>'
+    +'<div class="cat-grid">'
+    +'<button type="button" id="cat_ob" class="cat-opt on" onclick="setCat(\'obedience\')">'
+    +'<div class="cat-opt-icon">⬡</div>'
+    +'<div class="cat-opt-lbl">Obédience</div>'
+    +'<div class="cat-opt-desc">Plusieurs ateliers, structure Grande Loge / Grand Orient avec tous les niveaux de gouvernance.</div>'
+    +'</button>'
+    +'<button type="button" id="cat_la" class="cat-opt" onclick="setCat(\'loge_autonome\')">'
+    +'<div class="cat-opt-icon">◈</div>'
+    +'<div class="cat-opt-lbl">Loge Autonome</div>'
+    +'<div class="cat-opt-desc">Un seul atelier indépendant, gestion simplifiée, idéal pour les loges qui veulent agir seules.</div>'
+    +'</button>'
+    +'</div></div>'
+    // Nom + Acronyme
+    +'<div class="form-row">'
+    +'<div class="form-group"><label id="f_name_label">Nom de l\'obédience *</label>'
+    +'<input id="f_name" class="inp" type="text" placeholder="Grande Loge Universelle"/></div>'
+    +'<div class="form-group"><label>Acronyme *</label>'
+    +'<input id="f_acro" class="inp" type="text" placeholder="GLU" maxlength="12"/></div>'
+    +'</div>'
+    // Siège + Email
+    +'<div class="form-row">'
+    +'<div class="form-group"><label>Siège *</label>'
+    +'<input id="f_siege" class="inp" type="text" placeholder="Brazzaville"/></div>'
+    +'<div class="form-group"><label>Email administrateur *</label>'
+    +'<input id="f_email" class="inp" type="email" placeholder="admin@obedience.org"/></div>'
+    +'</div>'
+    // Type + Plan
+    +'<div class="form-row" id="f_type_row">'
+    +'<div class="form-group"><label>Rite / Structure</label>'
+    +'<select id="f_type" class="inp">'
+    +'<option value="GL">Grande Loge</option>'
+    +'<option value="GO">Grand Orient</option>'
+    +'<option value="REAA">REAA</option>'
+    +'<option value="MM">Memphis-Misraïm</option>'
+    +'<option value="Mixte">Mixte (co-éducatif)</option>'
+    +'<option value="Autre">Autre</option>'
+    +'</select></div>'
+    +'<div class="form-group" id="f_plan_row"><label>Formule / Plan</label>'
+    +'<select id="f_plan" class="inp">'
+    +'<option value="trial">Essai 30 jours — 3 loges / 50 membres</option>'
+    +'<option value="standard">Standard — 10 loges / 200 membres</option>'
+    +'<option value="premium" selected>Premium — 50 loges / 1000 membres</option>'
+    +'</select></div>'
+    +'</div>'
+    // Si loge_autonome, plan seul sur une ligne
+    +'<div class="form-row" id="f_plan_la_row" style="display:none">'
+    +'</div>'
+    // Couleur + Notes
+    +'<div class="form-row">'
+    +'<div class="form-group"><label>Couleur thème</label>'
+    +'<input id="f_color" class="inp" type="color" value="#c9a227" style="height:38px;padding:2px 6px"/></div>'
+    +'<div class="form-group"><label>Notes internes</label>'
+    +'<input id="f_notes" class="inp" type="text" placeholder="Remarques..."/></div>'
+    +'</div>'
+    +'<div id="f_err" class="err"></div>'
+    +'<div id="f_ok" class="alert-ok"></div>'
+    +'<div class="form-actions">'
+    +'<button class="btn-primary" onclick="submitNew()">Créer la souscription</button>'
+    +'<button class="btn-ghost" onclick="PS.view=\'dashboard\';R()">Annuler</button>'
+    +'</div></div>';
+}
+
+function submitNew() {
+  var name=val('f_name'), acro=val('f_acro'), siege=val('f_siege'), email=val('f_email');
+  var type=val('f_type'), plan=val('f_plan'), color=G('f_color').value, notes=val('f_notes');
+  var err = G('f_err');
+  if (!name||!acro||!siege||!email) {
+    err.textContent='Veuillez remplir tous les champs obligatoires (*).';
+    err.style.display='block'; return;
+  }
+  err.style.display='none';
+  var t = createTenant({name,acronym:acro,siege,adminEmail:email,type,plan,color,notes,category:_newCat});
+  PS.view='dashboard'; PS.tab='pending';
+  PS.modal='newTenantEmail'; PS.emailData={t:t}; R();
+}
+
+function vNewTenantEmailModal() {
+  if (!PS.emailData||!PS.emailData.t) return '';
+  var t = PS.emailData.t;
+  var base = window.location.origin+window.location.pathname.replace(/index\.html$/,'').replace(/\/?$/,'/');
+  var url = base+(t.appType||'gluc')+'/?org='+t.id;
+  var adminLogin = t.acronym+'-001';
+  var adminPwd = 'admin2026';
+  var saLogin = t.acronym+'-SA';
+  var saPwd = 'superadmin2026';
+  var subject = encodeURIComponent('['+t.acronym+'] Votre accès à la plateforme maçonnique');
+  var body = encodeURIComponent(
+    'Bonjour,\n\n'
+    +'Votre souscription à la plateforme maçonnique a bien été reçue.\n\n'
+    +'━━━━━━━━━━━━━━━━━━━━━━━━━━━\n'
+    +'  INFORMATIONS DE CONNEXION\n'
+    +'━━━━━━━━━━━━━━━━━━━━━━━━━━━\n\n'
+    +'► Accès à votre espace\n'
+    +'  URL     : '+url+'\n'
+    +'  Login   : '+adminLogin+'\n'
+    +'  Passe   : '+adminPwd+'\n\n'
+    +'► Compte Super Administrateur\n'
+    +'  Login   : '+saLogin+'\n'
+    +'  Passe   : '+saPwd+'\n\n'
+    +'⚠ Votre compte est en attente de validation par l\'équipe de la plateforme.\n'
+    +'Vous serez notifié(e) par email dès l\'activation.\n\n'
+    +'Nous vous recommandons de changer votre mot de passe dès la première connexion.\n\n'
+    +'Cordialement,\nL\'équipe de la Plateforme Maçonnique\n'
+  );
+  var mailto = 'mailto:'+t.adminEmail+'?subject='+subject+'&body='+body;
+  return '<div class="ovl" onclick="if(event.target===this){PS.modal=null;PS.emailData=null;R()}">'
+    +'<div class="mbox" style="max-width:540px">'
+    +'<div class="mhdr"><h2>✓ Souscription créée</h2>'
+    +'<button class="close-btn" onclick="PS.modal=null;PS.emailData=null;R()">✕</button></div>'
+    +'<div class="alert-ok" style="margin-bottom:16px;padding:12px 16px;background:#1a2e1a;border:1px solid #2d5a2d;border-radius:8px;color:#4caf50;font-size:13px">'
+    +'✓ La souscription <strong>'+t.acronym+'</strong> a été créée avec succès. Statut : <strong>EN ATTENTE</strong>.</div>'
+    +'<div style="background:#1a1a1a;border:1px solid #2a2a2a;border-radius:10px;padding:16px;margin-bottom:16px;font-size:13px;font-family:monospace;line-height:2">'
+    +'<div style="color:#888;font-size:11px;text-transform:uppercase;letter-spacing:1px;margin-bottom:8px">Accès tenant</div>'
+    +'<div><span style="color:#555">URL&nbsp;&nbsp;&nbsp;&nbsp;</span><span style="color:#c9a227">'+url+'</span></div>'
+    +'<div><span style="color:#555">Login&nbsp;&nbsp;</span><span style="color:#fff">'+adminLogin+'</span></div>'
+    +'<div><span style="color:#555">Passe&nbsp;&nbsp;</span><span style="color:#fff">'+adminPwd+'</span></div>'
+    +'<div style="margin-top:10px;color:#888;font-size:11px;text-transform:uppercase;letter-spacing:1px">Super Admin</div>'
+    +'<div><span style="color:#555">Login&nbsp;&nbsp;</span><span style="color:#fff">'+saLogin+'</span></div>'
+    +'<div><span style="color:#555">Passe&nbsp;&nbsp;</span><span style="color:#fff">'+saPwd+'</span></div>'
+    +'</div>'
+    +'<p style="color:#888;font-size:12px;margin-bottom:14px">Envoyez ces informations à <strong style="color:#fff">'+t.adminEmail+'</strong> via votre client de messagerie :</p>'
+    +'<div style="display:flex;gap:10px">'
+    +'<a class="btn-primary" href="'+mailto+'" style="text-decoration:none;display:inline-block">✉ Ouvrir dans ma messagerie</a>'
+    +'<button class="btn-ghost" onclick="PS.modal=null;PS.emailData=null;R()">Fermer</button>'
+    +'</div>'
+    +'</div></div>';
+}
+
+// ── Modale édition ──
+function openEdit(id) {
+  PS.editId = id; PS.modal = 'edit'; R();
+}
+
+function vEditModal() {
+  var t = PL.tenants.find(function(x){return x.id===PS.editId;});
+  if (!t) return '';
+  return '<div class="ovl" onclick="if(event.target===this){PS.modal=null;R()}">'
+    +'<div class="mbox">'
+    +'<div class="mhdr"><h2>Modifier — '+t.acronym+'</h2>'
+    +'<button class="close-btn" onclick="PS.modal=null;R()">✕</button></div>'
+    +'<div class="form-group"><label>Nom complet</label>'
+    +'<input id="e_name" class="inp" type="text" value="'+t.name+'"/></div>'
+    +'<div class="form-row">'
+    +'<div class="form-group"><label>Siège</label>'
+    +'<input id="e_siege" class="inp" type="text" value="'+t.siege+'"/></div>'
+    +'<div class="form-group"><label>Email admin</label>'
+    +'<input id="e_email" class="inp" type="email" value="'+t.adminEmail+'"/></div>'
+    +'</div>'
+    +'<div class="form-row">'
+    +'<div class="form-group"><label>Plan</label>'
+    +'<select id="e_plan" class="inp">'
+    +['trial','standard','premium'].map(function(p){
+      return '<option value="'+p+'"'+(t.plan===p?' selected':'')+'>'+planInfo(p).label+'</option>';
+    }).join('')
+    +'</select></div>'
+    +'<div class="form-group"><label>Couleur thème</label>'
+    +'<input id="e_color" class="inp" type="color" value="'+t.color+'" style="height:38px;padding:2px 6px"/></div>'
+    +'</div>'
+    +'<div class="form-group"><label>Notes internes</label>'
+    +'<input id="e_notes" class="inp" type="text" value="'+(t.notes||'')+'"/></div>'
+    +'<div class="form-actions">'
+    +'<button class="btn-primary" onclick="updateTenant(\''+t.id+'\',{name:val(\'e_name\'),siege:val(\'e_siege\'),adminEmail:val(\'e_email\'),plan:val(\'e_plan\'),color:G(\'e_color\').value,notes:val(\'e_notes\')})">Enregistrer</button>'
+    +'<button class="btn-ghost" onclick="PS.modal=null;R()">Annuler</button>'
+    +'</div></div></div>';
+}
+
+// ── Infos tenant ──
+function showInfo(id) {
+  var t = PL.tenants.find(function(x){return x.id===id;});
+  if (!t) return;
+  var base = window.location.href.replace(/\/[^/]*$/, '/');
+  var url = base+(t.appType||'gluc')+'/?org='+id;
+  var stats = getTenantStats(id);
+  alert(
+    '═══ '+t.acronym+' — '+t.name+' ═══\n\n'
+    +'ID tenant  : '+t.id+'\n'
+    +'URL accès  : '+url+'\n\n'
+    +'── Compte Grand Maître ──\n'
+    +'Matricule  : '+t.acronym+'-001\n'
+    +'Mot passe  : admin2026\n\n'
+    +'── Super Admin ──\n'
+    +'Matricule  : '+t.acronym+'-SA\n'
+    +'Mot passe  : superadmin2026\n\n'
+    +'── Plan ──\n'
+    +'Formule    : '+planInfo(t.plan).label+'\n'
+    +'Max loges  : '+t.maxLoges+'\n'
+    +'Max membres: '+t.maxMembres+'\n\n'
+    +'── Statistiques ──\n'
+    +(stats ? 'Loges actives : '+stats.loges+'\nMembres       : '+stats.membres : 'Pas de données locales')
+    +'\n\nCréé le    : '+fmtDate(t.createdAt)
+    +'\nActivé le  : '+fmtDate(t.activatedAt)
+  );
+}
+
+// ══════════════════════════════════════════════════════════════════════════════
+// INIT
+// ══════════════════════════════════════════════════════════════════════════════
+loadPlatform();
+R();
+</script>
 </body>
 </html>
