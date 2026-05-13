@@ -112,15 +112,44 @@ tr:hover td{background:#fafafa;}
 .frow{display:grid;grid-template-columns:1fr 1fr;gap:10px;}
 .prev{background:#f5f5f5;border-radius:8px;padding:10px 12px;margin-bottom:11px;display:flex;align-items:center;gap:10px;border:1.5px solid #ddd;}
 .ava{width:34px;height:34px;border-radius:50%;background:#111;display:flex;align-items:center;justify-content:center;color:#fff;font-weight:900;font-size:12px;flex-shrink:0;}
-.lpg{min-height:100vh;display:flex;align-items:center;justify-content:center;padding:16px;background:#111;}
-.lbox{background:#fff;border:2px solid #c9a227;border-radius:18px;padding:36px;width:100%;max-width:400px;box-shadow:0 30px 80px rgba(0,0,0,.5);}
-.llogo{width:70px;height:70px;border-radius:50%;background:#111;display:flex;align-items:center;justify-content:center;margin:0 auto 14px;font-size:30px;color:#c9a227;overflow:hidden;border:3px solid #c9a227;}
+/* ── PAGE LOGIN / MOT DE PASSE OUBLIÉ ───────────────────────────────────── */
+.lpg{min-height:100vh;display:flex;align-items:center;justify-content:center;padding:16px;
+  background:#0a0a0a;
+  background-image:radial-gradient(ellipse at 25% 55%,rgba(201,162,39,.07) 0%,transparent 55%),
+                   radial-gradient(ellipse at 80% 15%,rgba(201,162,39,.04) 0%,transparent 50%);}
+.lbox{background:#111;border:1px solid #222;border-top:2px solid rgba(201,162,39,.45);
+  border-radius:20px;padding:40px 36px;width:100%;max-width:420px;
+  box-shadow:0 40px 100px rgba(0,0,0,.8),inset 0 1px 0 rgba(255,255,255,.03);}
+.llogo{width:72px;height:72px;border-radius:50%;background:#1a1a1a;display:flex;align-items:center;
+  justify-content:center;margin:0 auto 16px;font-size:30px;color:#c9a227;overflow:hidden;
+  border:2px solid rgba(201,162,39,.4);box-shadow:0 0 24px rgba(201,162,39,.15);}
 .llogo img{width:100%;height:100%;object-fit:cover;border-radius:50%;}
-.ltit{color:#111;font-size:22px;font-weight:900;letter-spacing:3px;text-align:center;}
-.lsub{color:#888;font-size:12px;margin:5px 0 28px;letter-spacing:1px;text-align:center;}
-.lerr{background:#ffebee;border:1.5px solid #ef9a9a;border-radius:8px;padding:8px 12px;color:#b71c1c;font-size:12px;margin-bottom:11px;display:none;}
+.ltit{color:#fff;font-size:22px;font-weight:900;letter-spacing:3px;text-align:center;}
+.lsub{color:#555;font-size:12px;margin:5px 0 26px;letter-spacing:1px;text-align:center;line-height:1.5;}
+.lerr{background:rgba(183,28,28,.12);border:1px solid rgba(183,28,28,.3);border-radius:8px;
+  padding:9px 12px;color:#ef5350;font-size:12px;margin-bottom:11px;display:none;}
+.lsuccess{background:rgba(39,174,96,.1);border:1px solid rgba(39,174,96,.3);border-radius:8px;
+  padding:9px 12px;color:#4caf50;font-size:12px;margin-bottom:11px;display:none;}
+/* Inputs dans la login box — thème sombre */
+.lbox .fg input,.lbox .fg select{
+  background:#1a1a1a;border:1px solid #2a2a2a;border-radius:9px;
+  padding:10px 14px;color:#fff;font-size:14px;width:100%;outline:none;
+  transition:border .15s,box-shadow .15s;}
+.lbox .fg input:focus,.lbox .fg select:focus{border-color:#c9a227;box-shadow:0 0 0 3px rgba(201,162,39,.08);}
+.lbox .fg input::placeholder{color:#444;}
+.lbox .fl{color:#555;}
+/* Toggle visibilité mot de passe */
 .pwr{position:relative;}
-.pwe{position:absolute;right:10px;top:50%;transform:translateY(-50%);background:none;border:none;color:#999;font-size:14px;cursor:pointer;padding:0;}
+.pwr input{padding-right:40px!important;}
+.pwe{position:absolute;right:10px;top:50%;transform:translateY(-50%);background:none;border:none;
+  color:#555;font-size:16px;cursor:pointer;padding:2px 4px;line-height:1;transition:color .15s;}
+.pwe:hover{color:#c9a227;}
+/* Lien oublié */
+.lforgot{display:block;text-align:center;margin-top:14px;color:#555;font-size:12px;
+  background:none;border:none;cursor:pointer;transition:color .15s;padding:4px;}
+.lforgot:hover{color:#c9a227;}
+/* Séparateur */
+.lsep{border:none;border-top:1px solid #1e1e1e;margin:20px 0;}
 .div{border-top:1.5px solid #eee;margin:20px 0 14px;}
 .dg{display:grid;grid-template-columns:1fr 1fr;gap:6px;}
 .db{background:#f5f5f5;border:1.5px solid #e5e5e5;border-radius:8px;padding:8px 10px;color:#555;font-size:11px;text-align:left;cursor:pointer;transition:border .2s;}
@@ -296,6 +325,7 @@ function isVM(lid){
   var loge=gLoge(lid);if(!loge)return false;
   return loge.officiers.some(function(o){return o.mid===S.user.id&&(o.titre==='VM'||o.titre==='Vénérable Maîtresse');});
 }
+function isLA(){return !!(D.obInfo&&D.obInfo.logeAutonome);}
 function _userIsOfficer(u){
   if(!u)return false;
   return D.loges.some(function(l){
@@ -1522,9 +1552,26 @@ function getOfficerDashboard(lid){
 // ══════════════════════════════════════════════════════════════════════════
 // PERSISTANCE LOCALSTORAGE — données conservées entre les sessions
 // ══════════════════════════════════════════════════════════════════════════
-var LS_KEY = 'gluc_data';
-var LS_LOGO = 'gluc_logo';
-var LS_LOGE_LOGOS = 'gluc_loge_logos';
+// ── MULTI-TENANT : isoler les données par organisation ──────────────────────
+var TENANT_ID = (function(){
+  var p = new URLSearchParams(window.location.search);
+  return p.get('org') || 'gluc';
+}());
+var LS_KEY       = 'mason_' + TENANT_ID + '_data';
+var LS_LOGO      = 'mason_' + TENANT_ID + '_logo';
+var LS_LOGE_LOGOS= 'mason_' + TENANT_ID + '_loge_logos';
+
+// Migration automatique des anciennes clés non-namespacées (GLUC legacy)
+(function migrateLegacy(){
+  if (TENANT_ID === 'gluc' && localStorage.getItem('gluc_data') && !localStorage.getItem(LS_KEY)) {
+    localStorage.setItem(LS_KEY,        localStorage.getItem('gluc_data')       || '');
+    localStorage.setItem(LS_LOGO,       localStorage.getItem('gluc_logo')       || '');
+    localStorage.setItem(LS_LOGE_LOGOS, localStorage.getItem('gluc_loge_logos') || '');
+    localStorage.removeItem('gluc_data');
+    localStorage.removeItem('gluc_logo');
+    localStorage.removeItem('gluc_loge_logos');
+  }
+}());
 
 function saveState() {
   try {
@@ -1634,6 +1681,7 @@ APP.render=function(){
   var h='';
   if(S.view==='portal')h=vPortal();
   else if(S.view==='login')h=vLogin();
+  else if(S.view==='forgotPwd')h=vForgotPwd();
   else if(S.view==='secretQ')h=vSecretQuestion();
   else if(S.view==='atelierSelect')h=vAtelier();
   else if(S.view==='monEspace')h=vMonEspace();
@@ -1671,7 +1719,7 @@ function hdr(){
     +'<div style="color:#fff;font-size:13px;font-weight:700">'+S.user.nom+'</div>'
     +'<div style="margin-top:2px">'+rCh(S.user.role)+'<span style="color:#666;font-size:10px;margin-left:4px">'+S.user.matricule+'</span></div>'
     +'</div>'
-    +(S.view!=='atelierSelect'&&S.view!=='monEspace'?'<button class="btn ghost sm" onclick="APP.changeAtelier()">Ateliers<\/button>':'')
+    +(S.view!=='atelierSelect'&&S.view!=='monEspace'&&!(D.obInfo&&D.obInfo.logeAutonome)?'<button class="btn ghost sm" onclick="APP.changeAtelier()">Ateliers<\/button>':'')
     +'<button class="btn ghost sm" onclick="APP.openMod("changePwd",{})">🔑<\/button>'
     +'<button class="btn ghost sm" onclick="APP.logout()">Déconnexion<\/button>'+(!S.user||!isSuperAdmin()?'':'<button class="btn dng sm" onclick="resetState()" title="Reset données">🔄</button>')
     +'</div>';
@@ -1748,31 +1796,109 @@ APP.submitPortal = function(){
 };
 
 // ── LOGIN ──
+// Afficher/masquer un champ mot de passe
+function togglePwd(id,btn){
+  var el=G(id);
+  if(!el)return;
+  var show=el.type==='password';
+  el.type=show?'text':'password';
+  btn.textContent=show?'🙈':'👁';
+}
+
 function vLogin(){
-  var logo=LOGO?'<img src="'+LOGO+'" style="width:70px;height:70px;object-fit:cover;border-radius:50%;"/>':logoImg(70);
+  var logo=LOGO?'<img src="'+LOGO+'" style="width:72px;height:72px;object-fit:cover;border-radius:50%;"/>':logoImg(72);
   return'<div class="lpg"><div class="lbox">'
     +'<div class="llogo">'+logo+'</div>'
-    +'<div class="ltit">'+D.obInfo.acronym+'</div><div class="lsub">'+D.obInfo.name+'</div>'
-    +'<div class="alert a-w" style="font-size:11px;margin-bottom:14px">Version statique : les données et mots de passe restent dans ce navigateur. Ne publiez pas de données sensibles sans backend sécurisé.</div>'
+    +'<div class="ltit">'+D.obInfo.acronym+'</div>'
+    +'<div class="lsub">'+D.obInfo.name+'</div>'
     +'<div class="fg"><label class="fl">Matricule</label>'
-    +'<input id="lM" placeholder="Ex: F-001 ou GLUC-00" autocomplete="off" onkeydown="if(event.key===\'Enter\')G(\'lP\').focus()"/></div>'
+    +'<input id="lM" placeholder="Ex: F-001" autocomplete="username" onkeydown="if(event.key===\'Enter\')G(\'lP\').focus()"/></div>'
     +'<div class="fg"><label class="fl">Mot de passe</label>'
-    +'<input id="lP" type="password" placeholder="••••••" autocomplete="current-password" onkeydown="if(event.key===\'Enter\')APP.doLogin()"/></div>'
+    +'<div class="pwr"><input id="lP" type="password" placeholder="••••••" autocomplete="current-password" onkeydown="if(event.key===\'Enter\')APP.doLogin()"/>'
+    +'<button class="pwe" onclick="togglePwd(\'lP\',this)" type="button" title="Afficher/masquer">👁<\/button><\/div><\/div>'
     +'<div id="lE" class="lerr">Matricule ou mot de passe incorrect.</div>'
-    +'<button class="btn gold lg full" onclick="APP.doLogin()" style="margin-bottom:8px">Se connecter</button>'
+    +'<button class="btn gold lg full" onclick="APP.doLogin()">Se connecter</button>'
+    +'<hr class="lsep"/>'
+    +'<button class="lforgot" onclick="APP.goForgotPwd()">Mot de passe oublié ?</button>'
     +'</div></div>';
 }
+
+function vForgotPwd(){
+  var logo=LOGO?'<img src="'+LOGO+'" style="width:72px;height:72px;object-fit:cover;border-radius:50%;"/>':logoImg(72);
+  return'<div class="lpg"><div class="lbox">'
+    +'<div class="llogo">'+logo+'</div>'
+    +'<div class="ltit">'+D.obInfo.acronym+'</div>'
+    +'<div class="lsub" style="margin-bottom:20px">Réinitialisation du mot de passe</div>'
+    +'<div class="fg"><label class="fl">Votre Matricule</label>'
+    +'<input id="fpM" placeholder="Ex: F-001" autocomplete="username" onkeydown="if(event.key===\'Enter\')APP.forgotStep1()"/></div>'
+    +'<div id="fpErr" class="lerr">Matricule introuvable.</div>'
+    +'<button class="btn gold full" onclick="APP.forgotStep1()" style="margin-bottom:16px">Continuer</button>'
+    +'<div id="fpPanel" style="display:none"></div>'
+    +'<hr class="lsep"/>'
+    +'<button class="lforgot" onclick="APP.backToLogin()">← Retour à la connexion</button>'
+    +'</div></div>';
+}
+
+APP.goForgotPwd=function(){ S.view='forgotPwd'; R(); };
+
+APP.forgotStep1=function(){
+  var mat=(G('fpM').value||'').trim();
+  var user=D.membres.find(function(m){return m.matricule===mat;});
+  G('fpErr').style.display=user?'none':'block';
+  if(!user)return;
+  var sq=D.secretQuestions[user.grade];
+  var panel=G('fpPanel');
+  if(sq&&sq.q){
+    panel.innerHTML='<div style="background:#1a1a1a;border:1px solid #2a2a2a;border-radius:10px;padding:14px;margin-bottom:14px;font-size:13px;font-weight:600;color:#fff;line-height:1.5">'+sq.q+'</div>'
+      +'<div class="fg"><label class="fl">Votre réponse</label>'
+      +'<input id="fpA" placeholder="Répondez ici..." autocomplete="off"/></div>'
+      +'<div class="fg"><label class="fl">Nouveau mot de passe</label>'
+      +'<div class="pwr"><input id="fpNew" type="password" placeholder="Min. 4 caractères"/>'
+      +'<button class="pwe" onclick="togglePwd(\'fpNew\',this)" type="button">👁<\/button><\/div><\/div>'
+      +'<div id="fpAErr" class="lerr">Réponse incorrecte.</div>'
+      +'<div id="fpOk" class="lsuccess">Mot de passe réinitialisé. Vous pouvez vous connecter.</div>'
+      +'<button class="btn gold full" onclick="APP.forgotReset(\''+user.id+'\')">Réinitialiser</button>';
+  }else{
+    panel.innerHTML='<div style="background:#1a1a1a;border:1px solid #2a2a2a;border-radius:10px;padding:14px;font-size:13px;color:#888;line-height:1.6">'
+      +'Contactez votre <strong style="color:#fff">Secrétaire</strong> ou votre <strong style="color:#fff">Grand Secrétaire</strong> pour réinitialiser votre mot de passe.</div>';
+  }
+  panel.style.display='block';
+};
+
+APP.forgotReset=function(uid){
+  var user=D.membres.find(function(m){return m.id===uid;});
+  if(!user)return;
+  var sq=D.secretQuestions[user.grade];
+  var normalize=function(s){return(s||'').toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g,'').trim();};
+  var ans=normalize(G('fpA')?G('fpA').value:'');
+  var ok=sq&&sq.reponses&&sq.reponses.some(function(r){return normalize(r)===ans;});
+  if(!ok){G('fpAErr').style.display='block';return;}
+  var np=(G('fpNew').value||'').trim();
+  if(np.length<4){alert('Le mot de passe doit contenir au moins 4 caractères.');return;}
+  G('fpAErr').style.display='none';
+  user.pwd=np; saveState();
+  G('fpOk').style.display='block';
+  setTimeout(function(){APP.backToLogin();},1800);
+};
 APP.doLogin=function(){
   var mat=G('lM').value.trim(),pwd=G('lP').value;
   // Super Admin check
+  var isLA=D.obInfo&&D.obInfo.logeAutonome;
   if(mat===D.superAdmin.matricule&&pwd===D.superAdmin.pwd){
     S.user={id:'SADM',matricule:mat,nom:D.superAdmin.nom,role:'Super Admin',grade:'Maitre',logeId:null,pwd:pwd,statut:'actif',email:D.superAdmin.email};
-    G('lE').style.display='none';S.view='obedience';S.tab='programmes';R();return;
+    G('lE').style.display='none';
+    if(isLA&&D.loges.length){S.lid=D.loges[0].id;S.view='loge';S.tab='membres';}
+    else{S.view='obedience';S.tab='programmes';}
+    R();return;
   }
   var u=D.membres.find(function(m){return m.matricule===mat&&m.pwd===pwd;});
   if(!u){G('lE').style.display='block';return;}
   G('lE').style.display='none';
   S.user=u;
+  // Loge Autonome : entre directement dans l'atelier unique
+  if(isLA&&D.loges.length){
+    S.lid=D.loges[0].id;S.view='loge';S.tab='membres';S.pendingWelcome=true;R();return;
+  }
   // Check if secret question needed
   var grade=u.grade||'Maitre';
   var sq=D.secretQuestions[grade];
@@ -1786,7 +1912,10 @@ APP.doLogin=function(){
   R();
 };
 APP.logout=function(){S.user=null;S.view='login';S.lid=null;S.tab='membres';R();};
-APP.changeAtelier=function(){S.view='atelierSelect';R();};
+APP.changeAtelier=function(){
+  if(D.obInfo&&D.obInfo.logeAutonome)return; // pas de sélection pour LA
+  S.view='atelierSelect';R();
+};
 APP.setTab=function(t){S.tab=t;R();};
 APP.toggleProgMenu=function(){if(['programme','instruction','planches'].indexOf(S.tab)<0){S.tab='programme';R();}};
 APP.toggleFinMenu=function(){if(['finances','capitations','tronc'].indexOf(S.tab)<0){S.tab='finances';R();}};
@@ -1954,6 +2083,16 @@ function vMonEspace(){
     +'<div class="g3" style="margin-bottom:8px">'
     +[['Siège',D.siege],['Acronyme',D.acronym],['Fondée en',D.fondation]].map(function(x){
       return'<div class="sc"><div class="sc-l">'+x[0]+'</div><div class="sc-v" style="font-size:16px">'+x[1]+'</div></div>';}).join('')
+    +'</div>';
+  // Sécurité — changement de mot de passe
+  h+='<div class="sec" style="margin-top:20px">Sécurité</div>'
+    +'<div style="background:#fff;border:1.5px solid #e5e5e5;border-radius:12px;padding:16px 18px;'
+    +'display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;margin-bottom:20px">'
+    +'<div>'
+    +'<div style="font-weight:700;font-size:14px;color:#111">🔑 Mot de passe</div>'
+    +'<div style="color:#888;font-size:12px;margin-top:3px">Modifiez régulièrement votre mot de passe pour protéger votre compte.</div>'
+    +'</div>'
+    +'<button class="btn gold sm" onclick="APP.openMod(\'changePwd\',{})">Modifier</button>'
     +'</div>';
   return h+'</div>'+modH();
 }
@@ -2371,7 +2510,7 @@ function vLoge(){
     {id:'programme',lbl:'Programme',min:0},
     {id:'instruction',lbl:'Instruction',min:0},
     {id:'planches',lbl:'Planches & Thèmes',min:0},
-    {id:'membres',lbl:'Membres ('+ms.length+')',min:3},
+    {id:'membres',lbl:'Membres ('+ms.length+')',min:3,badge:(isLA()&&isVM(S.lid)?(D.dossiersPending||[]).filter(function(x){return x.lid===S.lid&&x.pendingForVM;}).length||'':'')},
     {id:'officiers',lbl:'Officiers',min:3},
     {id:'assiduites',lbl:'Assiduité',min:3},
     {id:'visiteurs',lbl:'Visiteurs',min:3},
@@ -2666,7 +2805,43 @@ APP.syncPresSel=function(sel){
 
 function lMbrs2(loge,ms,off){
   var otherLoges=D.loges.filter(function(l){return l.id!==loge.id&&l.statut==='active';});
-  var h='<div class="sec">Frères de la Loge</div><div class="tw"><table><thead><tr>'
+  var h='';
+  // ── Loge Autonome : dossiers en attente de validation VM ──
+  if(isLA()&&isVM(loge.id)){
+    var pending=(D.dossiersPending||[]).filter(function(x){return x.lid===loge.id&&x.pendingForVM;});
+    var radPending=(D.radiationPending||[]).filter(function(x){return x.lid===loge.id&&x.pendingForVM;});
+    if(pending.length||radPending.length){
+      h+='<div class="sec" style="color:#f59e0b">⏳ En attente de validation — Vénérable Maître</div>';
+      if(pending.length){
+        h+='<div class="tw"><table><thead><tr><th>Nom</th><th>Grade</th><th>Rôle</th><th>Soumis le</th><th>Note</th><th>Actions</th></tr></thead><tbody>';
+        pending.forEach(function(dos){
+          h+='<tr>'
+            +'<td style="font-weight:700">'+dos.nom+'</td>'
+            +'<td>'+gLbl(dos.grade||'Apprenti')+'</td>'
+            +'<td>'+(dos.role||'Frère')+'</td>'
+            +'<td style="color:#888">'+dos.date+'</td>'
+            +'<td style="color:#666;font-size:11px">'+(dos.note||'—')+'</td>'
+            +'<td><button class="btn ok sm" onclick="APP.validerDossier(\''+dos.id+'\')">✓ Valider<\/button> '
+            +'<button class="btn dng sm" onclick="APP.rejeterDossier(\''+dos.id+'\')">✕ Rejeter<\/button></td>'
+            +'</tr>';
+        });
+        h+='</tbody></table></div>';
+      }
+      if(radPending.length){
+        h+='<div style="margin-top:12px"><div class="sec" style="font-size:13px;color:#ef4444">Demandes de radiation</div>'
+          +'<div class="tw"><table><thead><tr><th>Membre</th><th>Date</th><th>Actions</th></tr></thead><tbody>';
+        radPending.forEach(function(req){
+          var m=D.membres.find(function(x){return x.id===req.mid;});
+          h+='<tr><td style="font-weight:700">'+(m?m.nom:req.mid)+'</td><td style="color:#888">'+req.date+'</td>'
+            +'<td><button class="btn dng sm" onclick="APP.validerRadiation(\''+req.id+'\')">✓ Radier<\/button> '
+            +'<button class="btn ghost sm" onclick="APP.rejeterRadiation(\''+req.id+'\')">✕ Refuser<\/button></td></tr>';
+        });
+        h+='</tbody></table></div></div>';
+      }
+      h+='<div style="margin-bottom:4px"></div>';
+    }
+  }
+  h+='<div class="sec">Frères de la Loge</div><div class="tw"><table><thead><tr>'
     +'<th>Matricule</th><th>Nom</th><th>Grade</th><th>Durée</th><th>Assiduité</th><th>Situation</th><th>Rôle</th>'
     +(off?'<th>Actions</th>':'')+'</tr></thead><tbody>';
   ms.forEach(function(m){
@@ -2875,21 +3050,37 @@ APP.updateSoldePreview=function(val,solde){var l=G('soldeAp');if(!l)return;var s
 
 var MODS={
   dossierForm:function(d){
-    return mhdr('Nouveau Frère — Dépôt de Dossier')
-      +'<div class="alert a-w" style="margin-bottom:14px"><div class="a-t">Dossier requis</div>Ce dossier sera transmis à l\'Obédience. Le Grand Secrétaire validera la création après examen des 3 documents obligatoires.</div>'
+    var vmNow=isVM(d.lid);
+    var laMode=isLA();
+    var title=laMode?(vmNow?'Créer un Frère / une Sœur':'Nouveau Membre — Soumettre au VM'):'Nouveau Frère — Dépôt de Dossier';
+    var notice=laMode
+      ?(vmNow
+        ?'<div class="alert a-i" style="margin-bottom:14px">En tant que <strong>Vénérable Maître</strong>, vous créez ce membre directement. Aucune validation supplémentaire requise.</div>'
+        :'<div class="alert a-w" style="margin-bottom:14px"><div class="a-t">Validation VM requise</div>Ce dossier sera soumis au Vénérable Maître pour validation avant création.</div>')
+      :'<div class="alert a-w" style="margin-bottom:14px"><div class="a-t">Dossier requis</div>Ce dossier sera transmis à l\'Obédience. Le Grand Secrétaire validera la création après examen des 3 documents obligatoires.</div>';
+    var docsSection=laMode?''
+      :'<div class="sec" style="font-size:13px;margin:12px 0 8px">Documents du dossier</div>'
+       +'<div class="fg"><label style="display:flex;align-items:center;gap:8px;cursor:pointer;padding:8px 0;border-bottom:1px solid #f0f0f0"><input id="docEx" type="checkbox" style="width:auto;margin:0"/> <span style="font-size:13px">Extrait d\'acte de naissance</span></label></div>'
+       +'<div class="fg"><label style="display:flex;align-items:center;gap:8px;cursor:pointer;padding:8px 0;border-bottom:1px solid #f0f0f0"><input id="docCas" type="checkbox" style="width:auto;margin:0"/> <span style="font-size:13px">Casier judiciaire vierge</span></label></div>'
+       +'<div class="fg"><label style="display:flex;align-items:center;gap:8px;cursor:pointer;padding:8px 0"><input id="docNat" type="checkbox" style="width:auto;margin:0"/> <span style="font-size:13px">Certificat de nationalité</span></label></div>';
+    var roleSection=laMode
+      ?'<div class="fg"><label class="fl">Rôle</label><select id="mRole"><option value="Frère">Frère</option><option value="Sœur">Sœur</option></select></div>'
+      :'';
+    var btnLabel=laMode?(vmNow?'Créer le membre':'Soumettre au VM'):'Soumettre le dossier';
+    return mhdr(title)
+      +notice
       +'<div class="fg"><label class="fl">Nom complet</label><input id="mNom" placeholder="Prénom NOM"/></div>'
       +'<div class="frow"><div class="fg"><label class="fl">Téléphone</label><input id="mTel" placeholder="+242..."/></div><div class="fg"><label class="fl">Email</label><input id="mEmail" placeholder="email@..."/></div></div>'
       +'<div class="fg"><label class="fl">Grade initial</label><select id="mGradeInit"><option value="Apprenti">Apprenti</option><option value="Compagnon">Compagnon</option><option value="Maitre">Maître</option></select></div>'
-      +'<div class="sec" style="font-size:13px;margin:12px 0 8px">Documents du dossier</div>'
-      +'<div class="fg"><label style="display:flex;align-items:center;gap:8px;cursor:pointer;padding:8px 0;border-bottom:1px solid #f0f0f0"><input id="docEx" type="checkbox" style="width:auto;margin:0"/> <span style="font-size:13px">Extrait d\'acte de naissance</span></label></div>'
-      +'<div class="fg"><label style="display:flex;align-items:center;gap:8px;cursor:pointer;padding:8px 0;border-bottom:1px solid #f0f0f0"><input id="docCas" type="checkbox" style="width:auto;margin:0"/> <span style="font-size:13px">Casier judiciaire vierge</span></label></div>'
-      +'<div class="fg"><label style="display:flex;align-items:center;gap:8px;cursor:pointer;padding:8px 0"><input id="docNat" type="checkbox" style="width:auto;margin:0"/> <span style="font-size:13px">Certificat de nationalité</span></label></div>'
+      +roleSection
+      +docsSection
       +'<div class="fg" style="margin-top:10px"><label class="fl">Note / Observation</label><textarea id="mNote" placeholder="Observations éventuelles…"></textarea></div>'
-      +'<div class="sec" style="font-size:13px;margin:12px 0 8px">📎 Document joint (optionnel)</div>'
-      +'<div class="fg"><label class="fl">Pièce jointe — photo, PDF, scan (max 5 Mo)</label>'
-      +'<input id="mDocFile" type="file" accept=".pdf,.jpg,.jpeg,.png,.doc,.docx" style="padding:6px;font-size:13px" onchange="APP.previewDocFile(this)"/></div>'
-      +'<div id="mDocPreview" style="display:none;margin-bottom:8px"></div>'
-      +'<div class="mact"><button class="btn gold full" onclick="APP.soumettreDossier(\''+d.lid+'\')">Soumettre le dossier<\/button><button class="btn ghost full" onclick="APP.closeMod()">Annuler<\/button></div>';
+      +(laMode?''
+        :'<div class="sec" style="font-size:13px;margin:12px 0 8px">📎 Document joint (optionnel)</div>'
+         +'<div class="fg"><label class="fl">Pièce jointe — photo, PDF, scan (max 5 Mo)</label>'
+         +'<input id="mDocFile" type="file" accept=".pdf,.jpg,.jpeg,.png,.doc,.docx" style="padding:6px;font-size:13px" onchange="APP.previewDocFile(this)"/></div>'
+         +'<div id="mDocPreview" style="display:none;margin-bottom:8px"></div>')
+      +'<div class="mact"><button class="btn gold full" onclick="APP.soumettreDossier(\''+d.lid+'\')">'+btnLabel+'<\/button><button class="btn ghost full" onclick="APP.closeMod()">Annuler<\/button></div>';
   },
   editDossier:function(d){
     var dos=D.dossiersPending.find(function(x){return x.id===d.id;});if(!dos)return'';
@@ -2902,14 +3093,18 @@ var MODS={
       +'<div class="mact"><button class="btn gold full" onclick="APP.updateDossier(\''+d.id+'\')">Mettre à jour<\/button><button class="btn ghost full" onclick="APP.closeMod()">Annuler<\/button></div>';
   },
   affiliationForm:function(d){
-    return mhdr('Affilier un Frère')
-      +'<div class="alert a-i" style="margin-bottom:12px">La demande sera transmise au Grand Secrétaire pour validation.</div>'
+    var laMode=isLA();
+    var notice=laMode
+      ?'<div class="alert a-i" style="margin-bottom:12px">Affiliation directe — le membre sera intégré à l\'atelier sans validation externe.</div>'
+      :'<div class="alert a-i" style="margin-bottom:12px">La demande sera transmise au Grand Secrétaire pour validation.</div>';
+    return mhdr('Affilier un Frère / une Sœur')
+      +notice
       +'<div class="fg"><label class="fl">Nom complet</label><input id="mNom" placeholder="Prénom NOM"/></div>'
       +'<div class="frow"><div class="fg"><label class="fl">Téléphone</label><input id="mTel" placeholder="+242..."/></div><div class="fg"><label class="fl">Email</label><input id="mEmail" placeholder="email@..."/></div></div>'
       +'<div class="fg"><label class="fl">Grade reconnu</label><select id="mGrade"><option value="Apprenti">Apprenti</option><option value="Compagnon">Compagnon</option><option value="Maitre">Maître</option></select></div>'
       +'<div class="frow"><div class="fg"><label class="fl">Loge d\'origine</label><input id="mLogeOrig" placeholder="Nom de la loge"/></div><div class="fg"><label class="fl">Obédience d\'origine</label><input id="mObOrig" placeholder="Nom de l\'obédience"/></div></div>'
       +'<div class="frow"><div class="fg"><label class="fl">Date de la demande</label><input id="mDateAffil" type="date" value="'+tdStr()+'"/></div></div>'
-      +'<div class="mact"><button class="btn gold full" onclick="APP.soumetteAffil(\''+d.lid+'\')">Soumettre<\/button><button class="btn ghost full" onclick="APP.closeMod()">Annuler<\/button></div>';
+      +'<div class="mact"><button class="btn gold full" onclick="APP.soumetteAffil(\''+d.lid+'\')">'+( laMode?'Affilier directement':'Soumettre' )+'<\/button><button class="btn ghost full" onclick="APP.closeMod()">Annuler<\/button></div>';
   },
   promote:function(d){
     var m=gMbr(d.mid);if(!m)return'';
@@ -3150,12 +3345,18 @@ MODS.editSuperAdmin=function(d){
     +'<div class="mact"><button class="btn gold full" onclick="APP.saveSuperAdmin()">Enregistrer<\/button><button class="btn ghost full" onclick="APP.closeMod()">Annuler<\/button></div>';
 };
 MODS.changePwd = function(d){
-  return mhdr('Changer mon mot de passe')
-    +'<div class="fg"><label class="fl">Mot de passe actuel</label><input id="pwOld" type="password" placeholder="••••••"/></div>'
-    +'<div class="fg"><label class="fl">Nouveau mot de passe</label><input id="pwNew" type="password" placeholder="••••••"/></div>'
-    +'<div class="fg"><label class="fl">Confirmer</label><input id="pwConf" type="password" placeholder="••••••"/></div>'
+  return mhdr('🔑 Changer mon mot de passe')
+    +'<div class="fg"><label class="fl">Mot de passe actuel</label>'
+    +'<div class="pwr"><input id="pwOld" type="password" placeholder="••••••"/>'
+    +'<button class="pwe" onclick="togglePwd(\'pwOld\',this)" type="button">👁<\/button><\/div><\/div>'
+    +'<div class="fg"><label class="fl">Nouveau mot de passe</label>'
+    +'<div class="pwr"><input id="pwNew" type="password" placeholder="Min. 4 caractères"/>'
+    +'<button class="pwe" onclick="togglePwd(\'pwNew\',this)" type="button">👁<\/button><\/div><\/div>'
+    +'<div class="fg"><label class="fl">Confirmer le nouveau mot de passe</label>'
+    +'<div class="pwr"><input id="pwConf" type="password" placeholder="••••••"/>'
+    +'<button class="pwe" onclick="togglePwd(\'pwConf\',this)" type="button">👁<\/button><\/div><\/div>'
     +'<div id="pwErr" style="display:none" class="lerr"></div>'
-    +'<div class="mact"><button class="btn gold full" onclick="APP.doChangePwd()">Enregistrer<\/button><button class="btn ghost full" onclick="APP.closeMod()">Annuler<\/button></div>';
+    +'<div class="mact"><button class="btn gold full" onclick="APP.doChangePwd()">Enregistrer<\/button><button class="btn ghost full" onclick="APP.closeMod()">Annuler<\/button><\/div>';
 };
 MODS.massNotif=function(d){
   return mhdr('Envoi en Masse')
@@ -3234,11 +3435,40 @@ MODS.avanceLoge=function(d){
 // ── ACTIONS ──
 APP.soumettreDossier=function(lid){
   var nom=G('mNom').value.trim();if(!nom)return;
+  var grade=G('mGradeInit')?G('mGradeInit').value:'Apprenti';
+  var role=(G('mRole')?G('mRole').value:null)||'Frère';
+  var tel=G('mTel')?G('mTel').value.trim():'';
+  var email=G('mEmail')?G('mEmail').value.trim():'';
+  var note=G('mNote')?G('mNote').value.trim():'';
+  // ── Loge Autonome ──
+  if(isLA()){
+    if(isVM(lid)){
+      // VM crée directement
+      var mat=nxtMat(D.membres);var mid=uid();
+      D.membres.push({id:mid,matricule:mat,nom:nom,grade:grade,dateGrade:tdStr(),logeId:lid,role:role,pwd:'1234',statut:'actif',tel:tel,email:email,affiliation:null});
+      D.caps.push({id:uid(),mid:mid,lid:lid,annee:new Date().getFullYear(),mnt:((gLoge(lid)||{}).tauxCap||D.tauxCap),st:'En attente',date:null});
+      save();APP.closeMod();
+      var t=document.createElement('div');
+      t.style.cssText='position:fixed;bottom:24px;left:50%;transform:translateX(-50%);background:#1b4d1b;color:#fff;padding:11px 28px;border-radius:8px;font-size:14px;font-weight:700;z-index:9999;box-shadow:0 4px 16px rgba(0,0,0,.3)';
+      t.textContent='✓ '+nom+' créé(e) — matricule '+mat+' — MDP : 1234';
+      document.body.appendChild(t);setTimeout(function(){t.remove();R();},2500);
+    } else {
+      // Secrétaire → en attente du VM
+      D.dossiersPending.push({id:uid(),lid:lid,nom:nom,tel:tel,email:email,grade:grade,role:role,docs:{extrait:true,casier:true,nationalite:true},note:note,date:tdStr(),st:'En attente VM',pendingForVM:true});
+      save();APP.closeMod();
+      var t2=document.createElement('div');
+      t2.style.cssText='position:fixed;bottom:24px;left:50%;transform:translateX(-50%);background:#5a3e00;color:#fff;padding:11px 28px;border-radius:8px;font-size:14px;font-weight:700;z-index:9999;box-shadow:0 4px 16px rgba(0,0,0,.3)';
+      t2.textContent='Dossier transmis au Vénérable Maître pour validation.';
+      document.body.appendChild(t2);setTimeout(function(){t2.remove();R();},2500);
+    }
+    return;
+  }
+  // ── Mode Obédience (comportement standard) ──
   var docs={extrait:G('docEx')&&G('docEx').checked,casier:G('docCas')&&G('docCas').checked,nationalite:G('docNat')&&G('docNat').checked};
   var allOK=docs.extrait&&docs.casier&&docs.nationalite;
   var attachment=_pendingDoc?{name:_pendingDoc.name,data:_pendingDoc.data}:null;
   _pendingDoc=null;
-  D.dossiersPending.push({id:uid(),lid:lid,nom:nom,tel:G('mTel')?G('mTel').value.trim():'',email:G('mEmail')?G('mEmail').value.trim():'',grade:G('mGradeInit')?G('mGradeInit').value:'Apprenti',docs:docs,note:G('mNote')?G('mNote').value.trim():'',date:tdStr(),st:allOK?'Complet':'Incomplet',attachment:attachment});
+  D.dossiersPending.push({id:uid(),lid:lid,nom:nom,tel:tel,email:email,grade:grade,docs:docs,note:note,date:tdStr(),st:allOK?'Complet':'Incomplet',attachment:attachment});
   alert('Dossier soumis à l\'Obédience. Le Grand Secrétaire sera notifié.');APP.closeMod();
 };
 APP.updateDossier=function(id){
@@ -3250,20 +3480,48 @@ APP.updateDossier=function(id){
 };
 APP.validerDossier=function(id){
   var dos=D.dossiersPending.find(function(x){return x.id===id;});if(!dos)return;
-  if(!dos.docs.extrait||!dos.docs.casier||!dos.docs.nationalite){alert('Dossier incomplet.');return;}
+  // En mode Obédience : vérification des documents obligatoires
+  if(!isLA()&&(!dos.docs.extrait||!dos.docs.casier||!dos.docs.nationalite)){alert('Dossier incomplet.');return;}
+  // En mode LA : seul le VM peut valider
+  if(isLA()&&!isVM(dos.lid)){alert('Réservé au Vénérable Maître.');return;}
   var mat=nxtMat(D.membres);var mid=uid();
-  D.membres.push({id:mid,matricule:mat,nom:dos.nom,grade:'Apprenti',dateGrade:tdStr(),logeId:dos.lid,role:'Frère',pwd:'1234',statut:'actif',tel:dos.tel,email:dos.email,affiliation:null});
-  D.caps.push({id:uid(),mid:mid,lid:dos.lid,annee:2026,mnt:((gLoge(dos.lid)||{}).tauxCap||D.tauxCap),st:'En attente',date:null});
-  dos.st='Validé';
+  var role=dos.role||'Frère';
+  D.membres.push({id:mid,matricule:mat,nom:dos.nom,grade:dos.grade||'Apprenti',dateGrade:tdStr(),logeId:dos.lid,role:role,pwd:'1234',statut:'actif',tel:dos.tel,email:dos.email,affiliation:null});
+  D.caps.push({id:uid(),mid:mid,lid:dos.lid,annee:new Date().getFullYear(),mnt:((gLoge(dos.lid)||{}).tauxCap||D.tauxCap),st:'En attente',date:null});
   D.dossiersPending=D.dossiersPending.filter(function(x){return x.id!==id;});
+  save();
   var l=gLoge(dos.lid);
-  alert('Frère créé avec succès : '+dos.nom+' ('+mat+') dans la loge '+(l?l.nom:'')+'. MDP par défaut : 1234');
-  R();
+  var t=document.createElement('div');
+  t.style.cssText='position:fixed;bottom:24px;left:50%;transform:translateX(-50%);background:#1b4d1b;color:#fff;padding:11px 28px;border-radius:8px;font-size:14px;font-weight:700;z-index:9999;box-shadow:0 4px 16px rgba(0,0,0,.3)';
+  t.textContent='✓ '+dos.nom+' validé(e) — '+mat+' — MDP : 1234';
+  document.body.appendChild(t);setTimeout(function(){t.remove();R();},2500);
 };
-APP.rejeterDossier=function(id){if(!confirm('Rejeter ce dossier ?'))return;D.dossiersPending=D.dossiersPending.filter(function(x){return x.id!==id;});R();};
+APP.rejeterDossier=function(id){
+  if(!confirm('Rejeter ce dossier ?'))return;
+  D.dossiersPending=D.dossiersPending.filter(function(x){return x.id!==id;});
+  save();R();
+};
 APP.soumetteAffil=function(lid){
   var nom=G('mNom').value.trim();if(!nom)return;
-  D.affiliationsPending.push({id:uid(),lid:lid,nom:nom,tel:G('mTel')?G('mTel').value.trim():'',email:G('mEmail')?G('mEmail').value.trim():'',grade:G('mGrade').value,logeOrigin:G('mLogeOrig')?G('mLogeOrig').value.trim():'',obOrigin:G('mObOrig')?G('mObOrig').value.trim():'',dateAffil:G('mDateAffil')?G('mDateAffil').value:tdStr(),st:'En attente',note:''});
+  var grade=G('mGrade')?G('mGrade').value:'Apprenti';
+  var tel=G('mTel')?G('mTel').value.trim():'';
+  var email=G('mEmail')?G('mEmail').value.trim():'';
+  var logeOrig=G('mLogeOrig')?G('mLogeOrig').value.trim():'';
+  var obOrig=G('mObOrig')?G('mObOrig').value.trim():'';
+  var dateAffil=G('mDateAffil')?G('mDateAffil').value:tdStr();
+  if(isLA()){
+    // Mode LA : création directe, pas de validation externe
+    var mat=nxtMat(D.membres);var mid=uid();
+    D.membres.push({id:mid,matricule:mat,nom:nom,grade:grade,dateGrade:tdStr(),logeId:lid,role:'Frère',pwd:'1234',statut:'actif',tel:tel,email:email,affiliation:{logeOrigin:logeOrig,obOrigin:obOrig,dateAffil:dateAffil,st:'Confirmé'}});
+    D.caps.push({id:uid(),mid:mid,lid:lid,annee:new Date().getFullYear(),mnt:Math.round(((gLoge(lid)||{}).tauxCap||D.tauxCap)/2),st:'En attente',date:null,note:'Capitation affilié (50%)'});
+    save();APP.closeMod();
+    var t=document.createElement('div');
+    t.style.cssText='position:fixed;bottom:24px;left:50%;transform:translateX(-50%);background:#1b4d1b;color:#fff;padding:11px 28px;border-radius:8px;font-size:14px;font-weight:700;z-index:9999;box-shadow:0 4px 16px rgba(0,0,0,.3)';
+    t.textContent='✓ '+nom+' affilié(e) — '+mat+' — MDP : 1234';
+    document.body.appendChild(t);setTimeout(function(){t.remove();R();},2500);
+    return;
+  }
+  D.affiliationsPending.push({id:uid(),lid:lid,nom:nom,tel:tel,email:email,grade:grade,logeOrigin:logeOrig,obOrigin:obOrig,dateAffil:dateAffil,st:'En attente',note:''});
   alert('Demande d\'affiliation transmise au Grand Secrétaire.');APP.closeMod();
 };
 APP.validerAffil=function(id){
@@ -3303,8 +3561,23 @@ APP.forcePromote=function(mid){
   document.body.appendChild(t);setTimeout(function(){t.remove();},3200);
 };
 APP.radier=function(mid){
-  if(!confirm('Soumettre une demande de radiation au Grand Secrétaire ?'))return;
   var m=D.membres.find(function(x){return x.id===mid;});if(!m)return;
+  var lid=m.logeId;
+  if(isLA()){
+    // Mode LA : le VM radie directement, les autres soumettent au VM
+    if(isVM(lid)){
+      if(!confirm('Radier définitivement '+m.nom+' de l\'atelier ?'))return;
+      m.statut='radié';save();R();
+    } else {
+      if(!confirm('Soumettre une demande de radiation au Vénérable Maître ?'))return;
+      if(!D.radiationPending)D.radiationPending=[];
+      if(D.radiationPending.find(function(r){return r.mid===mid;})){alert('Demande déjà soumise.');return;}
+      D.radiationPending.push({id:uid(),mid:mid,lid:lid,date:tdStr(),st:'En attente VM',motif:'Radiation demandée',pendingForVM:true});
+      save();alert('Demande transmise au Vénérable Maître.');R();
+    }
+    return;
+  }
+  if(!confirm('Soumettre une demande de radiation au Grand Secrétaire ?'))return;
   if(!D.radiationPending)D.radiationPending=[];
   if(D.radiationPending.find(function(r){return r.mid===mid;})){alert('Demande déjà soumise.');return;}
   D.radiationPending.push({id:uid(),mid:mid,date:tdStr(),st:'En attente',motif:'Radiation demandée par le VM'});
@@ -3312,13 +3585,15 @@ APP.radier=function(mid){
 };
 APP.validerRadiation=function(id){
   var req=D.radiationPending.find(function(x){return x.id===id;});if(!req)return;
+  if(isLA()&&!isVM(req.lid||S.lid)){alert('Réservé au Vénérable Maître.');return;}
   var m=D.membres.find(function(x){return x.id===req.mid;});
   if(m){m.statut='radié';}
   D.radiationPending=D.radiationPending.filter(function(x){return x.id!==id;});
-  R();
+  save();R();
 };
 APP.rejeterRadiation=function(id){
-  D.radiationPending=D.radiationPending.filter(function(x){return x.id!==id;});R();
+  D.radiationPending=D.radiationPending.filter(function(x){return x.id!==id;});
+  save();R();
 };
 APP.demandeReintegration=function(mid){
   var m=D.membres.find(function(x){return x.id===mid;});if(!m)return;
