@@ -174,8 +174,8 @@ tr:hover td{background:#fafafa;}
 .apg{min-height:100vh;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:20px;background:#f0f4f8;}
 .acard{background:#fff;border:1.5px solid #e2e8f0;border-radius:12px;padding:16px 18px;width:100%;max-width:340px;cursor:pointer;transition:all .2s;margin-bottom:10px;box-shadow:0 1px 4px rgba(0,0,0,.06);}
 .acard:hover{border-color:#c9a227;transform:translateY(-2px);box-shadow:0 8px 24px rgba(0,0,0,.12);}
-.lbar{background:#fff;border-bottom:1.5px solid #eee;padding:10px 18px;display:flex;align-items:center;gap:12px;flex-wrap:wrap;}
-.lnum{width:34px;height:34px;border-radius:7px;background:#1e293b;display:flex;align-items:center;justify-content:center;color:#c9a227;font-weight:900;font-size:11px;flex-shrink:0;}
+.lbar{background:#fff;border-bottom:1.5px solid #e8edf5;padding:12px 20px;display:flex;align-items:center;gap:12px;flex-wrap:wrap;box-shadow:0 1px 6px rgba(0,0,0,.04);}
+.lnum{min-width:38px;height:38px;border-radius:10px;background:#1e293b;display:flex;align-items:center;justify-content:center;color:#c9a227;font-weight:900;font-size:10px;flex-shrink:0;letter-spacing:.4px;padding:0 6px;}
 .cap-card{background:#fff;border:1.5px solid #e5e5e5;border-radius:11px;padding:15px;margin-bottom:11px;box-shadow:0 1px 4px rgba(0,0,0,.04);}
 .cap-card.retard{border-left:5px solid #c0392b;}
 .cap-card.attente{border-left:5px solid #c9a227;}
@@ -2213,14 +2213,14 @@ function buildProgTable(evts,isInstr,lid){
   evts.forEach(function(ev){var d=new Date(ev.date);var k=d.getFullYear()+'-'+String(d.getMonth()).padStart(2,'0');if(!byMonth[k])byMonth[k]={label:MFR[d.getMonth()]+' '+d.getFullYear(),evts:[]};byMonth[k].evts.push(ev);});
   var headers=['Date','Heure',!isInstr?'Type':null,'Thème / Planche','Présentateur'].filter(Boolean);
   if(canEdit)headers.push('');
-  var h='<div style="border:1.5px solid #e5e5e5;border-radius:10px;overflow:hidden;margin-bottom:14px">'
+  var h='<div style="border:1.5px solid #e2e8f0;border-radius:12px;overflow:hidden;margin-bottom:14px;box-shadow:0 1px 6px rgba(0,0,0,.04)">'
     +'<div style="display:grid;grid-template-columns:'+cols+(canEdit?' 44px':'')+(isVM(S.lid)?(' auto'):'');
-  h+=';background:#111;">'
-    +headers.map(function(t){return'<div style="padding:8px 11px;font-size:10px;font-weight:700;color:#fff;text-transform:uppercase;letter-spacing:.4px">'+t+'</div>';}).join('')
+  h+=';background:#1e293b;">'
+    +headers.map(function(t){return'<div style="padding:9px 12px;font-size:10px;font-weight:700;color:#94a3b8;text-transform:uppercase;letter-spacing:.6px">'+t+'</div>';}).join('')
     +'</div>';
   Object.keys(byMonth).sort().forEach(function(k){
     var mo=byMonth[k];
-    h+='<div style="background:#fff8e1;border-top:1px solid #f0f0f0;padding:7px 13px;font-weight:900;color:#5a3e00;font-size:12px;border-left:4px solid #c9a227;">📅 '+mo.label+'</div>';
+    h+='<div style="background:linear-gradient(90deg,#fff8e1 0%,#fffdf5 100%);border-top:1px solid #f0e8c0;padding:8px 14px;font-weight:900;color:#7a5a10;font-size:12px;border-left:4px solid #c9a227;display:flex;align-items:center;gap:6px;letter-spacing:.2px">📅 '+mo.label+'</div>';
     mo.evts.forEach(function(ev){
       var pl=ev.planche?ev.planche:'<span style="color:#bbb;font-style:italic">Non défini</span>';
       var pr=ev.presentateur?ev.presentateur:'<span style="color:#bbb">—</span>';
@@ -2228,13 +2228,13 @@ function buildProgTable(evts,isInstr,lid){
       var planSt=ev.planStatus||'Non présentée';
       var planStBadge=ev.planche?'<span style="display:inline-block;margin-top:3px;font-size:10px;font-weight:700;padding:1px 7px;border-radius:10px;background:'+(planSt==='Présentée'?'#e8f5e9;color:#1b5e20':'#f5f5f5;color:#888')+'">'+planSt+'</span>':'';
       var useLid=lid||S.lid;
-      h+='<div style="display:grid;grid-template-columns:'+cols+(canEdit?' 44px':'')+(isVM(useLid)?(' auto'):'')+(hasCR?' auto':'')+';border-top:1px solid #f5f5f5;">'
-        +'<div style="padding:9px 11px;font-size:13px;font-weight:700">'+ev.date+'</div>'
-        +'<div style="padding:9px 11px;font-size:12px;color:#666">'+ev.heure+'</div>'
-        +(!isInstr?'<div style="padding:9px 11px">'+tCh(ev.type||'Tenue')+'</div>':'')
-        +'<div style="padding:9px 11px;font-size:13px">'+pl+'<br>'+planStBadge+'</div>'
-        +'<div style="padding:9px 11px;font-size:13px">'+pr+'</div>'
-        +(canEdit?'<div style="padding:6px 5px;display:flex;align-items:center"><button class="btn outline sm" style="padding:3px 7px" onclick="APP.openMod(\'editEvt\',{lid:\''+useLid+'\',eid:\''+ev.id+'\',src:\''+(isInstr?'instr':'agenda')+'\'})">✏<\/button><\/div>':'')
+      h+='<div style="display:grid;grid-template-columns:'+cols+(canEdit?' 44px':'')+(isVM(useLid)?(' auto'):'')+(hasCR?' auto':'')+';border-top:1px solid #f0f4f8;transition:background .1s" onmouseover="this.style.background=\'#f8faff\'" onmouseout="this.style.background=\'\'">'
+        +'<div style="padding:10px 12px;font-size:12px;font-weight:700;color:#1e293b">'+ev.date+'</div>'
+        +'<div style="padding:10px 12px;font-size:12px;color:#64748b">'+ev.heure+'</div>'
+        +(!isInstr?'<div style="padding:10px 12px">'+tCh(ev.type||'Tenue')+'</div>':'')
+        +'<div style="padding:10px 12px;font-size:13px;color:#1e293b">'+pl+'<br>'+planStBadge+'</div>'
+        +'<div style="padding:10px 12px;font-size:13px;color:#475569">'+pr+'</div>'
+        +(canEdit?'<div style="padding:7px 6px;display:flex;align-items:center"><button class="btn ghost sm" style="padding:4px 8px;border-radius:7px" onclick="APP.openMod(\'editEvt\',{lid:\''+useLid+'\',eid:\''+ev.id+'\',src:\''+(isInstr?'instr':'agenda')+'\'})">✏<\/button><\/div>':'')
         +(hasCR?'<div style="padding:9px 11px"><button class="btn ok sm" onclick="APP.viewPlancheBtn(this)" data-e="'+ev.id+'" data-l="'+useLid+'">📄 CR<\/button><\/div>':'')
         +'</div>';
     });
@@ -2590,7 +2590,7 @@ function vLoge(){
   });
   tabBarHtml+='</div>';
   if(inPG){
-    tabBarHtml+='<div class="tabbar" style="background:#252525;border-bottom:2px solid #c9a227">'
+    tabBarHtml+='<div class="tabbar" style="background:#fffbf0;border-bottom:2px solid #c9a227;border-top:1px solid #f0e8c0">'
       +'<button class="tab'+(S.tab==='programme'?' on':'')+'" onclick="APP.setTab(\'programme\')">📅 Programme</button>'
       +'<button class="tab'+(S.tab==='instruction'?' on':'')+'" onclick="APP.setTab(\'instruction\')">📖 Instruction</button>'
       +'<button class="tab'+(S.tab==='planches'?' on':'')+'" onclick="APP.setTab(\'planches\')">📜 Planches & Thèmes</button>'
@@ -2599,7 +2599,7 @@ function vLoge(){
   if(inFG){
     var hasCap=tabs.some(function(t){return t.id==='capitations';});
     var hasTronc=tabs.some(function(t){return t.id==='tronc';});
-    tabBarHtml+='<div class="tabbar" style="background:#252525;border-bottom:2px solid #c9a227">'
+    tabBarHtml+='<div class="tabbar" style="background:#fffbf0;border-bottom:2px solid #c9a227;border-top:1px solid #f0e8c0">'
       +'<button class="tab'+(S.tab==='finances'?' on':'')+'" onclick="APP.setTab(\'finances\')">💰 Finances</button>'
       +(hasCap?'<button class="tab'+(S.tab==='capitations'?' on':'')+'" onclick="APP.setTab(\'capitations\')">💳 Capitations</button>':'')
       +(hasTronc?'<button class="tab'+(S.tab==='tronc'?' on':'')+'" onclick="APP.setTab(\'tronc\')">🕊 Tronc Veuve</button>':'')
@@ -2638,11 +2638,12 @@ function vLoge(){
   var officerBanner2='';
   if(off&&userPost2&&!isGO()){
     var pColor=lvl2>=10?'#27ae60':lvl2>=7?'#c9a227':lvl2>=5?'#1a5f8a':'#555';
-    officerBanner2='<div style="background:#fff;border-bottom:2px solid #e5e5e5;padding:7px 18px;display:flex;align-items:center;gap:12px;flex-wrap:wrap">'
-      +'<div style="background:#111;color:#c9a227;border-radius:6px;padding:4px 11px;font-size:12px;font-weight:900">'+userPost2+'</div>'
-      +'<div style="font-size:12px;color:#555">Niveau <strong style="color:'+pColor+'">'+lvl2+'/10</strong></div>'
+    officerBanner2='<div style="background:linear-gradient(90deg,#fffbf0 0%,#fff 60%);border-bottom:1.5px solid #f0e8c0;padding:10px 20px;display:flex;align-items:center;gap:12px;flex-wrap:wrap">'
+      +'<div style="background:#1e293b;color:#c9a227;border-radius:9px;padding:5px 14px;font-size:11px;font-weight:900;letter-spacing:.5px;text-transform:uppercase">'+userPost2+'</div>'
+      +'<div style="width:1px;height:18px;background:#ddd;flex-shrink:0"></div>'
+      +'<div style="font-size:12px;color:#555">Niveau <strong style="color:'+pColor+';font-size:14px">'+lvl2+'</strong><span style="color:#aaa">/10</span></div>'
       +'<div style="flex:1"></div>'
-      +'<div style="font-size:11px;color:#888;font-style:italic">Tableau de bord adapté à votre poste</div>'
+      +'<div style="font-size:11px;color:#94a3b8;font-style:italic;letter-spacing:.2px">Tableau de bord adapté à votre poste</div>'
       +'</div>';
   }
   var myGOPost2=D.grandOff.find(function(g){return g.mid===S.user.id;});
@@ -2679,9 +2680,9 @@ function lProg(loge,off){
       +'<div class="sec" style="margin:0">📅 Tenues de l\'Obédience</div>'
       +ch(glTenues.length+' tenue(s)','cteal2')
       +'</div>'
-      +'<div style="border:1.5px solid #e5e5e5;border-radius:10px;overflow:hidden">'
-      +'<div style="display:grid;grid-template-columns:90px 70px 1fr 1fr;background:#111">'
-      +['Date','Heure','Titre','Lieu'].map(function(t){return'<div style="padding:8px 11px;font-size:10px;font-weight:700;color:#fff;text-transform:uppercase;letter-spacing:.4px">'+t+'</div>';}).join('')
+      +'<div style="border:1.5px solid #e2e8f0;border-radius:12px;overflow:hidden;box-shadow:0 1px 6px rgba(0,0,0,.04)">'
+      +'<div style="display:grid;grid-template-columns:90px 70px 1fr 1fr;background:#1e293b">'
+      +['Date','Heure','Titre','Lieu'].map(function(t){return'<div style="padding:9px 12px;font-size:10px;font-weight:700;color:#94a3b8;text-transform:uppercase;letter-spacing:.6px">'+t+'</div>';}).join('')
       +'</div>';
     glTenues.forEach(function(t){
       h+='<div style="display:grid;grid-template-columns:90px 70px 1fr 1fr;border-top:1px solid #f0f0f0">'

@@ -208,6 +208,7 @@ body{background:#0f0f13;color:#e2e8f0;font-family:-apple-system,BlinkMacSystemFo
     <button class="nav-link" onclick="document.getElementById('s4').scrollIntoView({behavior:'smooth'})">Modale</button>
     <button class="nav-link" onclick="document.getElementById('s5').scrollIntoView({behavior:'smooth'})">Design System <span class="badge-new">NEW</span></button>
     <button class="nav-link" onclick="document.getElementById('s6').scrollIntoView({behavior:'smooth'})">Mobile</button>
+    <button class="nav-link" onclick="document.getElementById('s7').scrollIntoView({behavior:'smooth'})">Dashboard Loge <span class="badge-new">NEW</span></button>
   </div>
 </nav>
 
@@ -704,6 +705,199 @@ body{background:#0f0f13;color:#e2e8f0;font-family:-apple-system,BlinkMacSystemFo
   </div>
 </div>
 
+<!-- ════════════════════════════════════════════════════════════
+     SECTION 7 — DASHBOARD LOGE (PROGRAMME)
+════════════════════════════════════════════════════════════ -->
+<div class="section" id="s7">
+  <div class="section-title">07 — Dashboard Loge</div>
+  <div class="section-desc">Vue détaillée d'une loge : barre d'info, officier, tabs, programme des tenues</div>
+
+  <!-- Full-width browser frame -->
+  <div class="frame" style="max-width:1200px;margin:0 auto 32px">
+    <div class="frame-label">
+      <div class="dots"><div class="dot dot-r"></div><div class="dot dot-y"></div><div class="dot dot-g"></div></div>
+      <div class="frame-url">golac.app / loge / N°001 — Liberté et Fraternité</div>
+    </div>
+
+    <!-- HDR -->
+    <div style="background:#1e293b;border-bottom:3px solid #c9a227;padding:10px 18px;display:flex;align-items:center;gap:10px;flex-wrap:wrap">
+      <div style="width:34px;height:34px;border-radius:50%;background:#c9a227;display:flex;align-items:center;justify-content:center;font-size:17px">⬡</div>
+      <div><div style="color:#c9a227;font-size:15px;font-weight:900;letter-spacing:2px">GOLAC</div><div style="color:#94a3b8;font-size:10px">Grand Orient et Loges Associées du Congo</div></div>
+      <div style="color:#475569;font-size:18px">›</div>
+      <div style="color:#94a3b8;font-size:13px;cursor:pointer">Loges</div>
+      <div style="color:#475569">›</div>
+      <div style="color:#fff;font-size:13px;font-weight:600">N°001 — Liberté et Fraternité</div>
+      <div style="flex:1"></div>
+      <div style="display:flex;align-items:center;gap:8px">
+        <div style="background:#c9a227;width:30px;height:30px;border-radius:50%;display:flex;align-items:center;justify-content:center;color:#111;font-weight:900;font-size:12px">VM</div>
+        <div style="color:#e2e8f0;font-size:13px;font-weight:600">Jean Mukulu</div>
+        <div style="color:#64748b;font-size:12px">M-001</div>
+        <div style="width:1px;height:20px;background:#334155"></div>
+        <button style="background:none;border:1.5px solid #475569;color:#94a3b8;border-radius:7px;padding:5px 12px;font-size:12px;cursor:pointer">Ateliers</button>
+        <button style="background:none;border:none;color:#94a3b8;font-size:18px;cursor:pointer">✏</button>
+        <button style="background:#c0392b;border:none;color:#fff;border-radius:7px;padding:5px 12px;font-size:12px;cursor:pointer">Déconnexion</button>
+      </div>
+    </div>
+
+    <!-- LODGE INFO BAR -->
+    <div style="background:#fff;border-bottom:1.5px solid #e8edf5;padding:12px 20px;display:flex;align-items:center;gap:12px;flex-wrap:wrap;box-shadow:0 1px 6px rgba(0,0,0,.04)">
+      <div style="min-width:38px;height:38px;border-radius:10px;background:#1e293b;display:flex;align-items:center;justify-content:center;color:#c9a227;font-weight:900;font-size:10px;padding:0 6px;letter-spacing:.4px">N°001</div>
+      <div>
+        <div style="font-weight:900;font-size:15px;color:#111">Liberté et Fraternité</div>
+        <div style="color:#888;font-size:12px;margin-top:2px">📍 Brazzaville · 3 frères · <span style="background:#e8f5e9;color:#1b5e20;border:1.5px solid #81c784;border-radius:20px;padding:1px 9px;font-size:11px;font-weight:700">3/3 min.</span></div>
+      </div>
+      <div style="flex:1"></div>
+      <button style="background:#fff;color:#111;border:2px solid #111;border-radius:8px;padding:6px 14px;font-size:12px;font-weight:700;cursor:pointer">+ Tenue</button>
+      <button style="background:#1e293b;color:#fff;border:none;border-radius:8px;padding:6px 14px;font-size:12px;font-weight:700;cursor:pointer">+ Affiliation</button>
+      <button style="background:#c9a227;color:#fff;border:none;border-radius:8px;padding:6px 14px;font-size:12px;font-weight:700;cursor:pointer">+ Nouveau(elle) Membre</button>
+    </div>
+
+    <!-- OFFICER BANNER -->
+    <div style="background:linear-gradient(90deg,#f4f0ff 0%,#fff 60%);border-bottom:1.5px solid #e4ddf8;padding:10px 20px;display:flex;align-items:center;gap:12px;flex-wrap:wrap">
+      <div style="background:#1e293b;color:#c9a227;border-radius:9px;padding:5px 14px;font-size:11px;font-weight:900;letter-spacing:.5px;text-transform:uppercase">VÉNÉRABLE MAÎTRE</div>
+      <div style="width:1px;height:18px;background:#ddd"></div>
+      <div style="font-size:12px;color:#555">Niveau <strong style="color:#27ae60;font-size:14px">10</strong><span style="color:#aaa">/10</span></div>
+      <div style="flex:1"></div>
+      <div style="font-size:11px;color:#94a3b8;font-style:italic">Tableau de bord adapté à votre poste</div>
+    </div>
+
+    <!-- MAIN TABBAR -->
+    <div style="background:#fff;border-bottom:1px solid #e2e8f0;padding:0 18px;display:flex;overflow-x:auto;gap:0">
+      <button style="padding:10px 14px;background:none;border:none;border-bottom:2.5px solid #c9a227;color:#c9a227;font-size:13px;font-weight:800;white-space:nowrap;cursor:pointer;margin-bottom:-1px">Programme ▾</button>
+      <button style="padding:10px 14px;background:none;border:none;border-bottom:2.5px solid transparent;color:#64748b;font-size:13px;cursor:pointer;white-space:nowrap;margin-bottom:-1px">Membres (3)</button>
+      <button style="padding:10px 14px;background:none;border:none;border-bottom:2.5px solid transparent;color:#64748b;font-size:13px;cursor:pointer;white-space:nowrap;margin-bottom:-1px">Officiers</button>
+      <button style="padding:10px 14px;background:none;border:none;border-bottom:2.5px solid transparent;color:#64748b;font-size:13px;cursor:pointer;white-space:nowrap;margin-bottom:-1px">Assiduité</button>
+      <button style="padding:10px 14px;background:none;border:none;border-bottom:2.5px solid transparent;color:#64748b;font-size:13px;cursor:pointer;white-space:nowrap;margin-bottom:-1px">Documents</button>
+      <button style="padding:10px 14px;background:none;border:none;border-bottom:2.5px solid transparent;color:#64748b;font-size:13px;cursor:pointer;white-space:nowrap;margin-bottom:-1px">Finances ▸</button>
+      <button style="padding:10px 14px;background:none;border:none;border-bottom:2.5px solid transparent;color:#64748b;font-size:13px;cursor:pointer;white-space:nowrap;margin-bottom:-1px">Alertes <span style="background:#e53935;color:#fff;border-radius:10px;font-size:10px;font-weight:700;padding:1px 5px">3</span></button>
+      <button style="padding:10px 14px;background:none;border:none;border-bottom:2.5px solid transparent;color:#64748b;font-size:13px;cursor:pointer;white-space:nowrap;margin-bottom:-1px">⚙ Paramètres</button>
+    </div>
+
+    <!-- SUB TABBAR (light lavender) -->
+    <div style="background:#f5f1ff;border-bottom:2px solid #c9a227;border-top:1px solid #e8e0f8;padding:0 18px;display:flex">
+      <button style="padding:9px 14px;background:none;border:none;border-bottom:2.5px solid #c9a227;color:#c9a227;font-size:12px;font-weight:700;cursor:pointer;margin-bottom:-2px">📅 Programme</button>
+      <button style="padding:9px 14px;background:none;border:none;border-bottom:2.5px solid transparent;color:#64748b;font-size:12px;cursor:pointer">📖 Instruction</button>
+      <button style="padding:9px 14px;background:none;border:none;border-bottom:2.5px solid transparent;color:#64748b;font-size:12px;cursor:pointer">📜 Planches & Thèmes</button>
+    </div>
+
+    <!-- CONTENT AREA -->
+    <div style="background:#f0f2f5;padding:20px">
+
+      <!-- Header row -->
+      <div style="display:flex;align-items:center;gap:10px;margin-bottom:16px;flex-wrap:wrap">
+        <div style="font-size:15px;font-weight:900;color:#111">Programme — 9 mois</div>
+        <span style="background:#e8f5e9;color:#1b5e20;border:1.5px solid #81c784;border-radius:20px;padding:2px 9px;font-size:11px;font-weight:700">3 tenue(s)</span>
+        <div style="flex:1"></div>
+        <button style="background:#c9a227;color:#fff;border:none;border-radius:8px;padding:7px 16px;font-size:13px;font-weight:700;cursor:pointer">+ Ajouter</button>
+      </div>
+
+      <!-- Programme table card -->
+      <div style="border:1.5px solid #e2e8f0;border-radius:12px;overflow:hidden;box-shadow:0 1px 6px rgba(0,0,0,.04);background:#fff">
+
+        <!-- Table header -->
+        <div style="display:grid;grid-template-columns:110px 80px 100px 1fr 1fr 52px;background:#1e293b">
+          <div style="padding:9px 12px;font-size:10px;font-weight:700;color:#94a3b8;text-transform:uppercase;letter-spacing:.6px">Date</div>
+          <div style="padding:9px 12px;font-size:10px;font-weight:700;color:#94a3b8;text-transform:uppercase;letter-spacing:.6px">Heure</div>
+          <div style="padding:9px 12px;font-size:10px;font-weight:700;color:#94a3b8;text-transform:uppercase;letter-spacing:.6px">Type</div>
+          <div style="padding:9px 12px;font-size:10px;font-weight:700;color:#94a3b8;text-transform:uppercase;letter-spacing:.6px">Thème / Planche</div>
+          <div style="padding:9px 12px;font-size:10px;font-weight:700;color:#94a3b8;text-transform:uppercase;letter-spacing:.6px">Présentateur</div>
+          <div style="padding:9px 12px;font-size:10px;font-weight:700;color:#94a3b8;text-transform:uppercase;letter-spacing:.6px"></div>
+        </div>
+
+        <!-- Month: Avril -->
+        <div style="background:linear-gradient(90deg,#fff8e1 0%,#fffdf5 100%);border-top:1px solid #f0e8c0;padding:8px 14px;font-weight:900;color:#7a5a10;font-size:12px;border-left:4px solid #c9a227;letter-spacing:.2px">📅 Avril 2026</div>
+
+        <!-- Row 1 -->
+        <div style="display:grid;grid-template-columns:110px 80px 100px 1fr 1fr 52px;border-top:1px solid #f0f4f8">
+          <div style="padding:10px 12px;font-size:12px;font-weight:700;color:#1e293b">2026-04-25</div>
+          <div style="padding:10px 12px;font-size:12px;color:#64748b">19h00</div>
+          <div style="padding:10px 12px"><span style="background:#fff8e1;color:#5a3e00;border:1.5px solid #c9a227;border-radius:20px;font-size:11px;font-weight:700;padding:2px 9px">Tenue</span></div>
+          <div style="padding:10px 12px;font-size:13px;color:#1e293b">La Fraternité universelle<br><span style="display:inline-block;margin-top:3px;font-size:10px;font-weight:700;padding:1px 7px;border-radius:10px;background:#f5f5f5;color:#888">Non présentée</span></div>
+          <div style="padding:10px 12px;font-size:13px;color:#475569">Jean Mukulu</div>
+          <div style="padding:7px 6px;display:flex;align-items:center;justify-content:center"><button style="background:#f0f2f5;border:1.5px solid #ddd;border-radius:7px;padding:4px 8px;cursor:pointer;font-size:13px">✏</button></div>
+        </div>
+
+        <!-- Month: Mai -->
+        <div style="background:linear-gradient(90deg,#fff8e1 0%,#fffdf5 100%);border-top:1px solid #f0e8c0;padding:8px 14px;font-weight:900;color:#7a5a10;font-size:12px;border-left:4px solid #c9a227;letter-spacing:.2px">📅 Mai 2026</div>
+
+        <!-- Row 2 -->
+        <div style="display:grid;grid-template-columns:110px 80px 100px 1fr 1fr 52px;border-top:1px solid #f0f4f8">
+          <div style="padding:10px 12px;font-size:12px;font-weight:700;color:#1e293b">2026-05-10</div>
+          <div style="padding:10px 12px;font-size:12px;color:#64748b">18h00</div>
+          <div style="padding:10px 12px"><span style="background:#e3f2fd;color:#0d47a1;border:1.5px solid #90caf9;border-radius:20px;font-size:11px;font-weight:700;padding:2px 9px">Cérémonie</span></div>
+          <div style="padding:10px 12px;font-size:13px;color:#9aa3b0;font-style:italic">Non défini</div>
+          <div style="padding:10px 12px;font-size:13px;color:#94a3b8">—</div>
+          <div style="padding:7px 6px;display:flex;align-items:center;justify-content:center"><button style="background:#f0f2f5;border:1.5px solid #ddd;border-radius:7px;padding:4px 8px;cursor:pointer;font-size:13px">✏</button></div>
+        </div>
+
+        <!-- Month: Juin -->
+        <div style="background:linear-gradient(90deg,#fff8e1 0%,#fffdf5 100%);border-top:1px solid #f0e8c0;padding:8px 14px;font-weight:900;color:#7a5a10;font-size:12px;border-left:4px solid #c9a227;letter-spacing:.2px">📅 Juin 2026</div>
+
+        <!-- Row 3 -->
+        <div style="display:grid;grid-template-columns:110px 80px 100px 1fr 1fr 52px;border-top:1px solid #f0f4f8">
+          <div style="padding:10px 12px;font-size:12px;font-weight:700;color:#1e293b">2026-06-13</div>
+          <div style="padding:10px 12px;font-size:12px;color:#64748b">19h00</div>
+          <div style="padding:10px 12px"><span style="background:#fff8e1;color:#5a3e00;border:1.5px solid #c9a227;border-radius:20px;font-size:11px;font-weight:700;padding:2px 9px">Tenue</span></div>
+          <div style="padding:10px 12px;font-size:13px;color:#1e293b">L'initiation et ses symboles<br><span style="display:inline-block;margin-top:3px;font-size:10px;font-weight:700;padding:1px 7px;border-radius:10px;background:#f5f5f5;color:#888">Non présentée</span></div>
+          <div style="padding:10px 12px;font-size:13px;color:#475569">Paul Kipoi</div>
+          <div style="padding:7px 6px;display:flex;align-items:center;justify-content:center"><button style="background:#f0f2f5;border:1.5px solid #ddd;border-radius:7px;padding:4px 8px;cursor:pointer;font-size:13px">✏</button></div>
+        </div>
+
+      </div>
+      <!-- end table -->
+
+    </div>
+    <!-- end content -->
+  </div>
+  <!-- end frame -->
+
+  <!-- Component comparison: Before / After -->
+  <div class="grid2" style="max-width:1200px;margin:0 auto">
+
+    <div>
+      <div class="screen-label" style="color:#ef4444;margin-bottom:12px">❌ Avant — sous-onglets sombres</div>
+      <div class="frame">
+        <div class="frame-label"><div class="dots"><div class="dot dot-r"></div><div class="dot dot-y"></div><div class="dot dot-g"></div></div></div>
+        <div style="background:#252525;padding:0 18px;display:flex;border-bottom:2px solid #c9a227">
+          <div style="padding:9px 14px;color:#c9a227;font-size:12px;font-weight:800;border-bottom:2px solid #c9a227;margin-bottom:-2px">📅 Programme</div>
+          <div style="padding:9px 14px;color:#777;font-size:12px">📖 Instruction</div>
+          <div style="padding:9px 14px;color:#777;font-size:12px">📜 Planches</div>
+        </div>
+        <div style="background:#fff;padding:0 18px;display:flex;border-bottom:2px solid #111;margin-top:8px">
+          <div style="padding:7px 11px;font-size:10px;font-weight:700;color:#fff;text-transform:uppercase;background:#111;flex:1">Date</div>
+          <div style="padding:7px 11px;font-size:10px;font-weight:700;color:#fff;text-transform:uppercase;background:#111;flex:1">Heure</div>
+          <div style="padding:7px 11px;font-size:10px;font-weight:700;color:#fff;text-transform:uppercase;background:#111;flex:2">Type / Thème</div>
+        </div>
+        <div style="padding:14px 18px;background:#fff;color:#aaa;font-size:12px;font-style:italic">Contraste trop élevé — fond noir pesant</div>
+      </div>
+    </div>
+
+    <div>
+      <div class="screen-label" style="color:#22c55e;margin-bottom:12px">✅ Après — sous-onglets clairs</div>
+      <div class="frame">
+        <div class="frame-label"><div class="dots"><div class="dot dot-r"></div><div class="dot dot-y"></div><div class="dot dot-g"></div></div></div>
+        <div style="background:#f5f1ff;padding:0 18px;display:flex;border-bottom:2px solid #c9a227;border-top:1px solid #e8e0f8">
+          <div style="padding:9px 14px;color:#c9a227;font-size:12px;font-weight:800;border-bottom:2px solid #c9a227;margin-bottom:-2px">📅 Programme</div>
+          <div style="padding:9px 14px;color:#64748b;font-size:12px">📖 Instruction</div>
+          <div style="padding:9px 14px;color:#64748b;font-size:12px">📜 Planches</div>
+        </div>
+        <div style="background:#fff;padding:0">
+          <div style="display:grid;grid-template-columns:1fr 1fr 2fr;background:#1e293b">
+            <div style="padding:9px 12px;font-size:10px;font-weight:700;color:#94a3b8;text-transform:uppercase;letter-spacing:.6px">Date</div>
+            <div style="padding:9px 12px;font-size:10px;font-weight:700;color:#94a3b8;text-transform:uppercase;letter-spacing:.6px">Heure</div>
+            <div style="padding:9px 12px;font-size:10px;font-weight:700;color:#94a3b8;text-transform:uppercase;letter-spacing:.6px">Type / Thème</div>
+          </div>
+        </div>
+        <div style="padding:14px 18px;background:#fff;color:#64748b;font-size:12px">Cohérent, aéré — identité visuelle préservée</div>
+      </div>
+    </div>
+
+  </div>
+  <!-- end comparison -->
+
+</div>
+<!-- END SECTION 7 -->
+
 <script>
 // Génération des bulles pour chaque conteneur
 function makeBubbles(containerId){
@@ -721,7 +915,7 @@ makeBubbles('bub1');makeBubbles('bub2');makeBubbles('bub3');
 
 // Nav scroll active
 window.addEventListener('scroll',function(){
-  var sections=['s2','s3','s4','s5','s6'];
+  var sections=['s2','s3','s4','s5','s6','s7'];
   var links=document.querySelectorAll('.nav-link');
   var active=0;
   sections.forEach(function(id,i){
