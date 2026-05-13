@@ -114,36 +114,37 @@ tr:hover td{background:#fafafa;}
 .ava{width:34px;height:34px;border-radius:50%;background:#1e293b;display:flex;align-items:center;justify-content:center;color:#fff;font-weight:900;font-size:12px;flex-shrink:0;}
 /* ── PAGE LOGIN / MOT DE PASSE OUBLIÉ ───────────────────────────────────── */
 .lpg{min-height:100vh;display:flex;align-items:center;justify-content:center;padding:16px;
-  background:#f0f4f8;
-  background-image:radial-gradient(ellipse at 25% 55%,rgba(201,162,39,.12) 0%,transparent 55%),
-                   radial-gradient(ellipse at 80% 15%,rgba(201,162,39,.07) 0%,transparent 50%);}
-.lbox{background:#fff;border:1.5px solid #e2e8f0;border-top:3px solid #c9a227;
-  border-radius:20px;padding:40px 36px;width:100%;max-width:420px;
-  box-shadow:0 8px 40px rgba(0,0,0,.1);}
-.llogo{width:72px;height:72px;border-radius:50%;background:#fff8e6;display:flex;align-items:center;
-  justify-content:center;margin:0 auto 16px;font-size:30px;color:#c9a227;overflow:hidden;
-  border:2px solid rgba(201,162,39,.4);box-shadow:0 0 24px rgba(201,162,39,.15);}
-.llogo img{width:100%;height:100%;object-fit:cover;border-radius:50%;}
-.ltit{color:#1e293b;font-size:22px;font-weight:900;letter-spacing:3px;text-align:center;}
-.lsub{color:#64748b;font-size:12px;margin:5px 0 26px;letter-spacing:1px;text-align:center;line-height:1.5;}
+  background:radial-gradient(ellipse at center,#f8f9fb 0%,#e4e7ed 100%);}
+.lbox{background:#fff;border:none;
+  border-radius:22px;padding:44px 38px;width:100%;max-width:460px;
+  box-shadow:0 12px 52px rgba(0,0,0,.10);}
+.llogo{width:68px;height:68px;border-radius:18px;background:#fff;display:flex;align-items:center;
+  justify-content:center;margin:0 auto 20px;font-size:28px;color:#1e2d4a;overflow:hidden;
+  border:none;box-shadow:0 4px 20px rgba(0,0,0,.12);}
+.llogo img{width:100%;height:100%;object-fit:cover;border-radius:14px;}
+.ltit{color:#1e2d4a;font-size:26px;font-weight:700;letter-spacing:0;text-align:center;}
+.lsub{color:#8a95a3;font-size:13px;margin:6px 0 28px;letter-spacing:0;text-align:center;line-height:1.5;}
 .lerr{background:rgba(183,28,28,.12);border:1px solid rgba(183,28,28,.3);border-radius:8px;
   padding:9px 12px;color:#ef5350;font-size:12px;margin-bottom:11px;display:none;}
 .lsuccess{background:rgba(39,174,96,.1);border:1px solid rgba(39,174,96,.3);border-radius:8px;
   padding:9px 12px;color:#4caf50;font-size:12px;margin-bottom:11px;display:none;}
 /* Inputs dans la login box — thème sombre */
 .lbox .fg input,.lbox .fg select{
-  background:#f8fafc;border:1.5px solid #e2e8f0;border-radius:9px;
-  padding:10px 14px;color:#1e293b;font-size:14px;width:100%;outline:none;
+  background:#fff;border:1.5px solid #dde2ea;border-radius:50px;
+  padding:11px 18px;color:#1e2d4a;font-size:14px;width:100%;outline:none;
   transition:border .15s,box-shadow .15s;}
-.lbox .fg input:focus,.lbox .fg select:focus{border-color:#c9a227;box-shadow:0 0 0 3px rgba(201,162,39,.08);}
-.lbox .fg input::placeholder{color:#94a3b8;}
-.lbox .fl{color:#64748b;}
+.lbox .fg input:focus,.lbox .fg select:focus{border-color:#1a2845;box-shadow:0 0 0 3px rgba(26,40,69,.08);}
+.lbox .fg input::placeholder{color:#a8b2bc;}
+.lbox .fl{color:#6b7a8d;font-size:11px;}
+/* Bouton login navy */
+.lbox .gold{background:#1a2845 !important;color:#fff !important;}
+.lbox .gold:hover{opacity:.9;}
 /* Toggle visibilité mot de passe */
 .pwr{position:relative;}
 .pwr input{padding-right:40px!important;}
-.pwe{position:absolute;right:10px;top:50%;transform:translateY(-50%);background:none;border:none;
-  color:#555;font-size:16px;cursor:pointer;padding:2px 4px;line-height:1;transition:color .15s;}
-.pwe:hover{color:#c9a227;}
+.pwe{position:absolute;right:14px;top:50%;transform:translateY(-50%);background:none;border:none;
+  color:#a8b2bc;font-size:16px;cursor:pointer;padding:2px 4px;line-height:1;transition:color .15s;}
+.pwe:hover{color:#1e2d4a;}
 /* Lien oublié */
 .lforgot{display:block;text-align:center;margin-top:14px;color:#64748b;font-size:12px;
   background:none;border:none;cursor:pointer;transition:color .15s;padding:4px;}
