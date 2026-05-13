@@ -2046,7 +2046,7 @@ function vMonEspace(){
       return myGradeOrd>=2;
     });
     if(evts.length){
-      h+='<div style="border:1.5px solid #e5e5e5;border-radius:10px;overflow:hidden;margin-bottom:16px">'
+      h+='<div style="border:1.5px solid #e2e8f0;border-radius:12px;overflow:hidden;margin-bottom:16px;box-shadow:0 1px 6px rgba(0,0,0,.04)">'
         +'<div class="prog-hdr"><div>Date</div><div>Heure</div><div>Type</div><div>Thème</div><div>Présentateur</div></div>';
       evts.forEach(function(ev){
         h+='<div class="prog-row2"><div style="font-weight:700">'+ev.date+'</div><div style="color:#888">'+ev.heure+'</div><div>'+tCh(ev.type||'Tenue')+'</div><div>'+(ev.planche||'—')+'</div><div>'+(ev.presentateur||'—')+'</div></div>';
@@ -2055,7 +2055,7 @@ function vMonEspace(){
     }
     if(loge.instruction&&loge.instruction.length){
       h+='<div class="sec" style="font-size:14px">Tenues d\'Instruction</div>'
-        +'<div style="border:1.5px solid #e5e5e5;border-radius:10px;overflow:hidden;margin-bottom:16px">'
+        +'<div style="border:1.5px solid #e2e8f0;border-radius:12px;overflow:hidden;margin-bottom:16px;box-shadow:0 1px 6px rgba(0,0,0,.04)">'
         +'<div class="prog-instr-hdr"><div>Date</div><div>Heure</div><div>Thème</div><div>Présentateur</div></div>';
       loge.instruction.forEach(function(ev){
         h+='<div class="prog-instr-row"><div style="font-weight:700">'+ev.date+'</div><div style="color:#888">'+ev.heure+'</div><div>'+(ev.planche||'—')+'</div><div>'+(ev.presentateur||'—')+'</div></div>';
@@ -2220,12 +2220,15 @@ function buildProgTable(evts,isInstr,lid){
   if(!evts.length)return'<div style="color:#aaa;font-size:13px;font-style:italic;padding:10px 0">Aucune tenue programmée.</div>';
   var cols=isInstr?'90px 70px 1fr 1fr':'90px 70px 90px 1fr 1fr';
   var canEdit=!!lid&&(isLO(lid)||isVM(lid));
+  var useLidHdr=lid||S.lid;
+  var anyHasCR=evts.some(function(ev){return(ev.compteRendu&&ev.compteRendu.length>0)||(ev.plancheTracee&&ev.plancheTracee.length>0);});
   var byMonth={};
   evts.forEach(function(ev){var d=new Date(ev.date);var k=d.getFullYear()+'-'+String(d.getMonth()).padStart(2,'0');if(!byMonth[k])byMonth[k]={label:MFR[d.getMonth()]+' '+d.getFullYear(),evts:[]};byMonth[k].evts.push(ev);});
   var headers=['Date','Heure',!isInstr?'Type':null,'Thème / Planche','Présentateur'].filter(Boolean);
   if(canEdit)headers.push('');
+  if(anyHasCR)headers.push('');
   var h='<div style="border:1.5px solid #e2e8f0;border-radius:12px;overflow:hidden;margin-bottom:14px;box-shadow:0 1px 6px rgba(0,0,0,.04)">'
-    +'<div style="display:grid;grid-template-columns:'+cols+(canEdit?' 44px':'')+(isVM(S.lid)?(' auto'):'');
+    +'<div style="display:grid;grid-template-columns:'+cols+(canEdit?' 44px':'')+(isVM(useLidHdr)?' auto':'')+(anyHasCR?' auto':'');
   h+=';background:#1e293b;">'
     +headers.map(function(t){return'<div style="padding:9px 12px;font-size:10px;font-weight:700;color:#94a3b8;text-transform:uppercase;letter-spacing:.6px">'+t+'</div>';}).join('')
     +'</div>';
@@ -2684,7 +2687,7 @@ function lProg(loge,off){
       +'<div class="sec" style="margin:0">📅 Tenues de l\'Obédience</div>'
       +ch(glTenues.length+' tenue(s)','cteal2')
       +'</div>'
-      +'<div style="border:1.5px solid #e5e5e5;border-radius:10px;overflow:hidden">'
+      +'<div style="border:1.5px solid #e2e8f0;border-radius:12px;overflow:hidden;box-shadow:0 1px 6px rgba(0,0,0,.04)">'
       +'<div style="display:grid;grid-template-columns:90px 70px 1fr 1fr;background:#1e293b">'
       +['Date','Heure','Titre','Lieu'].map(function(t){return'<div style="padding:9px 12px;font-size:10px;font-weight:700;color:#94a3b8;text-transform:uppercase;letter-spacing:.6px">'+t+'</div>';}).join('')
       +'</div>';
