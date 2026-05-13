@@ -46,7 +46,7 @@ textarea{min-height:60px;resize:vertical;}
 .tab .bdg{background:#e53935;color:#fff;border-radius:10px;font-size:10px;font-weight:700;padding:1px 5px;margin-left:4px;}
 /* ── DROPDOWN SOUS-MENU ── */
 .tab-wrap{position:relative;display:inline-flex;flex-shrink:0;}
-.tab-drop{position:absolute;top:calc(100% + 4px);left:0;background:#fff;border:1.5px solid #e2e8f0;border-radius:10px;box-shadow:0 8px 28px rgba(0,0,0,.13);z-index:300;min-width:195px;padding:5px;display:none;}
+.tab-drop{position:fixed;top:0;left:0;background:#fff;border:1.5px solid #e2e8f0;border-radius:10px;box-shadow:0 8px 28px rgba(0,0,0,.13);z-index:9999;min-width:195px;padding:5px;display:none;}
 .tab-drop.open{display:block;}
 .tab-drop button{display:flex;align-items:center;gap:9px;padding:9px 13px;border-radius:7px;font-size:13px;color:#475569;cursor:pointer;border:none;background:none;width:100%;text-align:left;white-space:nowrap;font-family:inherit;transition:background .1s,color .1s;}
 .tab-drop button:hover{background:#f5f1ff;color:#1e293b;}
@@ -1995,19 +1995,27 @@ APP.changeAtelier=function(){
   S.view='atelierSelect';R();
 };
 APP.setTab=function(t){S.tab=t;R();};
+function _positionDrop(dropId,ev){
+  var d=document.getElementById(dropId);
+  if(!d)return null;
+  var btn=ev.target;while(btn&&btn.tagName!=='BUTTON')btn=btn.parentElement;
+  if(!btn)btn=ev.target;
+  var r=btn.getBoundingClientRect();
+  d.style.top=(r.bottom+4)+'px';
+  d.style.left=r.left+'px';
+  return d;
+}
 APP.toggleProgMenu=function(ev){
   if(ev)ev.stopPropagation();
-  var d=document.getElementById('prog-drop');
-  var f=document.getElementById('fin-drop');
-  if(f)f.classList.remove('open');
+  var f=document.getElementById('fin-drop');if(f)f.classList.remove('open');
+  var d=_positionDrop('prog-drop',ev);
   if(!d){S.tab='programme';R();return;}
   d.classList.toggle('open');
 };
 APP.toggleFinMenu=function(ev){
   if(ev)ev.stopPropagation();
-  var d=document.getElementById('fin-drop');
-  var p=document.getElementById('prog-drop');
-  if(p)p.classList.remove('open');
+  var p=document.getElementById('prog-drop');if(p)p.classList.remove('open');
+  var d=_positionDrop('fin-drop',ev);
   if(!d){S.tab='finances';R();return;}
   d.classList.toggle('open');
 };
@@ -2645,6 +2653,10 @@ function vLoge(){
     }
   });
   tabBarHtml+='</div>';
+  // Calcul poste officier AVANT bar (pour l'inclure inline)
+  var userPost2=getUserPost(loge.id);
+  var lvl2=getAccessLevel(loge.id);
+  var pColor=lvl2>=10?'#27ae60':lvl2>=7?'#c9a227':lvl2>=5?'#1a5f8a':'#555';
   var logeLogo=loge.logo?'<img src="'+loge.logo+'" style="width:36px;height:36px;border-radius:50%;object-fit:cover;border:2px solid #c9a227;flex-shrink:0"/>':'';
   var obLogo=LOGO?'<img src="'+LOGO+'" style="width:36px;height:36px;border-radius:50%;object-fit:cover;border:2px solid #ddd;flex-shrink:0"/>':'';
   var bar='<div class="lbar">'
@@ -2653,6 +2665,13 @@ function vLoge(){
     +'<div><div style="font-weight:900;font-size:15px">'+loge.nom+'</div>'
     +'<div style="color:#888;font-size:12px">📍 '+loge.ville+' · '+ms.length+' frères · '+ch(tCount+'/3 min.',tCount>=3?'cgreen':'cred')+'</div></div></div>'
     +'<div style="flex:1"></div>'
+    // Badge VM/poste inline avant les boutons d'action
+    +(off&&userPost2&&!isGO()
+      ?'<div style="display:flex;align-items:center;gap:8px;padding-right:8px;border-right:1.5px solid #e8edf5;margin-right:4px">'
+        +'<div style="background:#1e293b;color:#c9a227;border-radius:8px;padding:4px 11px;font-size:11px;font-weight:900;text-transform:uppercase;letter-spacing:.4px;white-space:nowrap">'+userPost2+'</div>'
+        +'<div style="font-size:12px;color:#555;white-space:nowrap">N.<strong style="color:'+pColor+'">'+lvl2+'</strong><span style="color:#aaa">/10</span></div>'
+        +'</div>'
+      :'')
     +(off?'<button class="btn outline sm" onclick="APP.openMod(\'newEvt\',{lid:\''+loge.id+'\'})">+ Tenue<\/button>'
        +'<button class="btn ok sm" onclick="APP.openMod(\'affiliationForm\',{lid:\''+loge.id+'\'})">+ Affiliation<\/button>'
        +'<button class="btn gold sm" onclick="APP.openMod(\'dossierForm\',{lid:\''+loge.id+'\'})">+ Nouveau(elle) Membre<\/button>':'')
@@ -2673,25 +2692,13 @@ function vLoge(){
   else if(S.tab==='alertes'&&off)c=lAlerts(loge,ms,props,retards);
   else if(S.tab==='hospitalier')c=lRapportHospitalier(loge);
   else if(S.tab==='paramsLoge'&&off)c=lParams(loge,off);
-  var userPost2=getUserPost(loge.id);
-  var lvl2=getAccessLevel(loge.id);
+  // Seul le banner GO convocations subsiste (si applicable)
   var officerBanner2='';
-  if(off&&userPost2&&!isGO()){
-    var pColor=lvl2>=10?'#27ae60':lvl2>=7?'#c9a227':lvl2>=5?'#1a5f8a':'#555';
-    officerBanner2='<div style="background:linear-gradient(90deg,#f4f0ff 0%,#fff 60%);border-bottom:1.5px solid #e4ddf8;padding:10px 20px;display:flex;align-items:center;gap:12px;flex-wrap:wrap">'
-      +'<div style="background:#1e293b;color:#c9a227;border-radius:9px;padding:5px 14px;font-size:11px;font-weight:900;letter-spacing:.5px;text-transform:uppercase">'+userPost2+'</div>'
-      +'<div style="width:1px;height:18px;background:#ddd;flex-shrink:0"></div>'
-      +'<div style="font-size:12px;color:#555">Niveau <strong style="color:'+pColor+';font-size:14px">'+lvl2+'</strong><span style="color:#aaa">/10</span></div>'
-      +'<div style="flex:1"></div>'
-      +'<div style="font-size:11px;color:#94a3b8;font-style:italic;letter-spacing:.2px">Tableau de bord adapté à votre poste</div>'
-      +'</div>';
-  }
-  // Convocations GO banner — visible si le membre est Grand Officier
   var myGOPost2=D.grandOff.find(function(g){return g.mid===S.user.id;});
   if(myGOPost2){
     var upConvs=(D.convocationsGO||[]).filter(function(c){return c.date>=tdStr()&&c.st!=='Annulé';}).sort(function(a,b){return a.date.localeCompare(b.date);});
     if(upConvs.length){
-      officerBanner2+='<div style="background:#fff8e1;border-bottom:2px solid #c9a227;padding:8px 18px;display:flex;align-items:center;gap:10px;flex-wrap:wrap">'
+      officerBanner2='<div style="background:#fff8e1;border-bottom:2px solid #c9a227;padding:8px 18px;display:flex;align-items:center;gap:10px;flex-wrap:wrap">'
         +'<div style="background:#c9a227;color:#111;border-radius:6px;padding:4px 11px;font-size:12px;font-weight:900">⚖ '+myGOPost2.titre+'</div>'
         +'<div style="font-size:12px;color:#555">'+upConvs.length+' convocation(s) Collège GO — prochaine le <strong>'+upConvs[0].date+'</strong> à <strong>'+(upConvs[0].heure||'—')+'</strong> · '+upConvs[0].lieu+'</div>'
         +'<div style="flex:1"></div>'
