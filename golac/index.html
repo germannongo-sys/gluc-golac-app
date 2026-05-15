@@ -589,12 +589,13 @@ function buildData(){
     portalConfig:{enabled:true},
     customPerms:null,
     showDemoAccounts:true,
+    connexionLogs:[],
     _dataInitAt:new Date().toISOString(),
   };
 }
 
 var D=buildData();
-var S={user:null,view:'login',lid:null,tab:'membres',modal:null,mdata:{}};
+var S={user:null,view:'login',lid:null,tab:'membres',modal:null,mdata:{},paramsSubTab:'settings'};
 
 function G(id){return document.getElementById(id);}
 function gMbr(id){return D.membres.find(function(m){return m.id===id;});}
@@ -798,17 +799,21 @@ function tDocuments(scope,lid){
   ['Règlement','Planche','Rituel','Compte rendu','Note','Autre'].forEach(function(type){
     var filtered=accessible.filter(function(d){return d.type===type;});
     if(!filtered.length)return;
+    h+='<div class="docSec" data-type="'+type+'">';
     h+='<div style="font-size:13px;font-weight:900;text-transform:uppercase;letter-spacing:.4px;color:#555;margin:14px 0 8px">'+type+'s</div>';
     filtered.forEach(function(doc){
+      var icon=doc.fileName?'📎':'📄';
       h+='<div class="card" style="display:flex;align-items:center;gap:12px;margin-bottom:8px">'
-        +'<div style="font-size:24px">📄</div>'
+        +'<div style="font-size:24px">'+icon+'</div>'
         +'<div style="flex:1"><div style="font-weight:700;font-size:13px">'+doc.titre+'</div>'
         +'<div style="font-size:11px;color:#888;margin-top:2px">'+doc.type+' · '+ch('Grade : '+doc.grade,'cgr')+' · '+doc.date+'</div>'
+        +(doc.fileName?'<div style="font-size:11px;color:#c9a227;margin-top:3px">📎 '+doc.fileName+'</div>':'')
         +(doc.contenu?'<div style="font-size:12px;color:#555;margin-top:4px;font-style:italic">'+doc.contenu.substring(0,100)+(doc.contenu.length>100?'...':'')+'</div>':'')
         +'</div>'
         +'<button class="btn outline sm" onclick="APP.viewDoc(\''+doc.id+'\')">Consulter</button>'
         +'</div>';
     });
+    h+='</div>';
   });
   h+='</div>';
   h+='<div style="border-top:2px solid #eee;margin-top:28px;padding-top:20px">';
@@ -856,12 +861,25 @@ function tRapportGlobal_inline(){
   });
   return h||'<div class="alert a-i">Aucune loge enregistrée.</div>';
 }
-APP.filterDocs=function(type){};
+APP.filterDocs=function(type){
+  document.querySelectorAll('[id^="docFilter_"]').forEach(function(b){b.className='btn ghost sm';});
+  var btnId='docFilter_'+type.replace(/ /g,'_');
+  var btn=document.getElementById(btnId);
+  if(btn)btn.className='btn gold sm';
+  document.querySelectorAll('#docList .docSec').forEach(function(s){
+    s.style.display=(type==='Tous'||s.dataset.type===type)?'':'none';
+  });
+};
 APP.viewDoc=function(id){
   var doc=D.documents.find(function(x){return x.id===id;});
   if(!doc)return;
-  if(doc.url){window.open(doc.url,'_blank');return;}
-  var w=window.open('','_blank','width=800,height:600');
+  if(doc.url){
+    if(doc.url.startsWith('data:')){
+      var a=document.createElement('a');a.href=doc.url;a.target='_blank';a.download=doc.fileName||doc.titre;a.click();return;
+    }
+    window.open(doc.url,'_blank');return;
+  }
+  var w=window.open('','_blank','width=800,height=600');
   w.document.write('<!DOCTYPE htm'+'l><html><head><meta charset="UTF-8"><title>'+doc.titre+'</title>'
     +'<style>body{font-family:Georgia,serif;padding:30px;max-width:700px;margin:0 auto;color:#111;}h1{border-bottom:2px solid #c9a227;padding-bottom:10px;}pre{white-space:pre-wrap;font-family:inherit;line-height:1.7;}<'+'/'+'style></head><body>'
     +'<h1>'+doc.titre+'</h1>'
@@ -873,8 +891,16 @@ APP.viewDoc=function(id){
 };
 APP.saveDoc=function(){
   var t=G('docTitre').value.trim();if(!t)return;
-  D.documents.push({id:uid(),titre:t,type:G('docType').value,grade:G('docGrade').value,date:tdStr(),url:null,contenu:G('docContenu')?G('docContenu').value.trim():''});
-  APP.closeMod();
+  var doc={id:uid(),titre:t,type:G('docType').value,grade:G('docGrade').value,date:tdStr(),url:null,fileName:null,fileType:null,contenu:G('docContenu')?G('docContenu').value.trim():''};
+  var fi=G('docFile');
+  var file=fi&&fi.files&&fi.files[0];
+  if(file){
+    var reader=new FileReader();
+    reader.onload=function(e){doc.url=e.target.result;doc.fileName=file.name;doc.fileType=file.type;D.documents.push(doc);saveState();APP.closeMod();};
+    reader.readAsDataURL(file);
+  } else {
+    D.documents.push(doc);APP.closeMod();
+  }
 };
 
 // ── TRONC DE LA VEUVE ──
@@ -919,7 +945,7 @@ APP.exportTronc=function(lid){
   var tv=D.troncVeuve.filter(function(t){return t.lid===lid;});
   var recettes=tv.filter(function(t){return t.type==='Recette';}).reduce(function(s,t){return s+t.mnt;},0);
   var depenses=tv.filter(function(t){return t.type==='Dépense';}).reduce(function(s,t){return s+t.mnt;},0);
-  var w=window.open('','_blank','width=700,height:600');
+  var w=window.open('','_blank','width=700,height=600');
   var rows=tv.map(function(t,i){var cumul=0;tv.slice(0,i+1).forEach(function(x){cumul+=(x.type==='Recette'?x.mnt:-x.mnt);});return'<tr><td>'+t.date+'</td><td>'+t.type+'</td><td>'+t.desc+'</td><td>'+fmt(t.mnt)+'</td><td>'+fmt(cumul)+'</td></tr>';}).join('');
   w.document.write('<!DOCTYPE htm'+'l><html><head><meta charset="UTF-8"><title>Tronc de la Veuve — '+loge.nom+'</title>'
     +'<style>body{font-family:Georgia,serif;padding:24px;max-width:700px;margin:0 auto;}h1{border-bottom:2px solid #c9a227;padding-bottom:8px;}table{width:100%;border-collapse:collapse;}th{background:#111;color:#fff;padding:7px 10px;font-size:11px;}td{padding:7px 10px;border-bottom:1px solid #eee;font-size:12px;}<'+'/'+'style></head><body>'
@@ -999,11 +1025,52 @@ APP.saveAllLogeInfo=function(lid){
   document.body.appendChild(t);setTimeout(function(){t.remove();},2800);
 };
 
+// ── AUDIT CONNEXIONS ──
+function tAuditConnexions(){
+  var logs=D.connexionLogs||[];
+  var h='<div style="display:flex;align-items:center;gap:12px;margin-bottom:18px;flex-wrap:wrap">'
+    +'<div class="sec" style="margin:0">🔍 Audit de Connexions</div>'
+    +'<div style="flex:1"></div>'
+    +(logs.length?'<button class="btn dng sm" onclick="APP.clearAuditLog()">🗑 Effacer l\'historique</button>':'')
+    +'</div>';
+  if(!logs.length){
+    return h+'<div class="alert a-i" style="text-align:center">Aucune connexion enregistrée.<br><span style="font-size:12px;color:#aaa">Les connexions seront tracées à partir de maintenant.</span></div>';
+  }
+  h+='<div style="font-size:12px;color:#64748b;margin-bottom:12px">'+logs.length+' connexion(s) enregistrée(s)</div>';
+  h+='<div class="tw"><table><thead><tr>'
+    +'<th>Date &amp; Heure</th><th>Matricule</th><th>Nom</th><th>Rôle</th><th>Grade</th>'
+    +'</tr></thead><tbody>';
+  logs.forEach(function(l){
+    var dt=l.heure?new Date(l.heure):null;
+    var dateStr=dt?dt.toLocaleDateString('fr-FR'):'—';
+    var heureStr=dt?dt.toLocaleTimeString('fr-FR',{hour:'2-digit',minute:'2-digit'}):'—';
+    var roleColor=l.role==='Super Admin'?'#b71c1c':l.role==='Grand Maître'?'#5a3e00':'#1e293b';
+    h+='<tr>'
+      +'<td style="white-space:nowrap"><strong>'+dateStr+'</strong> <span style="color:#888">'+heureStr+'</span></td>'
+      +'<td>'+ch(l.matricule||'—','cg')+'</td>'
+      +'<td style="font-weight:600">'+(l.nom||'—')+'</td>'
+      +'<td><span style="color:'+roleColor+';font-weight:700;font-size:12px">'+(l.role||'—')+'</span></td>'
+      +'<td>'+ch(gLbl(l.grade)||'—','cgr')+'</td>'
+      +'</tr>';
+  });
+  h+='</tbody></table></div>';
+  return h;
+}
+APP.clearAuditLog=function(){if(!confirm('Effacer tout l\'historique de connexions ?'))return;D.connexionLogs=[];saveState();R();};
+APP.setParamsSubTab=function(t){S.paramsSubTab=t;R();};
+
 // ── PARAMÈTRES OBÉDIENCE ──
 function tParamsOb(){
-  var h='<div style="display:flex;align-items:center;margin-bottom:18px">'
-    +'<div class="sec" style="margin:0">⚙ Paramètres de l\'Obédience</div></div>'
-    +'<div style="display:grid;grid-template-columns:1fr 1fr;gap:18px">'
+  var subTab=S.paramsSubTab||'settings';
+  var h='<div style="display:flex;align-items:center;margin-bottom:0">'
+    +'<div class="sec" style="margin:0">⚙ Administration</div></div>'
+    +'<div style="display:flex;gap:0;border-bottom:2px solid #e2e8f0;margin-bottom:22px;margin-top:12px">'
+    +'<button style="padding:9px 18px;border:none;background:none;font-size:13px;font-weight:700;cursor:pointer;border-bottom:2.5px solid '+(subTab==='settings'?'#c9a227':'transparent')+';color:'+(subTab==='settings'?'#c9a227':'#64748b')+';margin-bottom:-2px" onclick="APP.setParamsSubTab(\'settings\')">⚙ Paramètres</button>'
+    +'<button style="padding:9px 18px;border:none;background:none;font-size:13px;font-weight:700;cursor:pointer;border-bottom:2.5px solid '+(subTab==='audit'?'#c9a227':'transparent')+';color:'+(subTab==='audit'?'#c9a227':'#64748b')+';margin-bottom:-2px" onclick="APP.setParamsSubTab(\'audit\')">🔍 Audit Connexions <span class="bdg" style="background:'+(subTab==='audit'?'#c9a227':'#64748b')+'">'+((D.connexionLogs||[]).length)+'</span></button>'
+    +'</div>';
+  if(subTab==='audit')return h+tAuditConnexions();
+  // ── Sous-tab Paramètres ──
+  h+='<div style="display:grid;grid-template-columns:1fr 1fr;gap:18px">'
     // Left: Infos
     +'<div>'
     +'<div style="font-size:14px;font-weight:900;margin-bottom:12px">Informations générales</div>'
@@ -1429,7 +1496,7 @@ APP.viewPlanche=function(evtId,lid){
   var loge=gLoge(lid);if(!loge)return;
   var ev=loge.agenda.find(function(x){return x.id===evtId;});
   if(!ev)return;
-  var w=window.open('','_blank','width=700,height:600');
+  var w=window.open('','_blank','width=700,height=600');
   w.document.write('<!DOCTYPE htm'+'l><html><head><meta charset="UTF-8"><title>'+ev.titre+'</title>'
     +'<style>body{font-family:Georgia,serif;padding:24px;max-width:700px;margin:0 auto;}h1{border-bottom:2px solid #c9a227;padding-bottom:8px;font-size:18px;}h2{font-size:14px;font-weight:700;margin:16px 0 8px;color:#555;}pre{white-space:pre-wrap;font-family:inherit;line-height:1.7;background:#f9f9f9;padding:12px;border-radius:8px;}<'+'/'+'style></head><body>'
     +'<h1>'+ev.titre+' — '+ev.date+' à '+ev.heure+'</h1>'
@@ -2127,12 +2194,19 @@ function vForgotPwd(){
   }
   return h+'</div></div>';
 }
+function _logConnexion(user){
+  if(!D.connexionLogs)D.connexionLogs=[];
+  D.connexionLogs.unshift({id:uid(),matricule:user.matricule,nom:user.nom,role:user.role||'',grade:user.grade||'',heure:new Date().toISOString()});
+  if(D.connexionLogs.length>500)D.connexionLogs=D.connexionLogs.slice(0,500);
+  saveState();
+}
 APP.doLogin=function(){
   var mat=G('lM').value.trim(),pwd=G('lP').value;
   var isLA=D.obInfo&&D.obInfo.logeAutonome;
   // Super Admin check
   if(mat===D.superAdmin.matricule&&pwd===D.superAdmin.pwd){
     S.user={id:'SADM',matricule:mat,nom:D.superAdmin.nom,role:'Super Admin',grade:'Maitre',logeId:null,pwd:pwd,statut:'actif',email:D.superAdmin.email};
+    _logConnexion(S.user);
     G('lE').style.display='none';
     if(isLA&&D.loges.length){S.lid=D.loges[0].id;S.view='loge';S.tab='membres';}
     else{S.view='obedience';S.tab='programmes';}
@@ -2141,6 +2215,7 @@ APP.doLogin=function(){
   var u=D.membres.find(function(m){return m.matricule===mat&&m.pwd===pwd;});
   if(!u){G('lE').style.display='block';return;}
   G('lE').style.display='none';
+  _logConnexion(u);
   S.user=u;
   // Loge Autonome : entre directement dans l'atelier unique
   if(isLA&&D.loges.length){
@@ -3532,6 +3607,8 @@ var MODS={
       +mbrs.map(function(m){return'<label style="display:flex;align-items:center;gap:8px;padding:2px 0;cursor:pointer"><input type="checkbox" value="'+m.id+'" class="presChk"/> <span>'+m.nom+' ('+gLbl(m.grade)+')<\/span><\/label>';}).join('')
       +'<\/div>'
       +'<input id="mPresManual" placeholder="Présentateur(s) externe(s) — séparés par virgule" style="font-size:12px"/><\/div>'
+      +'<div class="fg"><label class="fl">📎 Pièce jointe <span style="color:#aaa;font-weight:400">(PDF, image — optionnel)</span></label>'
+      +'<input type="file" id="mFichier" accept=".pdf,.doc,.docx,.jpg,.jpeg,.png" style="padding:7px;border:1.5px dashed #c9a227;border-radius:8px;background:#fffbf0;cursor:pointer;font-size:12px"/><\/div>'
       +'<div class="mact"><button class="btn gold full" onclick="APP.createEvt(\''+d.lid+'\')">Ajouter<\/button><button class="btn ghost full" onclick="APP.closeMod()">Annuler<\/button></div>';
   },
   newInstr:function(d){
@@ -3546,6 +3623,8 @@ var MODS={
       +mbrs.map(function(m){return'<label style="display:flex;align-items:center;gap:8px;padding:2px 0;cursor:pointer"><input type="checkbox" value="'+m.id+'" class="presChk"/> <span>'+m.nom+' ('+gLbl(m.grade)+')<\/span><\/label>';}).join('')
       +'<\/div>'
       +'<input id="mPresManual" placeholder="Présentateur(s) externe(s) — séparés par virgule" style="font-size:12px"/><\/div>'
+      +'<div class="fg"><label class="fl">📎 Pièce jointe <span style="color:#aaa;font-weight:400">(PDF, image — optionnel)</span></label>'
+      +'<input type="file" id="mFichier" accept=".pdf,.doc,.docx,.jpg,.jpeg,.png" style="padding:7px;border:1.5px dashed #c9a227;border-radius:8px;background:#fffbf0;cursor:pointer;font-size:12px"/><\/div>'
       +'<div class="mact"><button class="btn gold full" onclick="APP.createInstr(\''+d.lid+'\')">Ajouter<\/button><button class="btn ghost full" onclick="APP.closeMod()">Annuler<\/button></div>';
   },
   editEvt:function(d){
@@ -3677,7 +3756,9 @@ MODS.newDoc=function(d){
     +'<div class="fg"><label class="fl">Type</label><select id="docType"><option>Règlement</option><option>Planche</option><option>Rituel</option><option>Compte rendu</option><option>Note</option><option>Autre</option></select></div>'
     +'<div class="fg"><label class="fl">Accessible à</label><select id="docGrade"><option value="Tous">Tous les grades</option><option value="Apprenti">Apprenti et +</option><option value="Compagnon">Compagnon et +</option><option value="Maitre">Maître uniquement</option></select></div>'
     +'</div>'
-    +'<div class="fg"><label class="fl">Contenu / Description</label><textarea id="docContenu" rows="5" placeholder="Contenu du document ou description..."></textarea></div>'
+    +'<div class="fg"><label class="fl">📎 Fichier joint <span style="color:#aaa;font-weight:400">(PDF, Word, image — optionnel)</span></label>'
+    +'<input type="file" id="docFile" accept=".pdf,.doc,.docx,.txt,.png,.jpg,.jpeg" style="padding:7px;border:1.5px dashed #c9a227;border-radius:8px;background:#fffbf0;cursor:pointer;font-size:12px"/></div>'
+    +'<div class="fg"><label class="fl">Contenu / Description</label><textarea id="docContenu" rows="4" placeholder="Contenu du document ou description..."></textarea></div>'
     +'<div class="mact"><button class="btn gold full" onclick="APP.saveDoc()">Enregistrer<\/button><button class="btn ghost full" onclick="APP.closeMod()">Annuler<\/button></div>';
 };
 MODS.newTronc=function(d){
@@ -3949,8 +4030,10 @@ APP.createEvt=function(lid){
   if(extPres)extPres.split(',').forEach(function(n){var tr=n.trim();if(tr)presNames.push(tr);});
   var pres=presNames.join(', ');
   var parts=[];document.querySelectorAll('.evtPartCk:checked').forEach(function(c){parts.push(c.value);});
-  loge.agenda.push({id:uid(),titre:t,date:d,heure:G('mHeure')?G('mHeure').value:'',type:G('mType')?G('mType').value:'Tenue',planche:G('mPlanche')?G('mPlanche').value.trim():'',typePlanche:G('mTypePlanche')?G('mTypePlanche').value:'Ordinaire',planStatus:G('mPlanStatus')?G('mPlanStatus').value:'Non présentée',presentateur:pres,presIds:presIds,participants:parts});
-  APP.closeMod();
+  var evt={id:uid(),titre:t,date:d,heure:G('mHeure')?G('mHeure').value:'',type:G('mType')?G('mType').value:'Tenue',planche:G('mPlanche')?G('mPlanche').value.trim():'',typePlanche:G('mTypePlanche')?G('mTypePlanche').value:'Ordinaire',planStatus:G('mPlanStatus')?G('mPlanStatus').value:'Non présentée',presentateur:pres,presIds:presIds,participants:parts,fichier:null};
+  var fi=G('mFichier');var file=fi&&fi.files&&fi.files[0];
+  if(file){var reader=new FileReader();reader.onload=function(e){evt.fichier={name:file.name,data:e.target.result,type:file.type};loge.agenda.push(evt);saveState();APP.closeMod();};reader.readAsDataURL(file);}
+  else{loge.agenda.push(evt);APP.closeMod();}
 };
 APP.toggleCeremonie=function(val){var d=G('evtParticipantsDiv');if(d)d.style.display=(val==='Cérémonie')?'block':'none';};
 APP.updateEvt=function(lid,eid,src){
@@ -3970,7 +4053,20 @@ APP.updateEvt=function(lid,eid,src){
   ev.presentateur=pres;ev.presIds=presIds;ev.participants=parts;
   APP.closeMod();
 };
-APP.createInstr=function(lid){var d=G('mDate').value;if(!d)return;var loge=gLoge(lid);if(!loge)return;if(!loge.instruction)loge.instruction=[];var presNames=[],presIds=[];document.querySelectorAll('.presChk:checked').forEach(function(c){presIds.push(c.value);var pm=lMbrs(lid).find(function(m){return m.id===c.value;});if(pm)presNames.push(pm.nom);});var extPres=G('mPresManual')?G('mPresManual').value.trim():'';if(extPres)extPres.split(',').forEach(function(n){var tr=n.trim();if(tr)presNames.push(tr);});var pres=presNames.join(', ');loge.instruction.push({id:uid(),titre:G('mTitre')?G('mTitre').value.trim()||"Tenue d'instruction":'',date:d,heure:G('mHeure')?G('mHeure').value:'',planche:G('mPlanche')?G('mPlanche').value.trim():'',planStatus:G('mPlanStatus')?G('mPlanStatus').value:'Non présentée',presentateur:pres,presIds:presIds});APP.closeMod();};
+APP.createInstr=function(lid){
+  var d=G('mDate').value;if(!d)return;
+  var loge=gLoge(lid);if(!loge)return;
+  if(!loge.instruction)loge.instruction=[];
+  var presNames=[],presIds=[];
+  document.querySelectorAll('.presChk:checked').forEach(function(c){presIds.push(c.value);var pm=lMbrs(lid).find(function(m){return m.id===c.value;});if(pm)presNames.push(pm.nom);});
+  var extPres=G('mPresManual')?G('mPresManual').value.trim():'';
+  if(extPres)extPres.split(',').forEach(function(n){var tr=n.trim();if(tr)presNames.push(tr);});
+  var pres=presNames.join(', ');
+  var instr={id:uid(),titre:G('mTitre')?G('mTitre').value.trim()||"Tenue d'instruction":'',date:d,heure:G('mHeure')?G('mHeure').value:'',planche:G('mPlanche')?G('mPlanche').value.trim():'',planStatus:G('mPlanStatus')?G('mPlanStatus').value:'Non présentée',presentateur:pres,presIds:presIds,fichier:null};
+  var fi=G('mFichier');var file=fi&&fi.files&&fi.files[0];
+  if(file){var reader=new FileReader();reader.onload=function(e){instr.fichier={name:file.name,data:e.target.result,type:file.type};loge.instruction.push(instr);saveState();APP.closeMod();};reader.readAsDataURL(file);}
+  else{loge.instruction.push(instr);APP.closeMod();}
+};
 APP.createVis=function(lid){var nom=G('mNom').value.trim(),loge=G('mLoge').value.trim();if(!nom||!loge)return;D.visiteurs.push({id:uid(),lid:lid,nom:nom,loge:loge,grade:G('mGrade').value,motif:G('mMotif').value.trim(),date:G('mDate').value});APP.closeMod();};
 APP.createOff=function(lid){var t=G('mTitre').value.trim();if(!t)return;var loge=gLoge(lid);if(!loge)return;loge.officiers.push({id:uid(),titre:t,mid:null,perm:false});APP.closeMod();};
 APP.doAssignOff=function(lid,oid){
