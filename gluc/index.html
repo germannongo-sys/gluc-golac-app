@@ -491,7 +491,7 @@ function buildData(){
   return{
     name:'Grande Loge Unie du Congo',acronym:'GLUC',siege:'Brazzaville',fondation:'1995',
     tauxCap:50000,tauxLoge:200000,
-    themeColors:{gold:'#c9a227',dark:'#111',bg:'#f0f2f5',loginGrad1:'#4a0e8f',loginGrad2:'#0891b2'},
+    themeColors:{gold:'#c9a227',dark:'#111',bg:'#f0f2f5',loginGrad1:'#4a0e8f',loginGrad2:'#0891b2',tabbarBg:'#1a1a1a',tabbarText:'#8892a0',textColor:'#111111',appFont:''},
     grandOff:[
       {id:'go1',titre:'Grand Maître',mid:'ADM'},{id:'go2',titre:'Grand Secrétaire',mid:'GS1'},
       {id:'go3',titre:'Grand Orateur',mid:null},{id:'go4',titre:'Grand Trésorier',mid:null},
@@ -1060,6 +1060,35 @@ function tParamsOb(){
           return'<button class="btn ghost sm" onclick="APP.applyPalette(\''+p[1]+'\',\''+p[2]+'\',\''+p[3]+'\')" style="border-left:4px solid '+p[1]+'">'+p[0]+'</button>';
         }).join('')
         +'</div>'
+        +'<div class="div"></div>'
+        +'<div style="font-size:11px;font-weight:700;color:#555;text-transform:uppercase;letter-spacing:.5px;margin-bottom:10px">🖥 Bande de navigation (tabbar)</div>'
+        +(function(){var tc=D.themeColors||{};
+          return'<div class="fg"><label class="fl">Fond de la tabbar</label>'
+            +'<div style="display:flex;align-items:center;gap:10px"><input type="color" id="thTabbarBg" value="'+(tc.tabbarBg||'#1a1a1a')+'" style="width:52px;height:38px;padding:2px;border-radius:6px;cursor:pointer;border:1.5px solid #ddd" oninput="G(\'thTabbarBgTxt\').value=this.value"/>'
+            +'<input type="text" id="thTabbarBgTxt" value="'+(tc.tabbarBg||'#1a1a1a')+'" style="width:100px;font-family:monospace" oninput="G(\'thTabbarBg\').value=this.value"/></div></div>'
+            +'<div class="fg"><label class="fl">Couleur du texte des onglets</label>'
+            +'<div style="display:flex;align-items:center;gap:10px"><input type="color" id="thTabbarText" value="'+(tc.tabbarText||'#8892a0')+'" style="width:52px;height:38px;padding:2px;border-radius:6px;cursor:pointer;border:1.5px solid #ddd" oninput="G(\'thTabbarTextTxt\').value=this.value"/>'
+            +'<input type="text" id="thTabbarTextTxt" value="'+(tc.tabbarText||'#8892a0')+'" style="width:100px;font-family:monospace" oninput="G(\'thTabbarText\').value=this.value"/></div></div>'
+            +'<div class="fg"><label class="fl">Couleur du texte de l\'application</label>'
+            +'<div style="display:flex;align-items:center;gap:10px"><input type="color" id="thTextColor" value="'+(tc.textColor||'#111111')+'" style="width:52px;height:38px;padding:2px;border-radius:6px;cursor:pointer;border:1.5px solid #ddd" oninput="G(\'thTextColorTxt\').value=this.value"/>'
+            +'<input type="text" id="thTextColorTxt" value="'+(tc.textColor||'#111111')+'" style="width:100px;font-family:monospace" oninput="G(\'thTextColor\').value=this.value"/></div></div>'
+            +'<div style="font-size:11px;color:#888;margin-bottom:6px">Palettes tabbar rapides :</div>'
+            +'<div style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:12px">'
+            +[['Nuit','#1a1a1a','#8892a0'],['Marine','#0d1b2a','#7ecfff'],['Forêt','#1a2710','#8bc34a'],['Bordeaux','#2a0a1a','#f48fb1'],['Saphir','#0a1628','#90caf9'],['Blanc','#ffffff','#475569']].map(function(p){
+              return'<button class="btn ghost sm" onclick="D.themeColors=Object.assign({},D.themeColors||{},{tabbarBg:\''+p[1]+'\',tabbarText:\''+p[2]+'\'}); APP.applyTheme();" style="border-left:4px solid '+p[1]+';border-top:1px solid '+p[2]+'">'
+                +'<span style="color:'+p[2]+'">'+p[0]+'</span></button>';
+            }).join('')
+            +'</div>'
+            +'<div class="div"></div>'
+            +'<div style="font-size:11px;font-weight:700;color:#555;text-transform:uppercase;letter-spacing:.5px;margin-bottom:10px">🔤 Police de caractères</div>'
+            +'<div class="fg"><label class="fl">Choisir une police (Google Fonts)</label>'
+            +'<select id="thAppFont" onchange="APP.previewFont(this.value)" style="font-size:13px">'
+            +[['Système (défaut)',''],['Inter','Inter'],['Poppins','Poppins'],['Roboto','Roboto'],['Lato','Lato'],['Montserrat','Montserrat'],['Open Sans','Open Sans'],['Nunito','Nunito'],['Raleway','Raleway'],['Oswald','Oswald'],['Playfair Display','Playfair Display'],['Source Code Pro','Source Code Pro']].map(function(f){
+              return'<option value="'+f[1]+'"'+(tc.appFont===f[1]?' selected':'')+' style="'+(f[1]?'font-family:'+f[1]:'')+'">'+f[0]+'</option>';
+            }).join('')
+            +'</select></div>'
+            +'<div id="fontPreview" style="padding:12px;background:#f8fafc;border-radius:8px;border:1.5px solid #e2e8f0;font-size:14px;color:#1e293b;margin-bottom:12px'+(tc.appFont?';font-family:'+tc.appFont:'')+'">Aperçu : À la Gloire du Grand Architecte de l\'Univers — 1234567890</div>';
+        })()
         +'<div style="display:flex;gap:8px">'
         +'<button class="btn gold" style="flex:1" onclick="APP.saveTheme()">💾 Appliquer le thème</button>'
         +'<button class="btn ghost" onclick="APP.resetTheme()">↺ Défaut</button>'
@@ -1229,14 +1258,27 @@ APP.saveAllObInfo=function(){
 APP.applyTheme=function(){
   var tc=D.themeColors||{gold:'#c9a227',dark:'#111',bg:'#f0f2f5'};
   var gold=tc.gold||'#c9a227',dark=tc.dark||'#111',bg=tc.bg||'#f0f2f5';
+  // Google Fonts loader
+  if(tc.appFont){
+    var _gfId='gf-'+tc.appFont.replace(/\s+/g,'-');
+    if(!document.getElementById(_gfId)){
+      var _lnk=document.createElement('link');
+      _lnk.id=_gfId;_lnk.rel='stylesheet';
+      _lnk.href='https://fonts.googleapis.com/css2?family='+encodeURIComponent(tc.appFont)+':wght@400;600;700;900&display=swap';
+      document.head.appendChild(_lnk);
+    }
+  }
   var st=G('themeStyle');if(!st)return;
   st.textContent=
     'body{background:'+bg+'!important}'
     +'.hdr{background:'+dark+'!important;border-bottom-color:'+gold+'!important}'
     +'.hdr-gluc{color:'+gold+'!important}'
     +'.hdr-logo{background:'+gold+'!important}'
-    +'.tabbar{background:#1a1a1a!important}'
+    +'.tabbar{background:'+(tc.tabbarBg||'#1a1a1a')+'!important}'
+    +'.tab{color:'+(tc.tabbarText||'#8892a0')+'!important;background:none!important}'
     +'.tab.on{color:'+gold+'!important;border-bottom-color:'+gold+'!important}'
+    +'body{color:'+(tc.textColor||'#111111')+'!important}'
+    +(tc.appFont?'body,button,input,select,textarea{font-family:"'+tc.appFont+'",sans-serif!important}':'')
     +'.gold{background:'+gold+'!important}'
     +'.ok{background:'+dark+'!important}'
     +'.outline{color:'+dark+'!important;border-color:'+dark+'!important}'
@@ -1247,7 +1289,6 @@ APP.applyTheme=function(){
     +'.lbox{border-color:'+gold+'!important}'
     +'.llogo{border-color:'+gold+'!important}'
     +'.ltit{color:'+dark+'!important}'
-    +'.tab{background:none!important}'
     +'th{background:'+dark+'!important}'
     +'.lnum{background:'+dark+'!important;color:'+gold+'!important}'
     +'.cap-card.attente{border-left-color:'+gold+'!important}'
@@ -1265,7 +1306,11 @@ APP.saveTheme=function(){
   var bg=G('thBg')?G('thBg').value:'#f0f2f5';
   var g1=G('thGrad1')?G('thGrad1').value:(D.themeColors.loginGrad1||'#4a0e8f');
   var g2=G('thGrad2')?G('thGrad2').value:(D.themeColors.loginGrad2||'#0891b2');
-  D.themeColors={gold:gold,dark:dark,bg:bg,loginGrad1:g1,loginGrad2:g2};
+  var tabbarBg=G('thTabbarBg')?G('thTabbarBg').value:(D.themeColors.tabbarBg||'#1a1a1a');
+  var tabbarText=G('thTabbarText')?G('thTabbarText').value:(D.themeColors.tabbarText||'#8892a0');
+  var textColor=G('thTextColor')?G('thTextColor').value:(D.themeColors.textColor||'#111111');
+  var appFont=G('thAppFont')?G('thAppFont').value:'';
+  D.themeColors={gold:gold,dark:dark,bg:bg,loginGrad1:g1,loginGrad2:g2,tabbarBg:tabbarBg,tabbarText:tabbarText,textColor:textColor,appFont:appFont};
   APP.applyTheme();R();
   var t=document.createElement('div');
   t.style.cssText='position:fixed;bottom:24px;left:50%;transform:translateX(-50%);background:'+gold+';color:#fff;padding:11px 28px;border-radius:8px;font-size:14px;font-weight:700;z-index:9999;box-shadow:0 4px 16px rgba(0,0,0,0.25)';
@@ -1273,7 +1318,7 @@ APP.saveTheme=function(){
   document.body.appendChild(t);setTimeout(function(){t.remove();},2800);
 };
 APP.resetTheme=function(){
-  D.themeColors={gold:'#c9a227',dark:'#111',bg:'#f0f2f5',loginGrad1:'#4a0e8f',loginGrad2:'#0891b2'};
+  D.themeColors={gold:'#c9a227',dark:'#111',bg:'#f0f2f5',loginGrad1:'#4a0e8f',loginGrad2:'#0891b2',tabbarBg:'#1a1a1a',tabbarText:'#8892a0',textColor:'#111111',appFont:''};
   APP.applyTheme();R();
 };
 APP.soumettreBiApp=function(mid,lid){
@@ -1323,8 +1368,22 @@ APP.retirerBiApp=function(mid){
   R();
 };
 APP.applyPalette=function(gold,dark,bg){
-  D.themeColors={gold:gold,dark:dark,bg:bg};
+  D.themeColors=Object.assign({},D.themeColors||{},{gold:gold,dark:dark,bg:bg});
   APP.applyTheme();R();
+};
+APP.previewFont=function(font){
+  var pv=G('fontPreview');if(!pv)return;
+  if(font){
+    var fid='gf-prev-'+font.replace(/\s+/g,'-');
+    if(!document.getElementById(fid)){
+      var lnk=document.createElement('link');lnk.id=fid;lnk.rel='stylesheet';
+      lnk.href='https://fonts.googleapis.com/css2?family='+encodeURIComponent(font)+':wght@400;700&display=swap';
+      document.head.appendChild(lnk);
+    }
+    pv.style.fontFamily='"'+font+'",sans-serif';
+  }else{
+    pv.style.fontFamily='';
+  }
 };
 APP.saveSecretQuestions=function(){
   ['Apprenti','Compagnon','Maitre'].forEach(function(grade){
@@ -1852,7 +1911,7 @@ var R=APP.render;
 if(!window._dropListenerAdded){
   window._dropListenerAdded=true;
   document.addEventListener('click',function(){
-    ['prog-drop','fin-drop'].forEach(function(id){
+    ['prog-drop','fin-drop','ob-gl-drop','ob-lo-drop','ob-no-drop','ob-ad-drop'].forEach(function(id){
       var el=document.getElementById(id);
       if(el)el.classList.remove('open');
     });
@@ -2145,6 +2204,15 @@ APP.toggleFinMenu=function(ev){
   if(!d){S.tab='finances';R();return;}
   d.classList.toggle('open');
 };
+APP.toggleObDrop=function(id,ev){
+  if(ev)ev.stopPropagation();
+  ['ob-gl-drop','ob-lo-drop','ob-no-drop','ob-ad-drop'].forEach(function(did){
+    if(did!==id){var el=document.getElementById(did);if(el)el.classList.remove('open');}
+  });
+  var d=_positionDrop(id,ev);
+  if(!d)return;
+  d.classList.toggle('open');
+};
 APP.goOb=function(tab){S.view='obedience';S.tab=tab||'programmes';R();};
 APP.loadLogo=function(inp){var file=inp.files[0];if(!file)return;var r=new FileReader();r.onload=function(e){LOGO=e.target.result;R();};r.readAsDataURL(file);};
 
@@ -2356,21 +2424,49 @@ function vObedience(){
   var aP=D.membres.filter(function(m){return m.logeId&&isPropGrade(m);});
   var aR=D.caps.filter(function(c){return c.st==='Retard';});
   var an=aP.length+aR.length+pend+aff;
-  var tabs=[
-    {id:'programmes',lbl:'Programmes'},
-    {id:'loges',lbl:'Loges ('+D.loges.length+')',restricted:!isGO()&&!isSuperAdmin()},
-    {id:'dossiers',lbl:'Dossiers',badge:pend||''},
-    {id:'affiliations',lbl:'Affiliations',badge:aff||''},
-    {id:'grandeloge',lbl:'Grande Loge'},
-    {id:'college_go',lbl:'CO — Collège GO'},
-    {id:'infos',lbl:'Informations'},
-    {id:'grand_off',lbl:'Grands Officiers'},
-    {id:'documents',lbl:'Documents'},
-    {id:'notifications',lbl:'Notifications'},
-  ];
-  if(hasPerm('viewAdmin','obedience')||isGO())tabs.push({id:'admin',lbl:'Administration'});
-  if(hasPerm('manageRights','obedience')||isSuperAdmin())tabs.push({id:'paramsob',lbl:'⚙ Paramètres'});
-  tabs.push({id:'alertes_ob',lbl:'Alertes',badge:an||''});
+  var canAdmin=hasPerm('viewAdmin','obedience')||isGO();
+  var canParams=hasPerm('manageRights','obedience')||isSuperAdmin();
+  var inGL=['grandeloge','infos','grand_off','college_go'].indexOf(S.tab)>=0;
+  var inLO=['loges','programmes','dossiers','affiliations'].indexOf(S.tab)>=0;
+  var inNO=['notifications','alertes_ob'].indexOf(S.tab)>=0;
+  var inAD=['admin','paramsob'].indexOf(S.tab)>=0;
+  var glSubLbl=S.tab==='infos'?' · Informations':S.tab==='grand_off'?' · G. Officiers':S.tab==='college_go'?' · Collège GO':S.tab==='grandeloge'?' · Tenues':'';
+  var loSubLbl=S.tab==='loges'?' · Loges':S.tab==='programmes'?' · Programmes':S.tab==='dossiers'?' · Dossiers':S.tab==='affiliations'?' · Affiliations':'';
+  var noSubLbl=S.tab==='alertes_ob'?' · Alertes':'';
+  var adSubLbl=S.tab==='paramsob'?' · Paramètres':'';
+  var obTabbar='<div class="tabbar" style="position:fixed;top:52px;left:0;right:0;z-index:900;display:flex;align-items:stretch;overflow-x:auto;padding:0 8px;border-bottom:1px solid rgba(255,255,255,0.08)">'
+    +'<div class="tab-wrap">'
+    +'<button class="tab'+(inGL?' on':'')+'" onclick="APP.toggleObDrop(\'ob-gl-drop\',event)">Grande Loge'+glSubLbl+' ▾</button>'
+    +'<div class="tab-drop" id="ob-gl-drop">'
+    +'<button class="'+(S.tab==='grandeloge'?'on':'')+'" onclick="APP.setTab(\'grandeloge\');document.getElementById(\'ob-gl-drop\').classList.remove(\'open\')">📋 Grande Loge</button>'
+    +'<button class="'+(S.tab==='infos'?'on':'')+'" onclick="APP.setTab(\'infos\');document.getElementById(\'ob-gl-drop\').classList.remove(\'open\')">ℹ️ Informations</button>'
+    +'<button class="'+(S.tab==='grand_off'?'on':'')+'" onclick="APP.setTab(\'grand_off\');document.getElementById(\'ob-gl-drop\').classList.remove(\'open\')">👥 Grands Officiers</button>'
+    +'<button class="'+(S.tab==='college_go'?'on':'')+'" onclick="APP.setTab(\'college_go\');document.getElementById(\'ob-gl-drop\').classList.remove(\'open\')">⚖️ CO — Collège GO</button>'
+    +'</div></div>'
+    +'<div class="tab-wrap">'
+    +'<button class="tab'+(inLO?' on':'')+'" onclick="APP.toggleObDrop(\'ob-lo-drop\',event)">Loges'+loSubLbl+' ▾</button>'
+    +'<div class="tab-drop" id="ob-lo-drop">'
+    +((!isGO()&&!isSuperAdmin())?'':'<button class="'+(S.tab==='loges'?'on':'')+'" onclick="APP.setTab(\'loges\');document.getElementById(\'ob-lo-drop\').classList.remove(\'open\')">🏛 Loges</button>')
+    +'<button class="'+(S.tab==='programmes'?'on':'')+'" onclick="APP.setTab(\'programmes\');document.getElementById(\'ob-lo-drop\').classList.remove(\'open\')">📅 Programmes</button>'
+    +'<button class="'+(S.tab==='dossiers'?'on':'')+'" onclick="APP.setTab(\'dossiers\');document.getElementById(\'ob-lo-drop\').classList.remove(\'open\')">📂 Dossiers'+(pend?'<span class="badge">'+pend+'</span>':'')+'</button>'
+    +'<button class="'+(S.tab==='affiliations'?'on':'')+'" onclick="APP.setTab(\'affiliations\');document.getElementById(\'ob-lo-drop\').classList.remove(\'open\')">🤝 Affiliations'+(aff?'<span class="badge">'+aff+'</span>':'')+'</button>'
+    +'</div></div>'
+    +'<button class="tab'+(S.tab==='documents'?' on':'')+'" onclick="APP.setTab(\'documents\')">Documents</button>'
+    +'<div class="tab-wrap">'
+    +'<button class="tab'+(inNO?' on':'')+'" onclick="APP.toggleObDrop(\'ob-no-drop\',event)">Notifications'+noSubLbl+' ▾</button>'
+    +'<div class="tab-drop" id="ob-no-drop">'
+    +'<button class="'+(S.tab==='notifications'?'on':'')+'" onclick="APP.setTab(\'notifications\');document.getElementById(\'ob-no-drop\').classList.remove(\'open\')">🔔 Notifications</button>'
+    +'<button class="'+(S.tab==='alertes_ob'?'on':'')+'" onclick="APP.setTab(\'alertes_ob\');document.getElementById(\'ob-no-drop\').classList.remove(\'open\')">⚠️ Alertes'+(an?'<span class="badge">'+an+'</span>':'')+'</button>'
+    +'</div></div>'
+    +((canAdmin||canParams)?
+      '<div class="tab-wrap">'
+      +'<button class="tab'+(inAD?' on':'')+'" onclick="APP.toggleObDrop(\'ob-ad-drop\',event)">Administration'+adSubLbl+' ▾</button>'
+      +'<div class="tab-drop" id="ob-ad-drop">'
+      +(canAdmin?'<button class="'+(S.tab==='admin'?'on':'')+'" onclick="APP.setTab(\'admin\');document.getElementById(\'ob-ad-drop\').classList.remove(\'open\')">🔧 Administration</button>':'')
+      +(canParams?'<button class="'+(S.tab==='paramsob'?'on':'')+'" onclick="APP.setTab(\'paramsob\');document.getElementById(\'ob-ad-drop\').classList.remove(\'open\')">⚙️ Paramètres</button>':'')
+      +'</div></div>'
+    :'')
+    +'</div>';
   var c='';
   if(S.tab==='programmes')c=tProg();
   else if(S.tab==='loges')c=tLoges();
@@ -2385,7 +2481,7 @@ function vObedience(){
   else if(S.tab==='paramsob')c=tParamsOb();
   else if(S.tab==='notifications')c=tNotifications();
   else if(S.tab==='alertes_ob')c=tAlertsOb(aP,aR,pend,aff);
-  return hdr()+tbr(tabs)+'<div class="cont">'+c+'</div>'+modH();
+  return hdr()+obTabbar+'<div class="cont">'+c+'</div>'+modH();
 }
 
 function buildProgTable(evts,isInstr,lid){
