@@ -2359,7 +2359,7 @@ APP.forgotReset=function(){
   var u=D.membres.find(function(m){return m.id===S.forgotUser.id;});
   if(u)u.pwd=np;
   if(D.superAdmin&&D.superAdmin.matricule===S.forgotUser.matricule)D.superAdmin.pwd=np;
-  save();
+  saveState();
   G('fpOk').style.display='block';
   setTimeout(function(){APP.goLogin();},2000);
 };
@@ -3416,7 +3416,7 @@ function lMbrs2(loge,ms,off){
       +'<td>'+(badge||ch('Régulier','cgr'))+'</td>'
       +'<td>'+rCh(m.role,m)+'</td>'
       +(off?'<td style="white-space:nowrap;display:flex;flex-wrap:wrap;gap:4px">'
-        +(isPrimary&&(propFull||(!plOK&&isVM(loge.id)&&capOK))&&isVM(loge.id)?'<button class="btn ok sm" onclick="APP.openMod(\'promote\',{mid:\''+m.id+'\'})">Promouvoir<\/button>':'')
+        +(isPrimary&&propG&&(propFull||(!plOK&&isVM(loge.id)&&capOK))&&isVM(loge.id)?'<button class="btn ok sm" onclick="APP.openMod(\'promote\',{mid:\''+m.id+'\'})">Promouvoir<\/button>':'')
         +(isPrimary&&isVM(loge.id)&&!propG?'<button class="btn dng sm" onclick="APP.radier(\''+m.id+'\')">Radier<\/button>':'')
         +(off?'<button class="btn inf sm" onclick="APP.openMod(\'notif\',{mid:\''+m.id+'\'})">📧<\/button>':'')
         +(isPrimary&&isVM(loge.id)&&otherLoges.length&&!m.secondLogeId
@@ -3656,6 +3656,15 @@ var MODS={
   promote:function(d){
     var m=gMbr(d.mid);if(!m)return'';
     var lid=m.logeId;
+    if(m.grade==='Maitre'){
+      return mhdr('Promotion impossible')
+        +'<div class="card" style="text-align:center;margin:6px 0 14px">'
+        +'<div style="font-weight:900;font-size:15px;margin-bottom:10px">'+m.nom+'</div>'
+        +gCh(m.grade)
+        +'</div>'
+        +mnote('Le grade de Maître est le grade le plus élevé. Aucune promotion n\'est possible.','i')
+        +'<div class="mact"><button class="btn ghost full" onclick="APP.closeMod()">Fermer</button></div>';
+    }
     var ng=nxtG(m.grade)||'',capOK=isCapOK(m,lid),pl=getPlanchesCount(m.id,lid),plOK=pl>=3,ok=capOK&&plOK;
     var vmMode=isVM(lid)&&capOK&&!plOK;
     var ordAss=getAssiduite(m.id,lid),instrAss=getInstrAssiduite(m.id,lid);
@@ -3997,14 +4006,14 @@ APP.soumettreDossier=function(lid){
       var mat=nxtMat(D.membres);var mid=uid();
       D.membres.push({id:mid,matricule:mat,nom:nom,grade:grade,dateGrade:tdStr(),logeId:lid,role:role,pwd:'1234',statut:'actif',tel:tel,email:email,affiliation:null,genre:genre});
       D.caps.push({id:uid(),mid:mid,lid:lid,annee:new Date().getFullYear(),mnt:((gLoge(lid)||{}).tauxCap||D.tauxCap),st:'En attente',date:null});
-      save();APP.closeMod();
+      saveState();APP.closeMod();
       var t=document.createElement('div');
       t.style.cssText='position:fixed;bottom:24px;left:50%;transform:translateX(-50%);background:#1b4d1b;color:#fff;padding:11px 28px;border-radius:8px;font-size:14px;font-weight:700;z-index:9999;box-shadow:0 4px 16px rgba(0,0,0,.3)';
       t.textContent='✓ '+nom+' créé(e) — '+mat+' — MDP : 1234';
       document.body.appendChild(t);setTimeout(function(){t.remove();R();},2500);
     } else {
       D.dossiersPending.push({id:uid(),lid:lid,nom:nom,tel:tel,email:email,grade:grade,genre:genre,role:role,docs:{extrait:true,casier:true,nationalite:true},note:note,date:tdStr(),st:'En attente VM',pendingForVM:true});
-      save();APP.closeMod();
+      saveState();APP.closeMod();
       var t2=document.createElement('div');
       t2.style.cssText='position:fixed;bottom:24px;left:50%;transform:translateX(-50%);background:#5a3e00;color:#fff;padding:11px 28px;border-radius:8px;font-size:14px;font-weight:700;z-index:9999;box-shadow:0 4px 16px rgba(0,0,0,.3)';
       t2.textContent='Dossier transmis au Vénérable Maître(sse) pour validation.';
@@ -4035,7 +4044,7 @@ APP.validerDossier=function(id){
   D.membres.push({id:mid,matricule:mat,nom:dos.nom,grade:dos.grade||'Apprenti',dateGrade:tdStr(),logeId:dos.lid,role:role,pwd:'1234',statut:'actif',tel:dos.tel,email:dos.email,affiliation:null,genre:genreDos});
   D.caps.push({id:uid(),mid:mid,lid:dos.lid,annee:new Date().getFullYear(),mnt:((gLoge(dos.lid)||{}).tauxCap||D.tauxCap),st:'En attente',date:null});
   D.dossiersPending=D.dossiersPending.filter(function(x){return x.id!==id;});
-  save();
+  saveState();
   var t=document.createElement('div');
   t.style.cssText='position:fixed;bottom:24px;left:50%;transform:translateX(-50%);background:#1b4d1b;color:#fff;padding:11px 28px;border-radius:8px;font-size:14px;font-weight:700;z-index:9999;box-shadow:0 4px 16px rgba(0,0,0,.3)';
   t.textContent='✓ '+dos.nom+' validé(e) — '+mat+' — MDP : 1234';
@@ -4044,7 +4053,7 @@ APP.validerDossier=function(id){
 APP.rejeterDossier=function(id){
   if(!confirm('Rejeter ce dossier ?'))return;
   D.dossiersPending=D.dossiersPending.filter(function(x){return x.id!==id;});
-  save();R();
+  saveState();R();
 };
 APP.soumetteAffil=function(lid){
   var nom=G('mNom').value.trim();if(!nom)return;
@@ -4060,7 +4069,7 @@ APP.soumetteAffil=function(lid){
     var role=genre==='F'?'Sœur':'Frère';
     D.membres.push({id:mid,matricule:mat,nom:nom,grade:grade,dateGrade:tdStr(),logeId:lid,role:role,pwd:'1234',statut:'actif',tel:tel,email:email,affiliation:{logeOrigin:logeOrig,obOrigin:obOrig,dateAffil:dateAffil,st:'Confirmé'},genre:genre});
     D.caps.push({id:uid(),mid:mid,lid:lid,annee:new Date().getFullYear(),mnt:Math.round(((gLoge(lid)||{}).tauxCap||D.tauxCap)/2),st:'En attente',date:null,note:'Capitation affilié (50%)'});
-    save();APP.closeMod();
+    saveState();APP.closeMod();
     var t=document.createElement('div');
     t.style.cssText='position:fixed;bottom:24px;left:50%;transform:translateX(-50%);background:#1b4d1b;color:#fff;padding:11px 28px;border-radius:8px;font-size:14px;font-weight:700;z-index:9999;box-shadow:0 4px 16px rgba(0,0,0,.3)';
     t.textContent='✓ '+nom+' affilié(e) — '+mat+' — MDP : 1234';
@@ -4090,17 +4099,21 @@ APP.validerAffil=function(id){
 APP.rejeterAffil=function(id){if(!confirm('Rejeter cette affiliation ?'))return;D.affiliationsPending=D.affiliationsPending.filter(function(x){return x.id!==id;});R();};
 APP.promote=function(mid){
   var m=D.membres.find(function(x){return x.id===mid;});if(!m)return;
+  if(m.grade==='Maitre'){alert('Le grade de Maître est le grade le plus élevé. Aucune promotion possible.');return;}
   if(!isCapOK(m,m.logeId)){alert('Promotion impossible : capitation non réglée.');return;}
   if(getPlanchesCount(m.id,m.logeId)<3){alert('Promotion impossible : minimum 3 planches présentées requis.');return;}
-  var ng=nxtG(m.grade);if(ng){m.grade=ng;m.dateGrade=tdStr();}APP.closeMod();
+  var ng=nxtG(m.grade);if(!ng){alert('Aucun grade supérieur disponible.');return;}
+  m.grade=ng;m.dateGrade=tdStr();saveState();APP.closeMod();
 };
 APP.forcePromote=function(mid){
   var m=D.membres.find(function(x){return x.id===mid;});if(!m)return;
+  if(m.grade==='Maitre'){alert('Le grade de Maître est le grade le plus élevé. Aucune promotion possible.');return;}
   if(!isVM(m.logeId)){alert('Réservé au Vénérable Maître.');return;}
   if(!isCapOK(m,m.logeId)){alert('Promotion impossible : capitation non réglée.');return;}
   var ord=getAssiduite(m.id,m.logeId),instr=getInstrAssiduite(m.id,m.logeId);
   if(ord.pct<=60||instr.pct<=60){alert('Promotion impossible : assiduité insuffisante (>60% requis en tenues ordinaires et d\'instruction).');return;}
-  var ng=nxtG(m.grade);if(ng){m.grade=ng;m.dateGrade=tdStr();m.promotionForcee=true;}APP.closeMod();
+  var ng=nxtG(m.grade);if(!ng){alert('Aucun grade supérieur disponible.');return;}
+  m.grade=ng;m.dateGrade=tdStr();m.promotionForcee=true;saveState();APP.closeMod();
   var t=document.createElement('div');
   t.style.cssText='position:fixed;bottom:24px;left:50%;transform:translateX(-50%);background:#5a3e00;color:#fff;padding:11px 28px;border-radius:8px;font-size:14px;font-weight:700;z-index:9999;box-shadow:0 4px 16px rgba(0,0,0,0.25)';
   t.textContent='⚡ Promotion forcée par le VM — '+m.nom+' promu '+gLbl(ng);
@@ -4112,13 +4125,13 @@ APP.radier=function(mid){
   if(isLA()){
     if(isVM(lid)){
       if(!confirm('Radier définitivement '+m.nom+' de l\'atelier ?'))return;
-      m.statut='radié';save();R();
+      m.statut='radié';saveState();R();
     } else {
       if(!confirm('Soumettre une demande de radiation au Vénérable Maître(sse) ?'))return;
       if(!D.radiationPending)D.radiationPending=[];
       if(D.radiationPending.find(function(r){return r.mid===mid;})){alert('Demande déjà soumise.');return;}
       D.radiationPending.push({id:uid(),mid:mid,lid:lid,date:tdStr(),st:'En attente VM',motif:'Radiation demandée',pendingForVM:true});
-      save();alert('Demande transmise au Vénérable Maître(sse).');R();
+      saveState();alert('Demande transmise au Vénérable Maître(sse).');R();
     }
     return;
   }
@@ -4134,11 +4147,11 @@ APP.validerRadiation=function(id){
   var m=D.membres.find(function(x){return x.id===req.mid;});
   if(m){m.statut='radié';}
   D.radiationPending=D.radiationPending.filter(function(x){return x.id!==id;});
-  save();R();
+  saveState();R();
 };
 APP.rejeterRadiation=function(id){
   D.radiationPending=D.radiationPending.filter(function(x){return x.id!==id;});
-  save();R();
+  saveState();R();
 };
 APP.demandeReintegration=function(mid){
   var m=D.membres.find(function(x){return x.id===mid;});if(!m)return;
