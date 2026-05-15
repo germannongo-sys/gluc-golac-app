@@ -46,8 +46,9 @@ textarea{min-height:60px;resize:vertical;}
 .tab .bdg{background:#e53935;color:#fff;border-radius:10px;font-size:10px;font-weight:700;padding:1px 5px;margin-left:4px;}
 /* ── DROPDOWN SOUS-MENU ── */
 .tab-wrap{position:relative;display:inline-flex;flex-shrink:0;}
-.tab-drop{position:fixed;top:0;left:0;background:#fff;border:1.5px solid #e2e8f0;border-radius:10px;box-shadow:0 8px 28px rgba(0,0,0,.13);z-index:9999;min-width:195px;padding:5px;display:none;}
+.tab-drop{position:fixed;top:0;left:0;background:#fff!important;border:1.5px solid #e2e8f0;border-radius:10px;box-shadow:0 12px 36px rgba(0,0,0,.22),0 2px 8px rgba(0,0,0,.08);z-index:999999;min-width:195px;padding:5px;display:none;opacity:1;isolation:isolate;}
 .tab-drop.open{display:block;}
+#drop-portal{position:relative;z-index:999999;}
 .tab-drop button{display:flex;align-items:center;gap:9px;padding:9px 13px;border-radius:7px;font-size:13px;color:#475569;cursor:pointer;border:none;background:none;width:100%;text-align:left;white-space:nowrap;font-family:inherit;transition:background .1s,color .1s;}
 .tab-drop button:hover{background:#f5f1ff;color:#1e293b;}
 .tab-drop button.on{color:#c9a227;font-weight:700;background:#fffbf0;}
@@ -590,8 +591,59 @@ function buildData(){
     customPerms:null,
     showDemoAccounts:true,
     connexionLogs:[],
+    pdfHeader:{showObedience:true,showLoge:true,showLogo:true,showAddress:true,showContact:true,showFooter:true},
     _dataInitAt:new Date().toISOString(),
   };
+}
+
+// ── Helper : en-tête standardisé pour tous les PDF/Imprimés
+function _pdfHeaderHTML(loge){
+  var cfg=D.pdfHeader||{showObedience:true,showLoge:true,showLogo:true,showAddress:true,showContact:true,showFooter:true};
+  var ob=D.obInfo||{};
+  var h='<div style="border-bottom:3px solid #c9a227;padding-bottom:12px;margin-bottom:18px;display:flex;align-items:flex-start;gap:14px">';
+  if(cfg.showLogo){
+    var src=LOGO||D.logoObedience||null;
+    if(loge&&loge.logo&&cfg.showLoge){
+      h+='<div style="display:flex;gap:8px;flex-shrink:0">'
+        +(src?'<img src="'+src+'" style="width:54px;height:54px;border-radius:50%;border:2px solid #c9a227;object-fit:cover"/>':'')
+        +'<img src="'+loge.logo+'" style="width:54px;height:54px;border-radius:50%;border:2px solid #c9a227;object-fit:cover"/>'
+        +'</div>';
+    } else if(src){
+      h+='<img src="'+src+'" style="width:60px;height:60px;border-radius:50%;border:2px solid #c9a227;object-fit:cover;flex-shrink:0"/>';
+    }
+  }
+  h+='<div style="flex:1;line-height:1.4">';
+  if(cfg.showObedience){
+    h+='<div style="font-size:18px;font-weight:900;color:#1e293b;letter-spacing:.5px;text-transform:uppercase">'+(ob.name||'')+'</div>'
+      +(ob.acronym?'<div style="font-size:11px;color:#c9a227;font-weight:700;letter-spacing:1.5px">'+ob.acronym+(ob.fondation?' · Fondée en '+ob.fondation:'')+'</div>':'');
+    if(cfg.showAddress&&ob.adresse){h+='<div style="font-size:11px;color:#555;margin-top:4px">📍 '+ob.adresse+(ob.ville?' — '+ob.ville:'')+'</div>';}
+    if(cfg.showContact){
+      var contacts=[];
+      if(ob.tel)contacts.push('☎ '+ob.tel);
+      if(ob.email)contacts.push('✉ '+ob.email);
+      if(ob.patente)contacts.push('Patente: '+ob.patente);
+      if(contacts.length)h+='<div style="font-size:11px;color:#555;margin-top:2px">'+contacts.join(' · ')+'</div>';
+    }
+  }
+  if(cfg.showLoge&&loge){
+    h+='<div style="margin-top:6px;padding-top:6px;border-top:1px solid #eee">'
+      +'<div style="font-size:13px;font-weight:700;color:#1e293b">⬡ Loge N°'+loge.numero+' « '+loge.nom+' »</div>'
+      +(loge.ville?'<div style="font-size:11px;color:#555">📍 '+loge.ville+'</div>':'')
+      +(loge.email?'<div style="font-size:11px;color:#555">✉ '+loge.email+'</div>':'')
+      +'</div>';
+  }
+  h+='</div></div>';
+  return h;
+}
+function _pdfFooterHTML(){
+  var cfg=D.pdfHeader||{showFooter:true};
+  if(!cfg.showFooter)return '';
+  var ob=D.obInfo||{};
+  return '<div style="margin-top:24px;text-align:center;color:#888;font-size:10px;border-top:2px solid #c9a227;padding-top:10px;line-height:1.6">'
+    +'<strong>'+(ob.acronym||'')+'</strong> — '+(ob.name||'')
+    +(ob.tel||ob.email?'<br>'+[ob.tel,ob.email].filter(Boolean).join(' · '):'')
+    +'<br><span style="font-style:italic">Document généré le '+new Date().toLocaleDateString('fr-FR')+' à '+new Date().toLocaleTimeString('fr-FR',{hour:'2-digit',minute:'2-digit'})+'</span>'
+    +'</div>';
 }
 
 var D=buildData();
@@ -1225,8 +1277,40 @@ function tParamsOb(){
     +'<button class="btn gold" style="flex:1" onclick="APP.saveMailConfig()">💾 Enregistrer la configuration</button>'
     +'<button class="btn outline" onclick="APP.testMailConfig()">✉ Tester</button>'
     +'</div></div>';
+  // ── Paramètres en-tête PDF/Imprimés ──
+  var ph=D.pdfHeader||{showObedience:true,showLoge:true,showLogo:true,showAddress:true,showContact:true,showFooter:true};
+  h+='<div style="font-size:14px;font-weight:900;margin:22px 0 12px">📄 En-tête des documents PDF / Imprimés</div>'
+    +'<div class="alert a-i" style="margin-bottom:14px;font-size:12px">Personnalisez les informations affichées sur tous les documents imprimés (rapports, reçus, attestations, etc.). Les modifications s\'appliquent immédiatement.</div>'
+    +'<div class="card">'
+    +[['showObedience','Afficher le nom et acronyme de l\'obédience',ph.showObedience],
+      ['showLoge','Afficher le nom et numéro de la loge',ph.showLoge],
+      ['showLogo','Afficher les logos (obédience / loge)',ph.showLogo],
+      ['showAddress','Afficher l\'adresse',ph.showAddress],
+      ['showContact','Afficher les contacts (téléphone, email, patente)',ph.showContact],
+      ['showFooter','Afficher le pied de page',ph.showFooter]].map(function(o){
+      return'<label style="display:flex;align-items:center;gap:10px;padding:7px 0;font-size:13px;cursor:pointer">'
+        +'<input type="checkbox" id="pdf_'+o[0]+'"'+(o[2]?' checked':'')+' style="width:auto;margin:0;accent-color:#c9a227"/>'
+        +'<span>'+o[1]+'</span></label>';
+    }).join('')
+    +'<button class="btn gold" style="margin-top:10px" onclick="APP.savePdfHeader()">💾 Enregistrer</button>'
+    +'</div>';
   return h;
 }
+APP.savePdfHeader=function(){
+  D.pdfHeader={
+    showObedience:G('pdf_showObedience').checked,
+    showLoge:G('pdf_showLoge').checked,
+    showLogo:G('pdf_showLogo').checked,
+    showAddress:G('pdf_showAddress').checked,
+    showContact:G('pdf_showContact').checked,
+    showFooter:G('pdf_showFooter').checked
+  };
+  saveState();
+  var t=document.createElement('div');
+  t.style.cssText='position:fixed;bottom:24px;left:50%;transform:translateX(-50%);background:#1b5e20;color:#fff;padding:11px 28px;border-radius:8px;font-size:14px;font-weight:700;z-index:9999;box-shadow:0 4px 16px rgba(0,0,0,0.25)';
+  t.textContent='✓ Paramètres PDF enregistrés';
+  document.body.appendChild(t);setTimeout(function(){t.remove();},2200);
+};
 function _mailProviderHTML(mc){
   var p=mc.provider||'smtp';
   var h='';
@@ -1655,11 +1739,12 @@ APP.printRapportGlobal=function(){
       +'<td>'+pct+'%</td>'
       +'<td>'+(vers?vers.st:'—')+'</td></tr>';
   }).join('');
-  w.document.write('<!DOCTYPE htm'+'l><html><head><meta charset="UTF-8"><title>Rapport GOLAC</title>'
-    +'<style>body{font-family:Georgia,serif;padding:24px;max-width:900px;margin:0 auto;}h1{border-bottom:2px solid #c9a227;padding-bottom:8px;}table{width:100%;border-collapse:collapse;font-size:12px;}th{background:#111;color:#fff;padding:7px 10px;text-align:left;}td{padding:7px 10px;border-bottom:1px solid #eee;}@media print{button{display:none!important;}}<'+'/style></head><body>'
-    +'<h1>Rapport Général — '+D.obInfo.name+'</h1>'
-    +'<p style="color:#888;font-size:12px">Généré le '+tdStr()+' · '+D.loges.length+' loges actives · '+D.membres.filter(function(m){return m.logeId&&m.statut==='actif';}).length+' frères</p>'
-    +'<table><thead><tr><th>N°</th><th>Loge</th><th>Ville</th><th>Frères</th><th>Tenues</th><th>Capitations</th><th>Versement GOLAC</th></tr></thead><tbody>'+rows+'</tbody></table>'
+  w.document.write('<!DOCTYPE htm'+'l><html><head><meta charset="UTF-8"><title>Rapport '+(D.obInfo.acronym||'')+'</title>'
+    +'<style>body{font-family:Georgia,serif;padding:24px;max-width:900px;margin:0 auto;color:#111}h2{font-size:15px;margin:12px 0 8px;color:#1e293b}table{width:100%;border-collapse:collapse;font-size:12px;}th{background:#111;color:#fff;padding:7px 10px;text-align:left;}td{padding:7px 10px;border-bottom:1px solid #eee;}@media print{button{display:none!important;}@page{margin:11mm}}<'+'/style></head><body>'
+    +_pdfHeaderHTML(null)
+    +'<div style="text-align:center;margin-bottom:14px"><div style="font-size:15px;font-weight:900;text-transform:uppercase;letter-spacing:1px;color:#1e293b">Rapport Général — Toutes les Loges</div><p style="color:#888;font-size:12px;margin-top:4px">Généré le '+tdStr()+' · '+D.loges.length+' loge(s) · '+D.membres.filter(function(m){return m.logeId&&m.statut==='actif';}).length+' frères actifs</p></div>'
+    +'<table><thead><tr><th>N°</th><th>Loge</th><th>Ville</th><th>Frères</th><th>Tenues</th><th>Capitations</th><th>Versement</th></tr></thead><tbody>'+rows+'</tbody></table>'
+    +_pdfFooterHTML()
     +'<div style="text-align:center;margin-top:16px"><button onclick="window.print()" style="background:#111;color:#fff;border:none;padding:9px 20px;border-radius:6px;cursor:pointer">🖨 PDF</button></div>'
     +'<'+'/body><'+'/html>');
   w.document.close();
@@ -1988,8 +2073,22 @@ APP.render=function(){
   }
   document.title=D.obInfo.acronym+' — '+D.obInfo.name;
   G('app').innerHTML=h;
+  // ── Portail dropdowns : déplacer tous les .tab-drop dans body
+  _portalDrops();
 };
 var R=APP.render;
+
+function _portalDrops(){
+  var portal=document.getElementById('drop-portal');
+  if(!portal){
+    portal=document.createElement('div');
+    portal.id='drop-portal';
+    document.body.appendChild(portal);
+  }
+  while(portal.firstChild)portal.removeChild(portal.firstChild);
+  var drops=document.querySelectorAll('#app .tab-drop');
+  for(var i=0;i<drops.length;i++){portal.appendChild(drops[i]);}
+}
 
 // Fermer les dropdowns au clic extérieur (listener unique)
 if(!window._dropListenerAdded){
@@ -2267,39 +2366,62 @@ APP.changeAtelier=function(){
   if(D.obInfo&&D.obInfo.logeAutonome)return;
   S.view='atelierSelect';R();
 };
-APP.setTab=function(t){S.tab=t;R();};
+APP.setTab=function(t){
+  if(S.view==='loge'&&S.lid&&!isGO()&&!isSuperAdmin()){
+    var l=gLoge(S.lid);
+    if(l){
+      var off=isLO(S.lid);
+      var post=getUserPost(S.lid);
+      var hasCustom=post&&l.customOfficerPerms&&l.customOfficerPerms[post];
+      var offOnlyTabs=['finances','capitations','tronc','hospitalier','alertes','paramsLoge'];
+      var isOffOnly=offOnlyTabs.indexOf(t)>=0;
+      if(!off&&isOffOnly){return;}
+      if(off&&hasCustom&&!canAccessTab(S.lid,t)){return;}
+    }
+  }
+  S.tab=t;R();
+};
 function _positionDrop(dropId,ev){
   var d=document.getElementById(dropId);
   if(!d)return null;
   var btn=ev.target;while(btn&&btn.tagName!=='BUTTON')btn=btn.parentElement;
   if(!btn)btn=ev.target;
   var r=btn.getBoundingClientRect();
-  d.style.top=(r.bottom+4)+'px';
-  d.style.left=r.left+'px';
+  d.style.visibility='hidden';
+  d.style.display='block';
+  d.style.top='-9999px';
+  d.style.left='0px';
+  var dw=d.offsetWidth||220;
+  var dh=d.offsetHeight||100;
+  var left=r.left;
+  var top=r.bottom+4;
+  var maxLeft=window.innerWidth-dw-8;
+  if(left>maxLeft){left=Math.max(8,maxLeft);}
+  if(top+dh+8>window.innerHeight){
+    var topAbove=r.top-dh-4;
+    if(topAbove>8){top=topAbove;}
+  }
+  d.style.top=top+'px';
+  d.style.left=left+'px';
+  d.style.display='';
+  d.style.visibility='';
   return d;
 }
-APP.toggleProgMenu=function(ev){
+function _toggleDrop(targetId,otherIds,ev,fallbackTab){
   if(ev)ev.stopPropagation();
-  var f=document.getElementById('fin-drop');if(f)f.classList.remove('open');
-  var d=_positionDrop('prog-drop',ev);
-  if(!d){S.tab='programme';R();return;}
-  d.classList.toggle('open');
-};
-APP.toggleFinMenu=function(ev){
-  if(ev)ev.stopPropagation();
-  var p=document.getElementById('prog-drop');if(p)p.classList.remove('open');
-  var d=_positionDrop('fin-drop',ev);
-  if(!d){S.tab='finances';R();return;}
-  d.classList.toggle('open');
-};
+  var target=document.getElementById(targetId);
+  var wasOpen=target&&target.classList.contains('open');
+  (otherIds||[]).forEach(function(did){var el=document.getElementById(did);if(el)el.classList.remove('open');});
+  if(!target){if(fallbackTab){S.tab=fallbackTab;R();}return;}
+  if(wasOpen){target.classList.remove('open');return;}
+  _positionDrop(targetId,ev);
+  target.classList.add('open');
+}
+APP.toggleProgMenu=function(ev){_toggleDrop('prog-drop',['fin-drop'],ev,'programme');};
+APP.toggleFinMenu=function(ev){_toggleDrop('fin-drop',['prog-drop'],ev,'finances');};
 APP.toggleObDrop=function(id,ev){
-  if(ev)ev.stopPropagation();
-  ['ob-gl-drop','ob-lo-drop','ob-no-drop','ob-ad-drop'].forEach(function(did){
-    if(did!==id){var el=document.getElementById(did);if(el)el.classList.remove('open');}
-  });
-  var d=_positionDrop(id,ev);
-  if(!d)return;
-  d.classList.toggle('open');
+  var others=['ob-gl-drop','ob-lo-drop','ob-no-drop','ob-ad-drop'].filter(function(x){return x!==id;});
+  _toggleDrop(id,others,ev,null);
 };
 APP.goOb=function(tab){S.view='obedience';S.tab=tab||'programmes';R();};
 APP.loadLogo=function(inp){var file=inp.files[0];if(!file)return;var r=new FileReader();r.onload=function(e){LOGO=e.target.result;R();};r.readAsDataURL(file);};
@@ -2941,14 +3063,20 @@ function vLoge(){
     {id:'alertes',lbl:'Alertes',min:7,badge:an||'',offOnly:true},
     {id:'paramsLoge',lbl:'⚙ Paramètres',min:10,offOnly:true},
   ];
+  var hasCustomPerms=userPost&&loge.customOfficerPerms&&loge.customOfficerPerms[userPost];
   var tabs=allTabs.filter(function(t){
     if(isGO()||isSuperAdmin())return true;
     if(t.offOnly&&!off)return false;
-    if(!off)return!t.offOnly||false;
+    if(!off)return !t.offOnly;
+    if(hasCustomPerms){return canAccessTab(loge.id,t.id);}
     return canAccessTab(loge.id,t.id)||accessLvl>=(t.min||0);
   });
   var inPG=['programme','instruction','planches'].indexOf(S.tab)>=0;
   var inFG=['finances','capitations','tronc'].indexOf(S.tab)>=0;
+  var hasProgItem=tabs.some(function(t){return t.id==='programme';});
+  var hasInstrItem=tabs.some(function(t){return t.id==='instruction';});
+  var hasPlanchesItem=tabs.some(function(t){return t.id==='planches';});
+  var hasFinances=tabs.some(function(t){return t.id==='finances';});
   var hasCap=tabs.some(function(t){return t.id==='capitations';});
   var hasTronc=tabs.some(function(t){return t.id==='tronc';});
   var pgSubLbl=S.tab==='instruction'?' · Instruction':S.tab==='planches'?' · Planches':'';
@@ -2961,15 +3089,15 @@ function vLoge(){
       tabBarHtml+='<div class="tab-wrap">'
         +'<button class="tab'+(inPG?' on':'')+'" onclick="APP.toggleProgMenu(event)">Programme'+pgSubLbl+' ▾</button>'
         +'<div class="tab-drop" id="prog-drop">'
-        +'<button class="'+(S.tab==='programme'?'on':'')+'" onclick="APP.setTab(\'programme\');document.getElementById(\'prog-drop\').classList.remove(\'open\')">📅 Programme</button>'
-        +'<button class="'+(S.tab==='instruction'?'on':'')+'" onclick="APP.setTab(\'instruction\');document.getElementById(\'prog-drop\').classList.remove(\'open\')">📖 Instruction</button>'
-        +'<button class="'+(S.tab==='planches'?'on':'')+'" onclick="APP.setTab(\'planches\');document.getElementById(\'prog-drop\').classList.remove(\'open\')">📜 Planches & Thèmes</button>'
+        +(hasProgItem?'<button class="'+(S.tab==='programme'?'on':'')+'" onclick="APP.setTab(\'programme\');document.getElementById(\'prog-drop\').classList.remove(\'open\')">📅 Programme</button>':'')
+        +(hasInstrItem?'<button class="'+(S.tab==='instruction'?'on':'')+'" onclick="APP.setTab(\'instruction\');document.getElementById(\'prog-drop\').classList.remove(\'open\')">📖 Instruction</button>':'')
+        +(hasPlanchesItem?'<button class="'+(S.tab==='planches'?'on':'')+'" onclick="APP.setTab(\'planches\');document.getElementById(\'prog-drop\').classList.remove(\'open\')">📜 Planches & Thèmes</button>':'')
         +'</div></div>';
     }else if(t.id==='finances'){
       tabBarHtml+='<div class="tab-wrap">'
         +'<button class="tab'+(inFG?' on':'')+'" onclick="APP.toggleFinMenu(event)">Finances'+fgSubLbl+' ▾</button>'
         +'<div class="tab-drop" id="fin-drop">'
-        +'<button class="'+(S.tab==='finances'?'on':'')+'" onclick="APP.setTab(\'finances\');document.getElementById(\'fin-drop\').classList.remove(\'open\')">💰 Finances</button>'
+        +(hasFinances?'<button class="'+(S.tab==='finances'?'on':'')+'" onclick="APP.setTab(\'finances\');document.getElementById(\'fin-drop\').classList.remove(\'open\')">💰 Finances</button>':'')
         +(hasCap?'<button class="'+(S.tab==='capitations'?'on':'')+'" onclick="APP.setTab(\'capitations\');document.getElementById(\'fin-drop\').classList.remove(\'open\')">💳 Capitations</button>':'')
         +(hasTronc?'<div class="tab-drop-sep"></div><button class="'+(S.tab==='tronc'?'on':'')+'" onclick="APP.setTab(\'tronc\');document.getElementById(\'fin-drop\').classList.remove(\'open\')">🕊 Tronc Veuve</button>':'')
         +'</div></div>';
@@ -4137,17 +4265,18 @@ APP.printRecu=function(id){
   }
   w.document.write('<!DOCTYPE htm'+'l><html><head><meta charset="UTF-8"><title>Reçu '+ref+'</title>'
     +'<sty'+'le>body{font-family:Georgia,serif;color:#111;padding:32px;max-width:720px;margin:0 auto;}'
-    +'.box{border:2px solid #111;padding:26px;}h1{text-align:center;font-size:22px;margin:4px 0 8px;text-transform:uppercase;}'
-    +'.sub{text-align:center;color:#555;font-size:12px;margin-bottom:22px}.row{display:flex;justify-content:space-between;border-bottom:1px solid #eee;padding:9px 0;font-size:14px}.lbl{color:#555}.val{font-weight:700;text-align:right}.total{font-size:18px;border-top:2px solid #111;margin-top:14px;padding-top:12px}.sign{display:flex;justify-content:space-between;margin-top:44px;font-size:12px;color:#555}.foot{text-align:center;margin-top:26px;font-size:11px;color:#777}@media print{button{display:none!important}@page{margin:12mm}}</sty'+'le></head><body>'
-    +'<div class="box"><h1>Reçu de capitation</h1><div class="sub">'+D.obInfo.name+' ·'+tdStr()+' · Réf. '+ref+'</div>'
+    +'.box{border:2px solid #111;padding:22px;margin-top:8px}h1{text-align:center;font-size:20px;margin:4px 0 4px;text-transform:uppercase;letter-spacing:1px}'
+    +'.refLine{text-align:center;color:#555;font-size:11px;margin-bottom:18px}.row{display:flex;justify-content:space-between;border-bottom:1px solid #eee;padding:9px 0;font-size:14px}.lbl{color:#555}.val{font-weight:700;text-align:right}.total{font-size:18px;border-top:2px solid #111;margin-top:14px;padding-top:12px}.sign{display:flex;justify-content:space-between;margin-top:44px;font-size:12px;color:#555}@media print{button{display:none!important}@page{margin:12mm}}</sty'+'le></head><body>'
+    +_pdfHeaderHTML(loge)
+    +'<div class="box"><h1>Reçu de capitation</h1><div class="refLine">Réf. '+ref+' · '+tdStr()+'</div>'
     +'<div class="row"><span class="lbl">Membre</span><span class="val">'+(m?m.nom:'—')+'</span></div>'
     +'<div class="row"><span class="lbl">Matricule</span><span class="val">'+(m?m.matricule:'—')+'</span></div>'
-    +'<div class="row"><span class="lbl">Loge</span><span class="val">'+(loge?('N°'+loge.numero+' '+loge.nom):'—')+'</span></div>'
     +'<div class="row"><span class="lbl">Exercice</span><span class="val">'+(c.annee||new Date().getFullYear())+'</span></div>'
     +'<div class="row"><span class="lbl">Montant dû</span><span class="val">'+fmt(sd.du)+' FCFA</span></div>'
     +'<div class="row"><span class="lbl">Montant versé</span><span class="val">'+fmt(sd.verse)+' FCFA</span></div>'
     +'<div class="row total"><span class="lbl">Solde</span><span class="val">0 FCFA</span></div>'
-    +'<div class="sign"><span>Le Trésorier</span><span>Signature</span></div><div class="foot">Document généré par '+D.obInfo.acronym+'</div></div>'
+    +'<div class="sign"><span>Le Trésorier</span><span>Signature</span></div></div>'
+    +_pdfFooterHTML()
     +'<div style="text-align:center;margin-top:18px"><button onclick="window.print()" style="background:#111;color:#fff;border:none;padding:10px 22px;border-radius:7px;cursor:pointer">Imprimer</button></div>'
     +'</bod'+'y><\/html>');
   w.document.close();
@@ -4243,12 +4372,6 @@ APP.printRapport=function(lid){
   var paid=sumA(caps.filter(function(c){return c.st==='Payé';}),function(c){return c.mnt;});
   var tot=sumA(caps,function(c){return c.mnt;});
   var pct=tot?Math.round(paid/tot*100):0;
-  var _dls=D.docLogoSource||'obedience';
-  var logH;
-  if(_dls==='none'){logH='';}
-  else if(_dls==='loge'&&loge.logo){logH='<img src="'+loge.logo+'" style="width:60px;height:60px;border-radius:50%;border:2px solid #c9a227;"/>';}
-  else if(_dls==='both'){logH='<div style="display:inline-flex;gap:12px;align-items:center">'+(LOGO?'<img src="'+LOGO+'" style="width:60px;height:60px;border-radius:50%;border:2px solid #c9a227;"/>':'')+( loge.logo?'<img src="'+loge.logo+'" style="width:60px;height:60px;border-radius:50%;border:2px solid #c9a227;"/>':'')+'</div>';}
-  else{logH=LOGO?'<img src="'+LOGO+'" style="width:60px;height:60px;border-radius:50%;border:2px solid #c9a227;"/>':'<div style="font-size:36px">⬡</div>';}
   var rMbrs=ms.map(function(m){var ass=getAssiduite(m.id,lid);return'<tr><td>'+m.matricule+'</td><td>'+m.nom+'</td><td>'+gLbl(m.grade)+'</td><td>'+moAt(m.dateGrade)+'</td><td>'+ass.pct+'%</td><td>'+m.role+'</td></tr>';}).join('');
   var rOffs=loge.officiers.map(function(o){var m=o.mid?gMbr(o.mid):null;return'<tr><td>'+o.titre+'</td><td>'+(m?m.nom:'<i>Vacant</i>')+'</td><td>'+(m?m.matricule:'—')+'</td></tr>';}).join('');
   var rProg=loge.agenda.slice().sort(function(a,b){return a.date.localeCompare(b.date);}).map(function(e){return'<tr><td>'+e.date+'</td><td>'+e.heure+'</td><td>'+e.type+'</td><td>'+(e.planche||'—')+'</td><td>'+(e.presentateur||'—')+'</td></tr>';}).join('');
@@ -4270,9 +4393,8 @@ APP.printRapport=function(lid){
     +'.footer{margin-top:24px;text-align:center;color:#888;font-size:10px;border-top:2px solid #c9a227;padding-top:10px;}'
     +'@media print{button{display:none!important;}@page{margin:11mm;}}'
     +'</sty'+'le></head><body>'
-    +'<div style="text-align:center;margin-bottom:18px">'+logH
-    +'<h1>'+D.obInfo.name.toUpperCase()+'</h1>'
-    +'<div class="sub">Rapport d\'Activité — Loge N°'+loge.numero+' « '+loge.nom+' » — '+loge.ville+'<br>Exercice 2026 · Généré le '+tdStr()+'</div></div>'
+    +_pdfHeaderHTML(loge)
+    +'<div style="text-align:center;margin-bottom:14px"><div style="font-size:15px;font-weight:900;color:#1e293b;text-transform:uppercase;letter-spacing:1px">Rapport d\'Activité</div><div class="sub">Exercice 2026 · Généré le '+tdStr()+'</div></div>'
     +'<div class="kpi"><div class="kb"><div class="kv">'+ms.length+'</div><div class="kl">Frères</div></div><div class="kb"><div class="kv">'+loge.agenda.length+'</div><div class="kl">Tenues</div></div><div class="kb"><div class="kv">'+pct+'%</div><div class="kl">Capitations</div></div><div class="kb"><div class="kv">'+loge.officiers.filter(function(o){return o.mid;}).length+'</div><div class="kl">Officiers</div></div></div>'
     +'<h2>I. Tableau des Membres</h2><table><thead><tr><th>Matricule</th><th>Nom</th><th>Grade</th><th>Durée</th><th>Assiduité</th><th>Rôle</th></tr></thead><tbody>'+rMbrs+'</tbody></table>'
     +'<h2>II. Officiers</h2><table><thead><tr><th>Poste</th><th>Nommé</th><th>Matricule</th></tr></thead><tbody>'+rOffs+'</tbody></table>'
@@ -4281,7 +4403,7 @@ APP.printRapport=function(lid){
     +'<h2>V. Capitations</h2><table><thead><tr><th>Frère</th><th>Dû</th><th>Versé</th><th>Solde</th><th>Statut</th></tr></thead><tbody>'+rCaps
     +'<tr style="background:#111;color:#fff;font-weight:900"><td>TOTAL</td><td>'+fmt(tot)+' F</td><td>'+fmt(paid)+' F</td><td>'+fmt(tot-paid)+' F</td><td>'+pct+'%</td></tr></tbody></table>'
     +(rVis?'<h2>VI. Visiteurs</h2><table><thead><tr><th>Nom</th><th>Loge</th><th>Grade</th><th>Motif</th><th>Date</th></tr></thead><tbody>'+rVis+'</tbody></table>':'')
-    +'<div class="footer">'+D.obInfo.acronym+' — Document confidentiel · '+tdStr()+'</div>'
+    +_pdfFooterHTML()
     +'<div style="text-align:center;margin-top:14px"><button onclick="window.print()" style="background:#111;color:#fff;border:none;padding:10px 22px;border-radius:7px;font-size:14px;cursor:pointer">🖨 Imprimer / PDF</button></div>'
     +'</bod'+'y><\/html>');
   w.document.close();
