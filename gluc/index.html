@@ -1270,14 +1270,13 @@ APP.applyTheme=function(){
   }
   var st=G('themeStyle');if(!st)return;
   st.textContent=
-    'body{background:'+bg+'!important}'
+    'body{background:'+bg+'!important;color:'+(tc.textColor||'#111111')+'!important}'
     +'.hdr{background:'+dark+'!important;border-bottom-color:'+gold+'!important}'
     +'.hdr-gluc{color:'+gold+'!important}'
     +'.hdr-logo{background:'+gold+'!important}'
     +'.tabbar{background:'+(tc.tabbarBg||'#1a1a1a')+'!important}'
     +'.tab{color:'+(tc.tabbarText||'#8892a0')+'!important;background:none!important}'
     +'.tab.on{color:'+gold+'!important;border-bottom-color:'+gold+'!important}'
-    +'body{color:'+(tc.textColor||'#111111')+'!important}'
     +(tc.appFont?'body,button,input,select,textarea{font-family:"'+tc.appFont+'",sans-serif!important}':'')
     +'.gold{background:'+gold+'!important}'
     +'.ok{background:'+dark+'!important}'
@@ -2434,7 +2433,7 @@ function vObedience(){
   var loSubLbl=S.tab==='loges'?' · Loges':S.tab==='programmes'?' · Programmes':S.tab==='dossiers'?' · Dossiers':S.tab==='affiliations'?' · Affiliations':'';
   var noSubLbl=S.tab==='alertes_ob'?' · Alertes':'';
   var adSubLbl=S.tab==='paramsob'?' · Paramètres':'';
-  var obTabbar='<div class="tabbar" style="position:fixed;top:52px;left:0;right:0;z-index:900;display:flex;align-items:stretch;overflow-x:auto;padding:0 8px;border-bottom:1px solid rgba(255,255,255,0.08)">'
+  var obTabbar='<div class="tabbar">'
     +'<div class="tab-wrap">'
     +'<button class="tab'+(inGL?' on':'')+'" onclick="APP.toggleObDrop(\'ob-gl-drop\',event)">Grande Loge'+glSubLbl+' ▾</button>'
     +'<div class="tab-drop" id="ob-gl-drop">'
@@ -2448,15 +2447,15 @@ function vObedience(){
     +'<div class="tab-drop" id="ob-lo-drop">'
     +((!isGO()&&!isSuperAdmin())?'':'<button class="'+(S.tab==='loges'?'on':'')+'" onclick="APP.setTab(\'loges\');document.getElementById(\'ob-lo-drop\').classList.remove(\'open\')">🏛 Loges</button>')
     +'<button class="'+(S.tab==='programmes'?'on':'')+'" onclick="APP.setTab(\'programmes\');document.getElementById(\'ob-lo-drop\').classList.remove(\'open\')">📅 Programmes</button>'
-    +'<button class="'+(S.tab==='dossiers'?'on':'')+'" onclick="APP.setTab(\'dossiers\');document.getElementById(\'ob-lo-drop\').classList.remove(\'open\')">📂 Dossiers'+(pend?'<span class="badge">'+pend+'</span>':'')+'</button>'
-    +'<button class="'+(S.tab==='affiliations'?'on':'')+'" onclick="APP.setTab(\'affiliations\');document.getElementById(\'ob-lo-drop\').classList.remove(\'open\')">🤝 Affiliations'+(aff?'<span class="badge">'+aff+'</span>':'')+'</button>'
+    +'<button class="'+(S.tab==='dossiers'?'on':'')+'" onclick="APP.setTab(\'dossiers\');document.getElementById(\'ob-lo-drop\').classList.remove(\'open\')">📂 Dossiers'+(pend?'<span class="bdg">'+pend+'</span>':'')+'</button>'
+    +'<button class="'+(S.tab==='affiliations'?'on':'')+'" onclick="APP.setTab(\'affiliations\');document.getElementById(\'ob-lo-drop\').classList.remove(\'open\')">🤝 Affiliations'+(aff?'<span class="bdg">'+aff+'</span>':'')+'</button>'
     +'</div></div>'
     +'<button class="tab'+(S.tab==='documents'?' on':'')+'" onclick="APP.setTab(\'documents\')">Documents</button>'
     +'<div class="tab-wrap">'
     +'<button class="tab'+(inNO?' on':'')+'" onclick="APP.toggleObDrop(\'ob-no-drop\',event)">Notifications'+noSubLbl+' ▾</button>'
     +'<div class="tab-drop" id="ob-no-drop">'
     +'<button class="'+(S.tab==='notifications'?'on':'')+'" onclick="APP.setTab(\'notifications\');document.getElementById(\'ob-no-drop\').classList.remove(\'open\')">🔔 Notifications</button>'
-    +'<button class="'+(S.tab==='alertes_ob'?'on':'')+'" onclick="APP.setTab(\'alertes_ob\');document.getElementById(\'ob-no-drop\').classList.remove(\'open\')">⚠️ Alertes'+(an?'<span class="badge">'+an+'</span>':'')+'</button>'
+    +'<button class="'+(S.tab==='alertes_ob'?'on':'')+'" onclick="APP.setTab(\'alertes_ob\');document.getElementById(\'ob-no-drop\').classList.remove(\'open\')">⚠️ Alertes'+(an?'<span class="bdg">'+an+'</span>':'')+'</button>'
     +'</div></div>'
     +((canAdmin||canParams)?
       '<div class="tab-wrap">'
