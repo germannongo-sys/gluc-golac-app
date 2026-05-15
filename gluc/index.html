@@ -1305,6 +1305,22 @@ function tParamsOb(){
     }).join('')
     +'<button class="btn gold" style="margin-top:10px" onclick="APP.savePdfHeader()">💾 Enregistrer</button>'
     +'</div>';
+  // ── Mode démo partagé (Netlify Blobs) ──
+  var remD=CLOUD.remainingMs?Math.ceil(CLOUD.remainingMs/(24*60*60*1000)):null;
+  var remH=CLOUD.remainingMs?Math.ceil(CLOUD.remainingMs/(60*60*1000)):null;
+  h+='<div style="font-size:14px;font-weight:900;margin:22px 0 12px">☁ Mode démo partagé (Netlify)</div>'
+    +'<div class="alert a-i" style="margin-bottom:14px;font-size:12px">Synchronise l\'état entre tous les visiteurs de la démo. Les données sont stockées chez Netlify pendant <strong>3 jours</strong> puis réinitialisées automatiquement. Utile pour présenter l\'application à plusieurs prospects qui interagissent avec les mêmes données.</div>'
+    +'<div class="card">'
+    +'<div style="display:flex;align-items:center;gap:14px;flex-wrap:wrap;margin-bottom:10px">'
+    +'<div style="flex:1">'
+    +'<div style="font-size:13px;font-weight:700">Synchronisation cloud '+(CLOUD.enabled?'<span style="color:#1b5e20">● activée</span>':'<span style="color:#888">○ désactivée</span>')+'</div>'
+    +'<div style="font-size:11px;color:#64748b;margin-top:3px">'+(CLOUD.enabled?(CLOUD.lastSyncOk?'Connecté à Netlify Blobs. Les modifications sont propagées aux autres visiteurs.':'En attente de synchronisation…'):'Les données restent locales à votre navigateur (mode privé).')+'</div>'
+    +(CLOUD.enabled&&CLOUD.serverInitAt?'<div style="font-size:11px;color:#94a3b8;margin-top:4px">📅 Démo initialisée le '+new Date(CLOUD.serverInitAt).toLocaleString('fr-FR')+' · ♻ Réinit. auto dans <strong style="color:'+(remD<=1?'#ef4444':'#c9a227')+'">'+(remH<24?remH+' h':remD+' jour(s)')+'</strong></div>':'')
+    +'</div>'
+    +'<button class="toggle'+(CLOUD.enabled?' on':'')+'" onclick="APP.toggleCloudDemo()" title="'+(CLOUD.enabled?'Désactiver':'Activer')+' le mode démo partagé"></button>'
+    +'</div>'
+    +(CLOUD.enabled?'<button class="btn dng sm" onclick="APP.cloudReset()" style="margin-top:6px">🗑 Réinitialiser le démo partagé maintenant</button>':'')
+    +'</div>';
   return h;
 }
 APP.savePdfHeader=function(){
@@ -2037,6 +2053,109 @@ function resetState() {
   R();
 }
 
+// ─── CLOUD SYNC — Mode démo partagé via Netlify Blobs ─────────────────
+// État partagé entre tous les visiteurs de la démo, TTL 3 jours côté serveur.
+var APP_NAME = 'gluc';
+var CLOUD_ENDPOINT = '/api/state';
+var DEMO_MODE_KEY = APP_NAME+'-demo-shared';
+var CLOUD = {
+  enabled: false, // sera initialisé depuis localStorage
+  serverInitAt: null,
+  remainingMs: null,
+  lastSyncOk: false,
+  saving: false,
+  saveTimer: null,
+  loadPromise: null,
+};
+function cloudIsEnabled(){
+  // Par défaut : activé sur Netlify (production), désactivé en local
+  var saved=localStorage.getItem(DEMO_MODE_KEY);
+  if(saved!==null)return saved==='1';
+  return location.hostname.indexOf('netlify')>=0||location.hostname.indexOf('.app')>=0;
+}
+function cloudSetEnabled(on){
+  CLOUD.enabled=!!on;
+  localStorage.setItem(DEMO_MODE_KEY,on?'1':'0');
+}
+function cloudLoad(){
+  if(!CLOUD.enabled)return Promise.resolve(false);
+  if(CLOUD.loadPromise)return CLOUD.loadPromise;
+  CLOUD.loadPromise=fetch(CLOUD_ENDPOINT+'?app='+APP_NAME,{cache:'no-store'})
+    .then(function(r){return r.ok?r.json():null;})
+    .then(function(res){
+      CLOUD.lastSyncOk=!!res;
+      if(!res||res.empty){
+        CLOUD.serverInitAt=null;CLOUD.remainingMs=null;
+        return false;
+      }
+      // Hydrate D avec le state serveur
+      var fresh=buildData();
+      D=Object.assign(fresh,res.data);
+      ['membres','loges','caps','avances','versements','visiteurs','presences','dossiersPending','affiliationsPending','radiationPending','reintegrationPending','biAppartPending','notifLog','smsLog','grandeLogeTenues','convocationsGO','documents','troncVeuve','obInfo','superAdmin','mailConfig','portalConfig','customPerms','smsConfig','themeColors','pdfHeader','connexionLogs','grandOff'].forEach(function(k){
+        if(res.data[k]!==undefined)D[k]=res.data[k];
+      });
+      if(res.data.logoObedience){D.logoObedience=res.data.logoObedience;LOGO=res.data.logoObedience;}
+      D.loges.forEach(function(l){
+        if(!l.planches)l.planches=[];
+        if(!Object.prototype.hasOwnProperty.call(l,'customOfficerPerms'))l.customOfficerPerms=null;
+      });
+      sanitizeData(D);
+      saveState(); // miroir local
+      CLOUD.serverInitAt=res.serverInitAt;
+      CLOUD.remainingMs=res.remainingMs;
+      return true;
+    })
+    .catch(function(e){console.warn('[cloud] load failed:',e.message);CLOUD.lastSyncOk=false;return false;})
+    .finally(function(){CLOUD.loadPromise=null;});
+  return CLOUD.loadPromise;
+}
+function cloudSaveNow(){
+  if(!CLOUD.enabled||CLOUD.saving)return;
+  CLOUD.saving=true;
+  var payload=JSON.parse(JSON.stringify(D));
+  // On exclut les logos très volumineux du payload cloud (limites de taille)
+  // mais on garde le logo obédience
+  return fetch(CLOUD_ENDPOINT+'?app='+APP_NAME,{
+    method:'POST',
+    headers:{'Content-Type':'application/json'},
+    body:JSON.stringify(payload)
+  })
+    .then(function(r){return r.ok?r.json():null;})
+    .then(function(res){
+      if(res&&res.ok){
+        CLOUD.lastSyncOk=true;
+        CLOUD.serverInitAt=res.serverInitAt;
+        CLOUD.remainingMs=res.remainingMs;
+      }
+    })
+    .catch(function(e){console.warn('[cloud] save failed:',e.message);CLOUD.lastSyncOk=false;})
+    .finally(function(){CLOUD.saving=false;});
+}
+function cloudSaveDebounced(){
+  if(!CLOUD.enabled)return;
+  if(CLOUD.saveTimer)clearTimeout(CLOUD.saveTimer);
+  CLOUD.saveTimer=setTimeout(cloudSaveNow,1800);
+}
+APP.cloudReset=function(){
+  if(!confirm('Réinitialiser le démo partagé sur le serveur ? Tous les visiteurs verront les données par défaut.'))return;
+  fetch(CLOUD_ENDPOINT+'?app='+APP_NAME,{method:'DELETE'})
+    .then(function(r){return r.json();})
+    .then(function(){
+      localStorage.removeItem(LS_KEY);localStorage.removeItem(LS_LOGO);localStorage.removeItem(LS_LOGE_LOGOS);
+      D=buildData();LOGO=null;CLOUD.serverInitAt=null;CLOUD.remainingMs=null;
+      S.user=null;S.view='login';S.lid=null;R();
+    })
+    .catch(function(e){alert('Échec : '+e.message);});
+};
+APP.toggleCloudDemo=function(){
+  cloudSetEnabled(!CLOUD.enabled);
+  if(CLOUD.enabled){
+    cloudLoad().then(function(){R();});
+  } else {
+    R();
+  }
+};
+
 // Auto-save: hook into render
 var _originalRender = null;
 function initAutoSave() {
@@ -2044,12 +2163,20 @@ function initAutoSave() {
   APP.render = function() {
     _originalRender.apply(this, arguments);
     saveState();
+    cloudSaveDebounced();
   };
-  // Load on startup
+  // Load on startup (local d'abord, puis cloud si activé)
   loadState();
+  CLOUD.enabled=cloudIsEnabled();
   // Set initial view: captive portal if enabled
   S.view = (D.portalConfig && D.portalConfig.enabled) ? 'portal' : 'login';
   APP.applyTheme();
+  // Charge le state cloud en arrière-plan puis re-rend
+  if(CLOUD.enabled){
+    cloudLoad().then(function(loaded){
+      if(loaded){S.view=(D.portalConfig&&D.portalConfig.enabled)?'portal':'login';APP.applyTheme();R();}
+    });
+  }
 }
 
 APP.render=function(){
