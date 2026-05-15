@@ -1024,7 +1024,8 @@ function lParams(loge,off){
     officierDroits+='<div class="perm-row" style="flex-direction:column;gap:8px;align-items:flex-start;margin-bottom:4px">'
       +'<div style="display:flex;align-items:center;gap:8px;width:100%">'
       +'<span style="font-weight:700;font-size:13px;min-width:160px">'+post+'</span>'
-      +(isCustom?'<span style="font-size:10px;color:#c9a227;font-weight:700">PERSONNALISÉ</span>'+'<button class="btn ghost sm" style="font-size:11px;margin-left:auto" onclick="APP.resetOfficerPerms(\''+loge.id+'\',\''+post+'\')">Réinitialiser</button>':'<span style="font-size:10px;color:#aaa">Défaut</span>')
+      +'<span class="perm-status" style="font-size:10px;font-weight:700;color:'+(isCustom?'#c9a227':'#aaa')+'">'+(isCustom?'PERSONNALISÉ':'Défaut')+'</span>'
+      +(isCustom?'<button class="btn ghost sm" style="font-size:11px;margin-left:auto" onclick="APP.resetOfficerPerms(\''+loge.id+'\',\''+post+'\')">Réinitialiser</button>':'')
       +'</div>'
       +'<div style="display:flex;gap:6px;flex-wrap:wrap">'
       +allModuleTabs.map(function(tab){
@@ -2371,12 +2372,11 @@ APP.setTab=function(t){
     var l=gLoge(S.lid);
     if(l){
       var off=isLO(S.lid);
-      var post=getUserPost(S.lid);
-      var hasCustom=post&&l.customOfficerPerms&&l.customOfficerPerms[post];
       var offOnlyTabs=['finances','capitations','tronc','hospitalier','alertes','paramsLoge'];
       var isOffOnly=offOnlyTabs.indexOf(t)>=0;
       if(!off&&isOffOnly){return;}
-      if(off&&hasCustom&&!canAccessTab(S.lid,t)){return;}
+      // Officier : source unique = OFFICER_PERMS (ou custom)
+      if(off&&!canAccessTab(S.lid,t)){return;}
     }
   }
   S.tab=t;R();
@@ -3063,13 +3063,13 @@ function vLoge(){
     {id:'alertes',lbl:'Alertes',min:7,badge:an||'',offOnly:true},
     {id:'paramsLoge',lbl:'⚙ Paramètres',min:10,offOnly:true},
   ];
-  var hasCustomPerms=userPost&&loge.customOfficerPerms&&loge.customOfficerPerms[userPost];
   var tabs=allTabs.filter(function(t){
     if(isGO()||isSuperAdmin())return true;
     if(t.offOnly&&!off)return false;
     if(!off)return !t.offOnly;
-    if(hasCustomPerms){return canAccessTab(loge.id,t.id);}
-    return canAccessTab(loge.id,t.id)||accessLvl>=(t.min||0);
+    // Officier : OFFICER_PERMS (ou customOfficerPerms) — source UNIQUE
+    // Pas de fallback par niveau pour respecter strictement la matrice
+    return canAccessTab(loge.id,t.id);
   });
   var inPG=['programme','instruction','planches'].indexOf(S.tab)>=0;
   var inFG=['finances','capitations','tronc'].indexOf(S.tab)>=0;
@@ -3321,11 +3321,18 @@ APP.toggleOfficerTab=function(lid,post,tab,btn){
   if(idx===-1)cur.push(tab);else cur.splice(idx,1);
   btn.classList.toggle('on');
   var row=btn.closest('.perm-row');
-  if(row){var info=row.querySelector('.perm-tags');if(info)info.textContent='Actifs : '+cur.join(', ');}
+  if(row){
+    var info=row.querySelector('.perm-tags');
+    if(info)info.textContent='Actifs : '+cur.join(', ');
+    var statusEl=row.querySelector('.perm-status');
+    if(statusEl){statusEl.textContent='PERSONNALISÉ';statusEl.style.color='#c9a227';}
+  }
+  saveState();
 };
 APP.resetOfficerPerms=function(lid,post){
   var loge=gLoge(lid);if(!loge||!loge.customOfficerPerms)return;
-  delete loge.customOfficerPerms[post];R();
+  delete loge.customOfficerPerms[post];
+  saveState();R();
 };
 var _pendingDoc=null;
 APP.previewDocFile=function(inp){
