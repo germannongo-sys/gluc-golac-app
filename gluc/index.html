@@ -581,6 +581,9 @@ function buildData(){
       {id:'F010',matricule:'F-010',nom:'Henri Wapasso',grade:'Apprenti',dateGrade:'2025-06-12',dateInit:'2025-06-12',logeId:'L001',role:'Frère',pwd:'1234',statut:'actif',tel:'+242001010',email:'henri@example.com',affiliation:null},
       {id:'F011',matricule:'F-011',nom:'Pascal Mukendi',grade:'Apprenti',dateGrade:'2025-08-25',dateInit:'2025-08-25',logeId:'L002',role:'Frère',pwd:'1234',statut:'actif',tel:'+242001011',email:'pascal@example.com',affiliation:null},
       {id:'F012',matricule:'F-012',nom:'Daniel Lukombo',grade:'Apprenti',dateGrade:'2025-11-03',dateInit:'2025-11-03',logeId:'L001',role:'Frère',pwd:'1234',statut:'actif',tel:'+242001012',email:'daniel@example.com',affiliation:null},
+      {id:'F013',matricule:'F-013',nom:'Laurent Massala',grade:'Maitre',dateGrade:'2022-04-18',dateInit:'2017-09-12',dateAugm:'2020-03-04',dateExalt:'2022-04-18',logeId:'L001',role:'Frère',pwd:'1234',statut:'actif',tel:'+242001013',email:'laurent@example.com',affiliation:null},
+      {id:'F014',matricule:'F-014',nom:'Christian Bouanga',grade:'Maitre',dateGrade:'2021-11-08',dateInit:'2016-12-03',dateAugm:'2019-06-15',dateExalt:'2021-11-08',logeId:'L001',role:'Frère',pwd:'1234',statut:'actif',tel:'+242001014',email:'christian@example.com',affiliation:null},
+      {id:'F015',matricule:'F-015',nom:'Roger Mavoungou',grade:'Maitre',dateGrade:'2023-02-14',dateInit:'2018-05-10',dateAugm:'2020-10-22',dateExalt:'2023-02-14',logeId:'L002',role:'Frère',pwd:'1234',statut:'actif',tel:'+242001015',email:'roger@example.com',affiliation:null},
     ],
     caps:[
       {id:'c1',mid:'F001',lid:'L001',annee:2026,mnt:50000,st:'Payé',date:'2026-01-15'},
@@ -595,6 +598,9 @@ function buildData(){
       {id:'c10',mid:'F010',lid:'L001',annee:2026,mnt:50000,st:'Payé',date:'2026-01-28'},
       {id:'c11',mid:'F011',lid:'L002',annee:2026,mnt:50000,st:'Payé',date:'2026-02-18'},
       {id:'c12',mid:'F012',lid:'L001',annee:2026,mnt:50000,st:'Payé',date:'2026-02-22'},
+      {id:'c13',mid:'F013',lid:'L001',annee:2026,mnt:50000,st:'Payé',date:'2026-01-10'},
+      {id:'c14',mid:'F014',lid:'L001',annee:2026,mnt:50000,st:'Payé',date:'2026-01-12'},
+      {id:'c15',mid:'F015',lid:'L002',annee:2026,mnt:50000,st:'Payé',date:'2026-01-18'},
     ],
     avances:[{id:'av1',mid:'F002',lid:'L001',mnt:20000,note:'1er versement',date:'2026-03-10'}],
     versements:[
@@ -637,6 +643,13 @@ function buildData(){
       {id:'pr21',mid:'F008',lid:'L001',evtId:'ag3',present:true},
       {id:'pr22',mid:'F010',lid:'L001',evtId:'ag3',present:true},
       {id:'pr23',mid:'F012',lid:'L001',evtId:'ag3',present:true},
+      // L001 — F013, F014 (Maîtres sans fonction L001)
+      {id:'pr39',mid:'F013',lid:'L001',evtId:'ag1',present:true},
+      {id:'pr40',mid:'F013',lid:'L001',evtId:'ag2',present:true},
+      {id:'pr41',mid:'F013',lid:'L001',evtId:'ag3',present:false},
+      {id:'pr42',mid:'F014',lid:'L001',evtId:'ag1',present:true},
+      {id:'pr43',mid:'F014',lid:'L001',evtId:'ag2',present:true},
+      {id:'pr44',mid:'F014',lid:'L001',evtId:'ag3',present:true},
       // L002 — ag4 (2026-04-28)
       {id:'pr24',mid:'F004',lid:'L002',evtId:'ag4',present:true},
       {id:'pr25',mid:'F005',lid:'L002',evtId:'ag4',present:false},
@@ -655,6 +668,10 @@ function buildData(){
       {id:'pr36',mid:'F006',lid:'L002',evtId:'ag6',present:false},
       {id:'pr37',mid:'F009',lid:'L002',evtId:'ag6',present:true},
       {id:'pr38',mid:'F011',lid:'L002',evtId:'ag6',present:true},
+      // L002 — F015 (Maître sans fonction L002)
+      {id:'pr45',mid:'F015',lid:'L002',evtId:'ag4',present:true},
+      {id:'pr46',mid:'F015',lid:'L002',evtId:'ag5',present:true},
+      {id:'pr47',mid:'F015',lid:'L002',evtId:'ag6',present:true},
     ],
     notifLog:[],
     smsLog:[],
