@@ -212,6 +212,113 @@ tr:hover td{background:#fafafa;}
 .prog-instr-row div{padding:9px 11px;font-size:12px;}
 @media print{.hdr,.tabbar,.lbar,.no-print{display:none!important;}.cont{padding:0;max-width:100%;}}
 
+/* ══════════════════════════════════════════════
+   ANIMATIONS — APP VIEWS
+══════════════════════════════════════════════ */
+@keyframes fadeSlideUp{
+  from{opacity:0;transform:translateY(14px);}
+  to{opacity:1;transform:translateY(0);}
+}
+@keyframes fadeIn{
+  from{opacity:0;}to{opacity:1;}
+}
+@keyframes scaleIn{
+  from{opacity:0;transform:scale(.93);}
+  to{opacity:1;transform:scale(1);}
+}
+@keyframes slideDown{
+  from{opacity:0;transform:translateY(-6px);}
+  to{opacity:1;transform:translateY(0);}
+}
+@keyframes popIn{
+  0%{opacity:0;transform:scale(.88);}
+  70%{transform:scale(1.03);}
+  100%{opacity:1;transform:scale(1);}
+}
+
+/* Contenu principal */
+.cont{animation:fadeSlideUp .28s cubic-bezier(.22,.68,0,1.2) both;}
+/* Barre loge & tabbar */
+.lbar{animation:slideDown .22s ease both;}
+.tabbar{animation:slideDown .18s ease both;}
+/* Cartes */
+.card{transition:box-shadow .18s,border-color .18s;animation:fadeSlideUp .3s ease both;}
+.sc{animation:fadeSlideUp .3s ease both;transition:box-shadow .18s;}
+.ocard{animation:fadeSlideUp .28s ease both;transition:border-color .18s,box-shadow .18s;}
+.cap-card{animation:fadeSlideUp .28s ease both;}
+.acard{animation:fadeSlideUp .3s cubic-bezier(.22,.68,0,1.2) both;}
+/* Grid stagger */
+.g2>*,.g3>*,.g4>*{animation:fadeSlideUp .32s ease both;}
+.g2>*:nth-child(2),.g3>*:nth-child(2),.g4>*:nth-child(2){animation-delay:.04s;}
+.g2>*:nth-child(3),.g3>*:nth-child(3),.g4>*:nth-child(3){animation-delay:.08s;}
+.g2>*:nth-child(4),.g3>*:nth-child(4),.g4>*:nth-child(4){animation-delay:.12s;}
+.g2>*:nth-child(5),.g3>*:nth-child(5),.g4>*:nth-child(5){animation-delay:.16s;}
+.g2>*:nth-child(6),.g3>*:nth-child(6),.g4>*:nth-child(6){animation-delay:.20s;}
+/* Modal */
+.mbox{animation:popIn .24s cubic-bezier(.34,1.56,.64,1) both;}
+.ovl{animation:fadeIn .18s ease both;}
+/* Dropdown ouvert */
+.tab-drop.open{animation:scaleIn .15s cubic-bezier(.22,.68,0,1.2) both;}
+/* Lignes tableau */
+tr{transition:background .1s;}
+/* Boutons .lbar */
+.lbar .btn{transition:transform .12s,opacity .15s,box-shadow .15s;}
+.lbar .btn:hover{transform:translateY(-1px);box-shadow:0 4px 12px rgba(0,0,0,.13);}
+.lbar .btn:active{transform:scale(.95);}
+/* Chips */
+.chip{transition:opacity .15s;}
+/* Cardx hover renforcé */
+.cardx:hover{border-color:#c9a227;transform:translateY(-3px);box-shadow:0 6px 20px rgba(0,0,0,.11);}
+/* Tabs — underline smooth */
+.tab{transition:color .15s,border-bottom-color .15s;}
+/* Alerte apparition */
+.alert{animation:fadeSlideUp .3s ease both;}
+
+/* ══════════════════════════════════════════════
+   RESPONSIVE — TABLETTE & MOBILE
+══════════════════════════════════════════════ */
+@media(max-width:768px){
+  .cont{padding:14px;}
+  .frow{grid-template-columns:1fr;}
+  .g3{grid-template-columns:repeat(auto-fill,minmax(130px,1fr));}
+  .hdr-sub{font-size:9px;}
+  .mbox{max-width:100%;border-radius:14px;padding:20px 18px;}
+  .ovl{padding:16px 10px;}
+}
+@media(max-width:640px){
+  .hdr{padding:8px 12px;gap:8px;}
+  .hdr-sub{display:none;}
+  .hdr-sep{display:none;}
+  .cont{padding:10px;}
+  .frow{grid-template-columns:1fr;}
+  .lbar{padding:10px 12px;gap:6px;flex-wrap:wrap;}
+  .lbar .btn.sm{font-size:11px;padding:4px 9px;}
+  .mbox{padding:16px 14px;border-radius:12px;}
+  .ovl{padding:10px 6px;align-items:flex-end;}
+  .mbox{border-radius:16px 16px 0 0;max-width:100%;}
+  .me-page{padding:10px;}
+  .me-banner{padding:14px 12px;gap:10px;}
+  .g2{grid-template-columns:1fr 1fr;}
+  .g3{grid-template-columns:repeat(auto-fill,minmax(120px,1fr));}
+  .sec{font-size:14px;}
+  .sc-v{font-size:18px;}
+  .card{padding:12px;}
+  table{font-size:12px;}
+  th,td{padding:7px 8px;}
+  .acard{padding:14px 16px;}
+  .btn.sm{font-size:11px;padding:4px 9px;}
+}
+@media(max-width:420px){
+  .g2{grid-template-columns:1fr;}
+  .hdr-gluc,.hdr-golac{font-size:13px;letter-spacing:1px;}
+  .me-banner{flex-direction:column;text-align:center;}
+  .me-ava{margin:0 auto;}
+  .lbar{gap:5px;}
+  .lbar .btn{font-size:11px;padding:4px 8px;}
+  .cont{padding:8px;}
+  .sc-v{font-size:16px;}
+}
+
 </style>
 <style id="themeStyle"></style>
 </head>
@@ -2230,11 +2337,13 @@ function vMonEspace(){
 // ── ATELIER SELECT ──
 function vAtelier(){
   var cards='';
+  var _ai=0;
   D.loges.filter(function(l){return l.statut==='active';}).forEach(function(l){
     var ms=lMbrs(l.id),canEnter=canAccessLoge(l.id);
     var isBiApp=isBiAppartenant(l.id);
     var next=l.agenda.slice().sort(function(a,b){return a.date.localeCompare(b.date);}).find(function(e){return e.date>=tdStr();});
-    cards+='<div class="acard" onclick="'+(canEnter?'APP.enterLoge(\''+l.id+'\')':'')+'" style="'+(canEnter?'':'opacity:.4;cursor:default;')+'">'
+    var delay='animation-delay:'+(_ai*0.08)+'s';_ai++;
+    cards+='<div class="acard" onclick="'+(canEnter?'APP.enterLoge(\''+l.id+'\')':'')+'" style="'+(canEnter?'':'opacity:.4;cursor:default;')+delay+'">'
       +'<div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:10px">'
       +'<div><div style="color:#c9a227;font-weight:900;font-size:14px">⬡ Loge N°'+l.numero+'</div>'
       +'<div style="color:#111;font-weight:700;font-size:15px;margin-top:2px">'+l.nom+'</div>'
