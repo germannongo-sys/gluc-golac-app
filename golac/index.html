@@ -406,6 +406,15 @@ function versementInfo(v){
   return{verse:verse,solde:solde,statut:statut};
 }
 function tdStr(){return new Date().toISOString().split('T')[0];}
+function fmtDate(iso){if(!iso)return'—';var d=new Date(iso);if(isNaN(d.getTime()))return'—';return ('0'+d.getDate()).slice(-2)+'/'+('0'+(d.getMonth()+1)).slice(-2)+'/'+String(d.getFullYear()).slice(-2);}
+function parcoursRituel(m){
+  var parts=[];
+  if(m.dateInit)parts.push('<span title="Initiation Apprenti">🌑 '+fmtDate(m.dateInit)+'</span>');
+  if(m.dateAugm)parts.push('<span title="Augmentation Compagnon">⚒ '+fmtDate(m.dateAugm)+'</span>');
+  if(m.dateExalt)parts.push('<span title="Exaltation Maître">✨ '+fmtDate(m.dateExalt)+'</span>');
+  if(!parts.length&&m.dateGrade)parts.push('<span>🌑 '+fmtDate(m.dateGrade)+'</span>');
+  return parts.join(' <span style="color:#ccc">→</span> ');
+}
 function uid(){return 'i'+Date.now()+Math.random().toString(36).slice(2,5);}
 function nxtMat(ms){var ns=ms.map(function(m){var r=m.matricule.match(/\d+/);return r?+r[0]:0;});return'M-'+String(Math.max.apply(null,[0].concat(ns))+1).padStart(3,'0');}
 function nxtLNum(ls){return String(Math.max.apply(null,[0].concat(ls.map(function(l){return+l.numero;})))+1).padStart(3,'0');}
@@ -551,14 +560,20 @@ function buildData(){
        officiers:o2},
     ],
     membres:[
-      {id:'ADM',matricule:'GOLAC-00',nom:'Grand Maître GOLAC',grade:'Maitre',dateGrade:'2010-01-01',logeId:null,role:'Grand Maître',pwd:'admin2026',statut:'actif',tel:'',email:'gm@golac.cg',affiliation:null,genre:'M'},
-      {id:'GS1',matricule:'GOLAC-GS',nom:'Grande Secrétaire GOLAC',grade:'Maitre',dateGrade:'2012-01-01',logeId:null,role:'Grand Secrétaire',pwd:'gs2026',statut:'actif',tel:'',email:'gs@golac.cg',affiliation:null,genre:'F'},
-      {id:'F001',matricule:'M-001',nom:'Jean Mukulu',grade:'Maitre',dateGrade:'2020-01-15',logeId:'L001',role:'VM',pwd:'vm1234',statut:'actif',tel:'+242001001',email:'jean@example.com',affiliation:null,genre:'M'},
-      {id:'F002',matricule:'M-002',nom:'Martine Loubaki',grade:'Compagnon',dateGrade:'2024-06-20',logeId:'L001',role:'Officier',pwd:'off1234',statut:'actif',tel:'+242001002',email:'martine@example.com',affiliation:null,genre:'F'},
-      {id:'F003',matricule:'M-003',nom:'Marc Yamba',grade:'Apprenti',dateGrade:'2025-03-10',logeId:'L001',role:'Membre',pwd:'1234',statut:'actif',tel:'+242001003',email:'marc@example.com',affiliation:null,genre:'M'},
-      {id:'F004',matricule:'M-004',nom:'Sophie Mbala',grade:'Maitre',dateGrade:'2019-05-20',logeId:'L002',role:'VM',pwd:'vm4321',statut:'actif',tel:'+242001004',email:'sophie@example.com',affiliation:null,genre:'F'},
-      {id:'F005',matricule:'M-005',nom:'Albert Zola',grade:'Compagnon',dateGrade:'2024-09-01',logeId:'L002',role:'Officier',pwd:'1234',statut:'actif',tel:'+242001005',email:'albert@example.com',affiliation:null,genre:'M'},
-      {id:'F006',matricule:'M-006',nom:'Nadège Bitsamou',grade:'Apprenti',dateGrade:'2025-01-15',logeId:'L002',role:'Membre',pwd:'1234',statut:'actif',tel:'+242001006',email:'nadege@example.com',affiliation:null,genre:'F'},
+      {id:'ADM',matricule:'GOLAC-00',nom:'Grand Maître GOLAC',grade:'Maitre',dateGrade:'2010-01-01',dateInit:'2005-03-15',dateAugm:'2007-06-20',dateExalt:'2010-01-01',logeId:null,role:'Grand Maître',pwd:'admin2026',statut:'actif',tel:'',email:'gm@golac.cg',affiliation:null,genre:'M'},
+      {id:'GS1',matricule:'GOLAC-GS',nom:'Grande Secrétaire GOLAC',grade:'Maitre',dateGrade:'2012-01-01',dateInit:'2008-04-10',dateAugm:'2010-09-15',dateExalt:'2012-01-01',logeId:null,role:'Grand Secrétaire',pwd:'gs2026',statut:'actif',tel:'',email:'gs@golac.cg',affiliation:null,genre:'F'},
+      {id:'F001',matricule:'M-001',nom:'Jean Mukulu',grade:'Maitre',dateGrade:'2020-01-15',dateInit:'2015-05-08',dateAugm:'2017-11-12',dateExalt:'2020-01-15',logeId:'L001',role:'VM',pwd:'vm1234',statut:'actif',tel:'+242001001',email:'jean@example.com',affiliation:null,genre:'M'},
+      {id:'F002',matricule:'M-002',nom:'Martine Loubaki',grade:'Compagnon',dateGrade:'2024-06-20',dateInit:'2022-04-15',dateAugm:'2024-06-20',logeId:'L001',role:'Officier',pwd:'off1234',statut:'actif',tel:'+242001002',email:'martine@example.com',affiliation:null,genre:'F'},
+      {id:'F003',matricule:'M-003',nom:'Marc Yamba',grade:'Apprenti',dateGrade:'2025-03-10',dateInit:'2025-03-10',logeId:'L001',role:'Membre',pwd:'1234',statut:'actif',tel:'+242001003',email:'marc@example.com',affiliation:null,genre:'M'},
+      {id:'F004',matricule:'M-004',nom:'Sophie Mbala',grade:'Maitre',dateGrade:'2019-05-20',dateInit:'2014-02-20',dateAugm:'2016-08-10',dateExalt:'2019-05-20',logeId:'L002',role:'VM',pwd:'vm4321',statut:'actif',tel:'+242001004',email:'sophie@example.com',affiliation:null,genre:'F'},
+      {id:'F005',matricule:'M-005',nom:'Albert Zola',grade:'Compagnon',dateGrade:'2024-09-01',dateInit:'2022-09-05',dateAugm:'2024-09-01',logeId:'L002',role:'Officier',pwd:'1234',statut:'actif',tel:'+242001005',email:'albert@example.com',affiliation:null,genre:'M'},
+      {id:'F006',matricule:'M-006',nom:'Nadège Bitsamou',grade:'Apprenti',dateGrade:'2025-01-15',dateInit:'2025-01-15',logeId:'L002',role:'Membre',pwd:'1234',statut:'actif',tel:'+242001006',email:'nadege@example.com',affiliation:null,genre:'F'},
+      {id:'F007',matricule:'M-007',nom:'Marie-Christine Ngongo',grade:'Compagnon',dateGrade:'2025-01-20',dateInit:'2023-02-10',dateAugm:'2025-01-20',logeId:'L001',role:'Membre',pwd:'1234',statut:'actif',tel:'+242001007',email:'mariec@example.com',affiliation:null,genre:'F'},
+      {id:'F008',matricule:'M-008',nom:'Bernard Lokoua',grade:'Compagnon',dateGrade:'2025-03-08',dateInit:'2023-05-22',dateAugm:'2025-03-08',logeId:'L001',role:'Membre',pwd:'1234',statut:'actif',tel:'+242001008',email:'bernard@example.com',affiliation:null,genre:'M'},
+      {id:'F009',matricule:'M-009',nom:'Antoine Pemba',grade:'Compagnon',dateGrade:'2025-04-15',dateInit:'2023-07-14',dateAugm:'2025-04-15',logeId:'L002',role:'Membre',pwd:'1234',statut:'actif',tel:'+242001009',email:'antoine@example.com',affiliation:null,genre:'M'},
+      {id:'F010',matricule:'M-010',nom:'Henri Wapasso',grade:'Apprenti',dateGrade:'2025-06-12',dateInit:'2025-06-12',logeId:'L001',role:'Membre',pwd:'1234',statut:'actif',tel:'+242001010',email:'henri@example.com',affiliation:null,genre:'M'},
+      {id:'F011',matricule:'M-011',nom:'Sylvie Mboumba',grade:'Apprenti',dateGrade:'2025-08-25',dateInit:'2025-08-25',logeId:'L002',role:'Membre',pwd:'1234',statut:'actif',tel:'+242001011',email:'sylvie@example.com',affiliation:null,genre:'F'},
+      {id:'F012',matricule:'M-012',nom:'Pauline Tchicaya',grade:'Apprenti',dateGrade:'2025-11-03',dateInit:'2025-11-03',logeId:'L001',role:'Membre',pwd:'1234',statut:'actif',tel:'+242001012',email:'pauline@example.com',affiliation:null,genre:'F'},
     ],
     caps:[
       {id:'c1',mid:'F001',lid:'L001',annee:2026,mnt:50000,st:'Payé',date:'2026-01-15'},
@@ -567,6 +582,12 @@ function buildData(){
       {id:'c4',mid:'F004',lid:'L002',annee:2026,mnt:50000,st:'Payé',date:'2026-02-01'},
       {id:'c5',mid:'F005',lid:'L002',annee:2026,mnt:50000,st:'Retard',date:null},
       {id:'c6',mid:'F006',lid:'L002',annee:2026,mnt:50000,st:'En attente',date:null},
+      {id:'c7',mid:'F007',lid:'L001',annee:2026,mnt:50000,st:'Payé',date:'2026-01-22'},
+      {id:'c8',mid:'F008',lid:'L001',annee:2026,mnt:50000,st:'Payé',date:'2026-02-05'},
+      {id:'c9',mid:'F009',lid:'L002',annee:2026,mnt:50000,st:'Payé',date:'2026-02-12'},
+      {id:'c10',mid:'F010',lid:'L001',annee:2026,mnt:50000,st:'Payé',date:'2026-01-28'},
+      {id:'c11',mid:'F011',lid:'L002',annee:2026,mnt:50000,st:'Payé',date:'2026-02-18'},
+      {id:'c12',mid:'F012',lid:'L001',annee:2026,mnt:50000,st:'Payé',date:'2026-02-22'},
     ],
     avances:[{id:'av1',mid:'F002',lid:'L001',mnt:20000,note:'1er versement',date:'2026-03-10'}],
     versements:[
@@ -585,12 +606,48 @@ function buildData(){
        logeOrigin:"Loge Lumière d'Afrique",obOrigin:'Grand Orient du Gabon',dateAffil:'2026-04-05',st:'En attente',note:''},
     ],
     presences:[
+      // L001 — ag1 (2026-04-25)
       {id:'pr1',mid:'F001',lid:'L001',evtId:'ag1',present:true},
       {id:'pr2',mid:'F002',lid:'L001',evtId:'ag1',present:true},
       {id:'pr3',mid:'F003',lid:'L001',evtId:'ag1',present:false},
+      {id:'pr7',mid:'F007',lid:'L001',evtId:'ag1',present:true},
+      {id:'pr8',mid:'F008',lid:'L001',evtId:'ag1',present:true},
+      {id:'pr10',mid:'F010',lid:'L001',evtId:'ag1',present:true},
+      {id:'pr12',mid:'F012',lid:'L001',evtId:'ag1',present:true},
+      // L001 — ag2 (2026-05-10)
       {id:'pr4',mid:'F001',lid:'L001',evtId:'ag2',present:true},
       {id:'pr5',mid:'F002',lid:'L001',evtId:'ag2',present:false},
       {id:'pr6',mid:'F003',lid:'L001',evtId:'ag2',present:true},
+      {id:'pr13',mid:'F007',lid:'L001',evtId:'ag2',present:true},
+      {id:'pr14',mid:'F008',lid:'L001',evtId:'ag2',present:true},
+      {id:'pr15',mid:'F010',lid:'L001',evtId:'ag2',present:false},
+      {id:'pr16',mid:'F012',lid:'L001',evtId:'ag2',present:true},
+      // L001 — ag3 (2026-06-13)
+      {id:'pr17',mid:'F001',lid:'L001',evtId:'ag3',present:true},
+      {id:'pr18',mid:'F002',lid:'L001',evtId:'ag3',present:false},
+      {id:'pr19',mid:'F003',lid:'L001',evtId:'ag3',present:false},
+      {id:'pr20',mid:'F007',lid:'L001',evtId:'ag3',present:true},
+      {id:'pr21',mid:'F008',lid:'L001',evtId:'ag3',present:true},
+      {id:'pr22',mid:'F010',lid:'L001',evtId:'ag3',present:true},
+      {id:'pr23',mid:'F012',lid:'L001',evtId:'ag3',present:true},
+      // L002 — ag4 (2026-04-28)
+      {id:'pr24',mid:'F004',lid:'L002',evtId:'ag4',present:true},
+      {id:'pr25',mid:'F005',lid:'L002',evtId:'ag4',present:false},
+      {id:'pr26',mid:'F006',lid:'L002',evtId:'ag4',present:true},
+      {id:'pr27',mid:'F009',lid:'L002',evtId:'ag4',present:true},
+      {id:'pr28',mid:'F011',lid:'L002',evtId:'ag4',present:true},
+      // L002 — ag5 (2026-05-15)
+      {id:'pr29',mid:'F004',lid:'L002',evtId:'ag5',present:true},
+      {id:'pr30',mid:'F005',lid:'L002',evtId:'ag5',present:false},
+      {id:'pr31',mid:'F006',lid:'L002',evtId:'ag5',present:false},
+      {id:'pr32',mid:'F009',lid:'L002',evtId:'ag5',present:true},
+      {id:'pr33',mid:'F011',lid:'L002',evtId:'ag5',present:true},
+      // L002 — ag6 (2026-06-20)
+      {id:'pr34',mid:'F004',lid:'L002',evtId:'ag6',present:true},
+      {id:'pr35',mid:'F005',lid:'L002',evtId:'ag6',present:true},
+      {id:'pr36',mid:'F006',lid:'L002',evtId:'ag6',present:false},
+      {id:'pr37',mid:'F009',lid:'L002',evtId:'ag6',present:true},
+      {id:'pr38',mid:'F011',lid:'L002',evtId:'ag6',present:true},
     ],
     notifLog:[],
     smsLog:[],
@@ -2105,6 +2162,27 @@ function loadState() {
         if(!l.planches)l.planches=[];
         if(!Object.prototype.hasOwnProperty.call(l,'customOfficerPerms'))l.customOfficerPerms=null;
       });
+      // Migration : backfill des dates rituelles pour les membres existants
+      D.membres.forEach(function(m){
+        if(m.grade==='Apprenti'&&!m.dateInit)m.dateInit=m.dateGrade;
+        else if(m.grade==='Compagnon'){
+          if(!m.dateAugm)m.dateAugm=m.dateGrade;
+          if(!m.dateInit&&m.dateAugm){
+            var d=new Date(m.dateAugm);d.setMonth(d.getMonth()-18);
+            m.dateInit=d.toISOString().split('T')[0];
+          }
+        } else if(m.grade==='Maitre'){
+          if(!m.dateExalt)m.dateExalt=m.dateGrade;
+          if(!m.dateAugm&&m.dateExalt){
+            var d2=new Date(m.dateExalt);d2.setMonth(d2.getMonth()-18);
+            m.dateAugm=d2.toISOString().split('T')[0];
+          }
+          if(!m.dateInit&&m.dateAugm){
+            var d3=new Date(m.dateAugm);d3.setMonth(d3.getMonth()-30);
+            m.dateInit=d3.toISOString().split('T')[0];
+          }
+        }
+      });
       sanitizeData(D);
     }
     // Restore logos
@@ -2176,6 +2254,27 @@ function cloudLoad(){
       D.loges.forEach(function(l){
         if(!l.planches)l.planches=[];
         if(!Object.prototype.hasOwnProperty.call(l,'customOfficerPerms'))l.customOfficerPerms=null;
+      });
+      // Migration : backfill des dates rituelles pour les membres existants
+      D.membres.forEach(function(m){
+        if(m.grade==='Apprenti'&&!m.dateInit)m.dateInit=m.dateGrade;
+        else if(m.grade==='Compagnon'){
+          if(!m.dateAugm)m.dateAugm=m.dateGrade;
+          if(!m.dateInit&&m.dateAugm){
+            var d=new Date(m.dateAugm);d.setMonth(d.getMonth()-18);
+            m.dateInit=d.toISOString().split('T')[0];
+          }
+        } else if(m.grade==='Maitre'){
+          if(!m.dateExalt)m.dateExalt=m.dateGrade;
+          if(!m.dateAugm&&m.dateExalt){
+            var d2=new Date(m.dateExalt);d2.setMonth(d2.getMonth()-18);
+            m.dateAugm=d2.toISOString().split('T')[0];
+          }
+          if(!m.dateInit&&m.dateAugm){
+            var d3=new Date(m.dateAugm);d3.setMonth(d3.getMonth()-30);
+            m.dateInit=d3.toISOString().split('T')[0];
+          }
+        }
       });
       sanitizeData(D);
       saveState();
@@ -2785,6 +2884,13 @@ function vMonEspace(){
   // Stats perso
   var userPostMe=loge?getUserPost(loge.id):null;
   var accessLvlMe=loge?getAccessLevel(loge.id):0;
+  h+='<div class="card" style="margin-bottom:16px;padding:14px 18px">'
+    +'<div style="font-size:11px;color:#666;text-transform:uppercase;letter-spacing:.6px;font-weight:700;margin-bottom:8px">Mon parcours rituel</div>'
+    +'<div style="display:flex;gap:24px;flex-wrap:wrap;align-items:center">'
+    +(u.dateInit?'<div><div style="font-size:10px;color:#888;font-weight:700">🌑 Initiation Apprenti</div><div style="font-size:14px;font-weight:700;color:#1e293b">'+fmtDate(u.dateInit)+'</div></div>':'')
+    +(u.dateAugm?'<div><div style="font-size:10px;color:#888;font-weight:700">⚒ Augmentation Compagnon</div><div style="font-size:14px;font-weight:700;color:#1e293b">'+fmtDate(u.dateAugm)+'</div></div>':'')
+    +(u.dateExalt?'<div><div style="font-size:10px;color:#888;font-weight:700">✨ Exaltation Maître</div><div style="font-size:14px;font-weight:700;color:#1e293b">'+fmtDate(u.dateExalt)+'</div></div>':'')
+    +'</div></div>';
   h+='<div class="g3" style="margin-bottom:20px">'
     +'<div class="sc"><div class="sc-l">Mon grade</div><div class="sc-v">'+gLbl(u.grade)+'</div></div>'
     +'<div class="sc"><div class="sc-l">Depuis</div><div class="sc-v" style="font-size:16px">'+moAt(u.dateGrade)+' mois</div></div>'
@@ -3751,7 +3857,7 @@ function lMbrs2(loge,ms,off){
     }
   }
   h+='<div class="sec">Membres de la Loge</div><div class="tw"><table><thead><tr>'
-    +'<th>Matricule</th><th>Nom</th><th>Grade</th><th>Durée</th><th>Assiduité</th><th>Situation</th><th>Rôle</th>'
+    +'<th>Matricule</th><th>Nom</th><th>Grade</th><th>Parcours rituel</th><th>Assiduité</th><th>Situation</th><th>Rôle</th>'
     +(off?'<th>Actions</th>':'')+'</tr></thead><tbody>';
   ms.forEach(function(m){
     var mo=moAt(m.dateGrade),propG=isPropGrade(m),capOK=isCapOK(m,loge.id),plOK=getPlanchesCount(m.id,loge.id)>=3;
@@ -3770,7 +3876,7 @@ function lMbrs2(loge,ms,off){
         +(!isPrimary&&biLoge?'<br><span style="font-size:10px;background:#e3f2fd;color:#1565c0;padding:1px 6px;border-radius:8px;font-weight:700">Loge principale : '+biLoge.nom+'</span>':'')
         +'<br>'+genreChip(m)+'</td>'
       +'<td>'+gCh(m.grade)+'</td>'
-      +'<td><span style="font-size:12px;color:'+(propG&&!capOK?'#b71c1c':propG?'#1b5e20':mo>=9?'#5a3e00':'#888')+'">'+dur+'</span></td>'
+      +'<td><span style="font-size:11px;color:#555;line-height:1.6">'+parcoursRituel(m)+'</span>'+(m.grade!=='Maitre'?'<br><span style="font-size:10px;color:'+(propG&&!capOK?'#b71c1c':propG?'#1b5e20':mo>=9?'#5a3e00':'#888')+'">'+dur+'</span>':'')+'</td>'
       +'<td><span style="font-size:12px;font-weight:700;color:'+(ass.pct>=70?'#1b5e20':ass.pct>=40?'#5a3e00':'#b71c1c')+'">'+ass.pct+'%</span><span style="font-size:11px;color:#aaa"> ('+ass.present+'/'+ass.total+')</span></td>'
       +'<td>'+(badge||ch('Régulier','cgr'))+'</td>'
       +'<td>'+rCh(m.role,m)+'</td>'
@@ -4536,7 +4642,10 @@ APP.promote=function(mid){
   if(!isCapOK(m,m.logeId)){alert('Promotion impossible : capitation non réglée.');return;}
   if(getPlanchesCount(m.id,m.logeId)<3){alert('Promotion impossible : minimum 3 planches présentées requis.');return;}
   var ng=nxtG(m.grade);if(!ng){alert('Aucun grade supérieur disponible.');return;}
-  m.grade=ng;m.dateGrade=tdStr();saveState();APP.closeMod();
+  m.grade=ng;m.dateGrade=tdStr();
+  if(ng==='Compagnon')m.dateAugm=m.dateGrade;
+  else if(ng==='Maitre')m.dateExalt=m.dateGrade;
+  saveState();APP.closeMod();
 };
 APP.forcePromote=function(mid){
   var m=D.membres.find(function(x){return x.id===mid;});if(!m)return;
@@ -4546,7 +4655,10 @@ APP.forcePromote=function(mid){
   var ord=getAssiduite(m.id,m.logeId),instr=getInstrAssiduite(m.id,m.logeId);
   if(ord.pct<=60||instr.pct<=60){alert('Promotion impossible : assiduité insuffisante (>60% requis en tenues ordinaires et d\'instruction).');return;}
   var ng=nxtG(m.grade);if(!ng){alert('Aucun grade supérieur disponible.');return;}
-  m.grade=ng;m.dateGrade=tdStr();m.promotionForcee=true;saveState();APP.closeMod();
+  m.grade=ng;m.dateGrade=tdStr();m.promotionForcee=true;
+  if(ng==='Compagnon')m.dateAugm=m.dateGrade;
+  else if(ng==='Maitre')m.dateExalt=m.dateGrade;
+  saveState();APP.closeMod();
   var t=document.createElement('div');
   t.style.cssText='position:fixed;bottom:24px;left:50%;transform:translateX(-50%);background:#5a3e00;color:#fff;padding:11px 28px;border-radius:8px;font-size:14px;font-weight:700;z-index:9999;box-shadow:0 4px 16px rgba(0,0,0,0.25)';
   t.textContent='⚡ Promotion forcée par le VM — '+m.nom+' promu '+gLbl(ng);
