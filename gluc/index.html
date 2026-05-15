@@ -604,6 +604,7 @@ function buildData(){
     showDemoAccounts:true,
     connexionLogs:[],
     pdfHeader:{showObedience:true,showLoge:true,showLogo:true,showAddress:true,showContact:true,showFooter:true},
+    sessionConfig:{idleMinutes:3,persistOnRefresh:true},
     _dataInitAt:new Date().toISOString(),
   };
 }
@@ -1304,6 +1305,21 @@ function tParamsOb(){
         +'<span>'+o[1]+'</span></label>';
     }).join('')
     +'<button class="btn gold" style="margin-top:10px" onclick="APP.savePdfHeader()">💾 Enregistrer</button>'
+    +'</div>';
+  // ── Sécurité de session ──
+  var sc=D.sessionConfig||{idleMinutes:3};
+  h+='<div style="font-size:14px;font-weight:900;margin:22px 0 12px">🔐 Sécurité de session</div>'
+    +'<div class="alert a-i" style="margin-bottom:14px;font-size:12px">Délai d\'inactivité avant déconnexion automatique. Un avertissement s\'affiche 30 secondes avant. Mettre <strong>0</strong> pour désactiver. La session est restaurée après un rafraîchissement F5 tant que ce délai n\'est pas écoulé.</div>'
+    +'<div class="card" style="margin-bottom:18px">'
+    +'<div style="display:flex;align-items:center;gap:12px;flex-wrap:wrap">'
+    +'<label style="font-size:13px;font-weight:700;flex:1">Délai d\'inactivité</label>'
+    +'<input id="idleMin" type="number" min="0" max="120" value="'+(sc.idleMinutes||0)+'" style="width:80px;text-align:center"/>'
+    +'<span style="font-size:12px;color:#64748b">minutes</span>'
+    +'<button class="btn gold sm" onclick="APP.saveSessionConfig()">💾 Enregistrer</button>'
+    +'</div>'
+    +'<div style="font-size:11px;color:#94a3b8;margin-top:8px">Statut actuel : '
+    +(sc.idleMinutes>0?'<strong style="color:#c9a227">Activé · '+sc.idleMinutes+' min</strong>':'<strong style="color:#888">Désactivé</strong>')
+    +'</div>'
     +'</div>';
   // ── Mode démo partagé (Netlify Blobs) ──
   var remD=CLOUD.remainingMs?Math.ceil(CLOUD.remainingMs/(24*60*60*1000)):null;
@@ -2156,6 +2172,118 @@ APP.toggleCloudDemo=function(){
   }
 };
 
+// ─── SESSION PERSISTANTE & IDLE TIMEOUT ─────────────────────────────
+var SESS_KEY = APP_NAME+'-session';
+var IDLE = { lastActivity: Date.now(), timer: null, warningShown: false, warnEl: null };
+
+function saveSession(){
+  if(!S.user||!S.user.matricule){clearSessionStore();return;}
+  try{
+    localStorage.setItem(SESS_KEY, JSON.stringify({
+      mat: S.user.matricule,
+      isSA: S.user.id==='SADM',
+      view: S.view,
+      lid: S.lid,
+      tab: S.tab,
+      ts: Date.now()
+    }));
+  }catch(e){}
+}
+function clearSessionStore(){
+  try{localStorage.removeItem(SESS_KEY);}catch(e){}
+}
+function restoreSession(){
+  try{
+    var raw=localStorage.getItem(SESS_KEY);
+    if(!raw)return false;
+    var s=JSON.parse(raw);
+    // Vérification du timeout d'inactivité (sécurité)
+    var idleMin=(D.sessionConfig&&D.sessionConfig.idleMinutes)||0;
+    if(idleMin>0&&Date.now()-s.ts>idleMin*60*1000){
+      clearSessionStore();return false;
+    }
+    var user=null;
+    if(s.isSA){
+      if(D.superAdmin&&D.superAdmin.matricule===s.mat){
+        user={id:'SADM',matricule:s.mat,nom:D.superAdmin.nom,role:'Super Admin',grade:'Maitre',logeId:null,pwd:D.superAdmin.pwd,statut:'actif',email:D.superAdmin.email};
+      }
+    } else {
+      user=D.membres.find(function(m){return m.matricule===s.mat&&m.statut==='actif';});
+    }
+    if(!user){clearSessionStore();return false;}
+    S.user=user;
+    var safeViews=['obedience','loge','monEspace','atelierSelect'];
+    if(s.view&&safeViews.indexOf(s.view)>=0)S.view=s.view;
+    if(s.lid)S.lid=s.lid;
+    if(s.tab)S.tab=s.tab;
+    resetIdle();
+    return true;
+  }catch(e){clearSessionStore();return false;}
+}
+function resetIdle(){
+  IDLE.lastActivity=Date.now();
+  IDLE.warningShown=false;
+  if(IDLE.warnEl){IDLE.warnEl.remove();IDLE.warnEl=null;}
+}
+function showIdleWarning(secs){
+  if(IDLE.warningShown)return;
+  IDLE.warningShown=true;
+  var w=document.createElement('div');
+  w.id='idleWarn';
+  w.style.cssText='position:fixed;bottom:24px;right:24px;background:#c9a227;color:#111;padding:14px 20px;border-radius:10px;font-size:13px;font-weight:700;z-index:99999;box-shadow:0 6px 22px rgba(0,0,0,0.25);max-width:300px;cursor:pointer';
+  w.innerHTML='⏱ <strong>Déconnexion imminente</strong><br><span style="font-size:12px;font-weight:500">Inactivité détectée. Vous serez déconnecté dans '+secs+' s. Cliquez pour rester connecté.</span>';
+  w.onclick=function(){resetIdle();};
+  document.body.appendChild(w);
+  IDLE.warnEl=w;
+}
+function startIdleWatcher(){
+  if(IDLE.timer)clearInterval(IDLE.timer);
+  IDLE.timer=setInterval(function(){
+    if(!S.user)return;
+    var cfg=D.sessionConfig||{};
+    var idleMin=cfg.idleMinutes||0;
+    if(idleMin<=0)return; // désactivé
+    var idleMs=idleMin*60*1000;
+    var elapsed=Date.now()-IDLE.lastActivity;
+    if(elapsed>=idleMs){
+      // Déconnexion
+      clearSessionStore();
+      var t=document.createElement('div');
+      t.style.cssText='position:fixed;bottom:24px;left:50%;transform:translateX(-50%);background:#b71c1c;color:#fff;padding:12px 28px;border-radius:8px;font-size:14px;font-weight:700;z-index:99999;box-shadow:0 4px 16px rgba(0,0,0,0.25)';
+      t.textContent='⏱ Déconnexion automatique après '+idleMin+' min d\'inactivité.';
+      document.body.appendChild(t);setTimeout(function(){t.remove();},4500);
+      S.user=null;S.view='login';S.lid=null;S.tab='membres';
+      resetIdle();R();
+    } else if(elapsed>=idleMs-30000&&!IDLE.warningShown){
+      showIdleWarning(30);
+    }
+  },2000);
+}
+function bindIdleActivity(){
+  if(window._idleBound)return;
+  window._idleBound=true;
+  var throttle=null;
+  var lightHandler=function(){
+    if(throttle)return;
+    throttle=setTimeout(function(){throttle=null;},500);
+    resetIdle();
+  };
+  ['click','keydown','touchstart'].forEach(function(e){document.addEventListener(e,resetIdle,{passive:true});});
+  ['mousemove','scroll'].forEach(function(e){document.addEventListener(e,lightHandler,{passive:true});});
+}
+APP.saveSessionConfig=function(){
+  var m=parseInt(G('idleMin').value);
+  if(isNaN(m)||m<0)m=0;
+  if(m>120)m=120;
+  if(!D.sessionConfig)D.sessionConfig={};
+  D.sessionConfig.idleMinutes=m;
+  saveState();resetIdle();R();
+  var t=document.createElement('div');
+  t.style.cssText='position:fixed;bottom:24px;left:50%;transform:translateX(-50%);background:#1b5e20;color:#fff;padding:11px 28px;border-radius:8px;font-size:14px;font-weight:700;z-index:99999';
+  t.textContent=m===0?'✓ Idle timeout désactivé':'✓ Idle timeout : '+m+' min';
+  document.body.appendChild(t);setTimeout(function(){t.remove();},2200);
+};
+
 // Auto-save: hook into render
 var _originalRender = null;
 function initAutoSave() {
@@ -2164,17 +2292,36 @@ function initAutoSave() {
     _originalRender.apply(this, arguments);
     saveState();
     cloudSaveDebounced();
+    saveSession();
   };
   // Load on startup (local d'abord, puis cloud si activé)
   loadState();
   CLOUD.enabled=cloudIsEnabled();
-  // Set initial view: captive portal if enabled
-  S.view = (D.portalConfig && D.portalConfig.enabled) ? 'portal' : 'login';
+  // Restaure la session AVANT de fixer la vue
+  var sessionRestored=restoreSession();
+  // Set initial view: captive portal si pas de session, sinon vue restaurée
+  if(!sessionRestored){
+    S.view = (D.portalConfig && D.portalConfig.enabled) ? 'portal' : 'login';
+  }
   APP.applyTheme();
-  // Charge le state cloud en arrière-plan puis re-rend
+  // Surveille l'inactivité
+  bindIdleActivity();
+  startIdleWatcher();
+  // Charge le state cloud en arrière-plan
   if(CLOUD.enabled){
     cloudLoad().then(function(loaded){
-      if(loaded){S.view=(D.portalConfig&&D.portalConfig.enabled)?'portal':'login';APP.applyTheme();R();}
+      if(loaded){
+        // Re-restaure la session avec les données cloud
+        var u=S.user;
+        if(u&&u.matricule&&u.id!=='SADM'){
+          var fresh=D.membres.find(function(m){return m.matricule===u.matricule&&m.statut==='actif';});
+          if(fresh)S.user=fresh;
+        }
+        if(!S.user&&!sessionRestored){
+          S.view=(D.portalConfig&&D.portalConfig.enabled)?'portal':'login';
+        }
+        APP.applyTheme();R();
+      }
     });
   }
 }
@@ -2489,7 +2636,7 @@ APP.doLogin=function(){
   S.pendingWelcome=true;
   R();
 };
-APP.logout=function(){S.user=null;S.view='login';S.lid=null;S.tab='membres';R();};
+APP.logout=function(){clearSessionStore();S.user=null;S.view='login';S.lid=null;S.tab='membres';R();};
 APP.fillDemo=function(mat,pwd){var m=G('lM'),p=G('lP');if(m)m.value=mat;if(p){p.value=pwd;p.focus();}};
 APP.toggleDemoAccounts=function(){D.showDemoAccounts=!D.showDemoAccounts;saveState();R();};
 APP.changeAtelier=function(){
