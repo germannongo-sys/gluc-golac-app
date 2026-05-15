@@ -2298,10 +2298,32 @@ function initAutoSave() {
   if(CLOUD.enabled){
     cloudLoad().then(function(loaded){
       if(loaded){
+        // Re-résout S.user dans le D fraîchement chargé du cloud
         var u=S.user;
         if(u&&u.matricule&&u.id!=='SADM'){
           var fresh=D.membres.find(function(m){return m.matricule===u.matricule&&m.statut==='actif';});
-          if(fresh)S.user=fresh;
+          if(fresh){
+            S.user=fresh;
+          } else {
+            // Utilisateur supprimé/radié côté cloud → déconnexion propre
+            clearSessionStore();
+            S.user=null;S.lid=null;S.tab='membres';
+            S.view=(D.portalConfig&&D.portalConfig.enabled)?'portal':'login';
+          }
+        } else if(u&&u.id==='SADM'){
+          if(D.superAdmin&&D.superAdmin.matricule===u.matricule){
+            S.user.nom=D.superAdmin.nom;
+            S.user.email=D.superAdmin.email;
+            S.user.pwd=D.superAdmin.pwd;
+          }
+        }
+        // Loge supprimée côté cloud ?
+        if(S.lid&&!gLoge(S.lid)){
+          S.lid=null;
+          if(S.view==='loge'){
+            S.view=S.user?'obedience':'login';
+            S.tab='programmes';
+          }
         }
         if(!S.user&&!sessionRestored){
           S.view=(D.portalConfig&&D.portalConfig.enabled)?'portal':'login';
