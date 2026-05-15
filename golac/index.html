@@ -456,6 +456,7 @@ function isVM(lid){
 function isLA(){return !!(D.obInfo&&D.obInfo.logeAutonome);}
 function _userIsOfficer(u){
   if(!u)return false;
+  if(D.grandOff&&D.grandOff.some(function(g){return g.mid===u.id;}))return true;
   return D.loges.some(function(l){
     return l.officiers.some(function(o){return o.mid===u.id;});
   });
@@ -474,9 +475,13 @@ function canAccessLoge(lid){
   return loge&&loge.officiers.some(function(o){return o.mid===S.user.id;});
 }
 function isFrereSimple(){
+  // Un "frère simple" = sans aucune fonction obédielle ni dans une loge,
+  // quel que soit son grade (Apprenti, Compagnon ou Maître).
+  // Il n'accède qu'à son tableau de bord personnel (Mon Espace).
   if(!S.user)return false;
-  var restrictedRoles=['Frère','Membre'];
-  return restrictedRoles.indexOf(S.user.role)!==-1&&S.user.role!=='VM'&&S.user.role!=='Officier';
+  if(S.user.role==='Super Admin')return false;
+  if(S.user.role==='Grand Maître')return false;
+  return !_userIsOfficer(S.user)&&!isGS();
 }
 function isMaitre(){return S.user&&S.user.grade==='Maitre';}
 
@@ -2600,6 +2605,10 @@ function vMonEspace(){
 
 // ── ATELIER SELECT ──
 function vAtelier(){
+  if(isFrereSimple()){
+    S.view='monEspace';
+    return vMonEspace();
+  }
   var cards='';
   var _ai=0;
   D.loges.filter(function(l){return l.statut==='active';}).forEach(function(l){
@@ -3040,6 +3049,11 @@ function tAlertsOb(aP,aR,pend,aff){
 
 // ── LOGE VIEW ──
 function vLoge(){
+  // Garde-fou : un frère sans fonction n'a accès qu'à son tableau de bord (Mon Espace)
+  if(isFrereSimple()&&!isLA()){
+    S.view='monEspace';
+    return vMonEspace();
+  }
   var loge=gLoge(S.lid);if(!loge)return hdr()+'<div class="cont">Introuvable.</div>';
   var off=isLO(S.lid),ms=lMbrs(S.lid);
   var props=ms.filter(isPropGrade),caps=lCaps(S.lid),retards=caps.filter(function(c){return c.st==='Retard';});
