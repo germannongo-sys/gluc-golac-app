@@ -376,6 +376,35 @@ function isPropGrade(m){return m.grade!=='Maitre'&&moAt(m.dateGrade)>=12;}
 function isCapOK(m,lid){var c=D.caps.find(function(c){return c.mid===m.id&&c.lid===lid;});if(!c)return false;if(c.st==='Payé')return true;var sd=getSolde(m.id,lid);return sd.solde<=0;}
 function nxtG(g){var i=GRADES.indexOf(g);return i<2?GRADES[i+1]:null;}
 function gLbl(g){return g==='Maitre'?'Maître':g;}
+function freresLabel(){
+  var t=(D.obInfo&&D.obInfo.typeObedience)||'mixte';
+  if(t==='feminine')return 'Sœurs';
+  if(t==='masculine')return 'Frères';
+  return 'Frères & Sœurs';
+}
+function maitreLabel(){
+  var t=(D.obInfo&&D.obInfo.typeObedience)||'mixte';
+  if(t==='feminine')return 'Maîtresse';
+  if(t==='masculine')return 'Maître';
+  return 'Maître(sse)';
+}
+function venerableLabel(){
+  return 'Vénérable '+maitreLabel();
+}
+function isDelegation(){return S.user&&S.user.role==='Délégation';}
+function delegPerm(key){
+  if(!isDelegation())return false;
+  return !!(S.user.permsDeleg&&S.user.permsDeleg[key]);
+}
+function versementInfo(v){
+  var verse=(v.avances||[]).reduce(function(s,a){return s+(parseInt(a.mnt)||0);},0);
+  var solde=v.mnt-verse;
+  var statut='En attente';
+  if(solde<=0)statut='Payé';
+  else if(verse>0)statut='Avance';
+  else if(v.deadline&&new Date(v.deadline)<new Date())statut='Retard';
+  return{verse:verse,solde:solde,statut:statut};
+}
 function tdStr(){return new Date().toISOString().split('T')[0];}
 function uid(){return 'i'+Date.now()+Math.random().toString(36).slice(2,5);}
 function nxtMat(ms){var ns=ms.map(function(m){var r=m.matricule.match(/\d+/);return r?+r[0]:0;});return'M-'+String(Math.max.apply(null,[0].concat(ns))+1).padStart(3,'0');}
@@ -566,7 +595,8 @@ function buildData(){
     notifLog:[],
     smsLog:[],
     superAdmin:{id:'SADM',matricule:'SADM-01',nom:'Super Administrateur',role:'Super Admin',pwd:'superadmin2026',email:'admin@golac.cg'},
-    obInfo:{name:'Grand Orient et Loges Associées du Congo',acronym:'GOLAC',siege:'Brazzaville',ville:'Brazzaville',fondation:'1995',adresse:'Avenue de la Paix, Brazzaville',patente:'PAT-GOLAC-2026',tel:'+242 06 000 0000',email:'contact@golac.cg',description:'Obédience maçonnique de la République du Congo',welcomeMsg:'À la Gloire du Grand Architecte de l\'Univers. {titre} {nom}, nous vous souhaitons la bienvenue dans l\'espace de travail de la Grand Orient et Loges Associées du Congo.',scrollMsg:'Prochain Grand Orient — 15 Août 2026 · Rappel cotisations 2026 ouvertes · Bienvenue à tous les nouveaux membres initiés · Loge mixte — Fraternité universelle'},
+    delegations:[],
+    obInfo:{name:'Grand Orient et Loges Associées du Congo',acronym:'GOLAC',siege:'Brazzaville',ville:'Brazzaville',fondation:'1995',adresse:'Avenue de la Paix, Brazzaville',patente:'PAT-GOLAC-2026',tel:'+242 06 000 0000',email:'contact@golac.cg',description:'Obédience maçonnique de la République du Congo',typeObedience:'mixte',welcomeMsg:'À la Gloire du Grand Architecte de l\'Univers. {titre} {nom}, nous vous souhaitons la bienvenue dans l\'espace de travail de la Grand Orient et Loges Associées du Congo.',scrollMsg:'Prochain Grand Orient — 15 Août 2026 · Rappel cotisations 2026 ouvertes · Bienvenue à tous les nouveaux membres initiés · Loge mixte — Fraternité universelle'},
     grandeLogeTenues:[
       {id:'gl1',titre:'Tenue de Grande Loge Ordinaire',date:'2026-06-01',heure:'10h00',type:'Grande Loge',lieu:'Temple GOLAC Brazzaville',compteRendu:null,participants:[]},
       {id:'gl2',titre:'Tenue Blanche Ouverte',date:'2026-09-20',heure:'15h00',type:'Tenue Blanche',lieu:'Hôtel Olympique, Pointe-Noire',compteRendu:null,participants:[]},
@@ -1139,6 +1169,10 @@ function tParamsOb(){
       return'<div class="fg"><label class="fl">'+labels[k]+'</label>'
         +'<input id="obInfo_'+k+'" value="'+(D.obInfo[k]||'')+'"/></div>';
     }).join('')
+    +'<div class="fg"><label class="fl">Type d\'Obédience</label>'
+    +'<select id="obInfo_typeObedience">'
+    +[['masculine','Masculine (Frères)'],['feminine','Féminine (Sœurs)'],['mixte','Mixte (Frères & Sœurs)']].map(function(o){return'<option value="'+o[0]+'"'+(((D.obInfo.typeObedience||'mixte')===o[0])?' selected':'')+'>'+o[1]+'</option>';}).join('')
+    +'</select></div>'
     +'<button class="btn gold" style="width:100%;margin-top:4px" onclick="APP.saveAllObInfo()">💾 Enregistrer les modifications</button>'
     +'</div>'
     // Logo
@@ -1316,6 +1350,25 @@ function tParamsOb(){
     +(sc.idleMinutes>0?'<strong style="color:#c9a227">Activé · '+sc.idleMinutes+' min</strong>':'<strong style="color:#888">Désactivé</strong>')
     +'</div>'
     +'</div>';
+  // ── Comptes Délégation ──
+  var delegs=D.delegations||[];
+  h+='<div style="font-size:14px;font-weight:900;margin:22px 0 12px">👥 Comptes de Délégation</div>'
+    +'<div class="alert a-i" style="margin-bottom:14px;font-size:12px">Créez des comptes administratifs externes (comptable, secrétaire administratif, gestionnaire technique) avec une matrice de droits configurable. Ces comptes ne sont pas des membres maçonniques.</div>'
+    +'<div class="card" style="margin-bottom:18px">'
+    +'<div style="display:flex;align-items:center;margin-bottom:12px"><div style="font-weight:700;font-size:13px;flex:1">'+delegs.length+' compte(s) actif(s)</div>'
+    +'<button class="btn gold sm" onclick="APP.openMod(\'newDeleg\',{})">+ Nouveau compte</button></div>';
+  if(delegs.length){
+    h+='<div class="tw"><table><thead><tr><th>Matricule</th><th>Nom</th><th>Rôle</th><th>Email</th><th>Statut</th><th>Action</th></tr></thead><tbody>';
+    delegs.forEach(function(d){
+      h+='<tr><td>'+ch(d.matricule,'cg')+'</td><td style="font-weight:600">'+d.nom+'</td><td>'+d.role+'</td><td style="font-size:12px;color:#666">'+(d.email||'—')+'</td><td>'+ch(d.statut,d.statut==='actif'?'cgreen':'cgr')+'</td>'
+        +'<td><button class="btn outline sm" onclick="APP.openMod(\'editDeleg\',{id:\''+d.id+'\'})">⚙ Droits</button> '
+        +'<button class="btn dng sm" onclick="APP.deleteDeleg(\''+d.id+'\')">🗑</button></td></tr>';
+    });
+    h+='</tbody></table></div>';
+  } else {
+    h+='<div style="color:#aaa;text-align:center;padding:16px;font-size:13px">Aucun compte délégation. Cliquez sur "+ Nouveau compte" pour en créer.</div>';
+  }
+  h+='</div>';
   // ── Mode démo partagé (Netlify Blobs) ──
   var remD=CLOUD.remainingMs?Math.ceil(CLOUD.remainingMs/(24*60*60*1000)):null;
   var remH=CLOUD.remainingMs?Math.ceil(CLOUD.remainingMs/(60*60*1000)):null;
@@ -1441,6 +1494,7 @@ APP.saveAllObInfo=function(){
   ['name','acronym','siege','ville','adresse','fondation','patente','tel','email','description'].forEach(function(k){
     var el=G('obInfo_'+k);if(el)D.obInfo[k]=el.value;
   });
+  var typeObEl=G('obInfo_typeObedience');if(typeObEl)D.obInfo.typeObedience=typeObEl.value;
   R();
   var t=document.createElement('div');
   t.style.cssText='position:fixed;bottom:24px;left:50%;transform:translateX(-50%);background:#1b5e20;color:#fff;padding:11px 28px;border-radius:8px;font-size:14px;font-weight:700;z-index:9999;box-shadow:0 4px 16px rgba(0,0,0,0.25)';
@@ -2030,6 +2084,7 @@ function loadState() {
       if(parsed.reintegrationPending) D.reintegrationPending = parsed.reintegrationPending;
       if(parsed.biAppartPending) D.biAppartPending = parsed.biAppartPending;
       if(parsed.notifLog)    D.notifLog    = parsed.notifLog;
+      if(parsed.delegations)D.delegations=parsed.delegations;
       if(parsed.smsLog)      D.smsLog      = parsed.smsLog;
       if(parsed.grandeLogeTenues) D.grandeLogeTenues = parsed.grandeLogeTenues;
       if(parsed.convocationsGO)   D.convocationsGO   = parsed.convocationsGO;
@@ -2114,7 +2169,7 @@ function cloudLoad(){
       }
       var fresh=buildData();
       D=Object.assign(fresh,res.data);
-      ['membres','loges','caps','avances','versements','visiteurs','presences','dossiersPending','affiliationsPending','radiationPending','reintegrationPending','biAppartPending','notifLog','smsLog','grandeLogeTenues','convocationsGO','documents','troncVeuve','obInfo','superAdmin','mailConfig','portalConfig','customPerms','smsConfig','themeColors','pdfHeader','connexionLogs','grandOff'].forEach(function(k){
+      ['membres','loges','caps','avances','versements','visiteurs','presences','dossiersPending','affiliationsPending','radiationPending','reintegrationPending','biAppartPending','notifLog','smsLog','grandeLogeTenues','convocationsGO','documents','troncVeuve','obInfo','superAdmin','mailConfig','portalConfig','customPerms','smsConfig','themeColors','pdfHeader','connexionLogs','grandOff','delegations'].forEach(function(k){
         if(res.data[k]!==undefined)D[k]=res.data[k];
       });
       if(res.data.logoObedience){D.logoObedience=res.data.logoObedience;LOGO=res.data.logoObedience;}
@@ -2431,7 +2486,7 @@ function vPortal(){
   var h = '<div class="lpg">'+_vBubbles()+_vLoginComm()+'<div class="lbox">'
     +'<div class="llogo">'+logo+'</div>'
     +'<div class="ltit">'+D.obInfo.acronym+'</div>'
-    +'<div class="lsub">Portail d\'Accès Frères & Sœurs</div>'
+    +'<div class="lsub">Portail d\'Accès '+freresLabel()+'</div>'
     +'<div style="background:#fff8e1;border:1.5px solid #c9a227;border-radius:10px;padding:12px 14px;margin-bottom:18px;font-size:12px;color:#555;text-align:center;line-height:1.6">'
     +'<span style="font-size:16px">🔐</span><br>Zone réservée aux membres de l\'Obédience.<br>'
     +'Sélectionnez votre grade et répondez à la question de votre degré pour accéder.'
@@ -2587,6 +2642,15 @@ APP.doLogin=function(){
     G('lE').style.display='none';
     if(isLA&&D.loges.length){S.lid=D.loges[0].id;S.view='loge';S.tab='membres';}
     else{S.view='obedience';S.tab='programmes';}
+    R();return;
+  }
+  // Compte Délégation
+  var deleg=(D.delegations||[]).find(function(d){return d.matricule===mat&&d.pwd===pwd&&d.statut==='actif';});
+  if(deleg){
+    S.user={id:deleg.id,matricule:mat,nom:deleg.nom,role:'Délégation',roleDeleg:deleg.role,grade:'Maitre',logeId:null,pwd:pwd,statut:'actif',email:deleg.email,permsDeleg:deleg.perms||{}};
+    _logConnexion(S.user);
+    G('lE').style.display='none';
+    S.view='obedience';S.tab='programmes';
     R();return;
   }
   var u=D.membres.find(function(m){return m.matricule===mat&&m.pwd===pwd;});
@@ -3243,12 +3307,21 @@ function tAdmin(){
     +'<div style="font-size:14px;font-weight:900">Versements des Loges</div><div style="flex:1"></div>'
     +'<button class="btn outline sm" onclick="APP.notifRetards()">📧 Relancer tous les retards</button>'
     +'</div>'
-    +'<div class="tw"><table><thead><tr><th>Loge</th><th>Montant</th><th>Statut</th><th>Date</th><th>Action</th></tr></thead><tbody>';
-  vl.forEach(function(v){var l=gLoge(v.lid);
+    +'<div class="tw"><table><thead><tr><th>Loge</th><th>Dû</th><th>Versé</th><th>Solde</th><th>Statut</th><th>Échéance</th><th>Action</th></tr></thead><tbody>';
+  vl.forEach(function(v){
+    var l=gLoge(v.lid);
+    var inf=versementInfo(v);
+    var statColor=inf.statut==='Payé'?'cgreen':inf.statut==='Avance'?'cor':inf.statut==='Retard'?'cred':'cgr';
     h+='<tr><td style="font-weight:700">'+(l?'N°'+l.numero+' — '+l.nom:'—')+'</td>'
       +'<td style="font-weight:700">'+fmt(v.mnt)+' F</td>'
-      +'<td>'+sCh(v.st)+'</td><td style="color:#888;font-size:12px">'+(v.date||'—')+'</td>'
-      +'<td>'+(v.st!=='Payé'?'<button class="btn ok sm" onclick="APP.payVL(\''+v.id+'\')">Valider<\/button>':'')+'</td></tr>';
+      +'<td style="color:#1b5e20;font-weight:700">'+fmt(inf.verse)+' F</td>'
+      +'<td style="color:'+(inf.solde<=0?'#1b5e20':'#b71c1c')+';font-weight:700">'+fmt(inf.solde)+' F</td>'
+      +'<td>'+ch(inf.statut,statColor)+'</td>'
+      +'<td style="font-size:12px;color:#888">'+(v.deadline||'—')+'</td>'
+      +'<td style="white-space:nowrap">'
+      +(inf.solde>0?'<button class="btn outline sm" onclick="APP.openMod(\'newAvance\',{vid:\''+v.id+'\'})">+ Avance</button> ':'')
+      +(inf.statut!=='Payé'?'<button class="btn ok sm" onclick="APP.payVL(\''+v.id+'\')">Solder</button>':'')
+      +'</td></tr>';
   });
   h+='</tbody></table></div>';
   if(aR.length){
@@ -4191,6 +4264,80 @@ MODS.newDoc=function(d){
     +'<div class="fg"><label class="fl">Contenu / Description</label><textarea id="docContenu" rows="4" placeholder="Contenu du document ou description..."></textarea></div>'
     +'<div class="mact"><button class="btn gold full" onclick="APP.saveDoc()">Enregistrer<\/button><button class="btn ghost full" onclick="APP.closeMod()">Annuler<\/button></div>';
 };
+MODS.newDeleg=function(d){
+  return mhdr('Nouveau Compte Délégation')
+    +'<div class="fg"><label class="fl">Nom complet</label><input id="dgNom" placeholder="Ex: Comptable Externe"/></div>'
+    +'<div class="frow"><div class="fg"><label class="fl">Matricule</label><input id="dgMat" placeholder="Ex: DEL-001"/></div>'
+    +'<div class="fg"><label class="fl">Mot de passe</label><input id="dgPwd" placeholder="Min. 4 caractères"/></div></div>'
+    +'<div class="fg"><label class="fl">Rôle</label><select id="dgRole">'
+    +['Comptable','Secrétaire Administratif','Gestionnaire Technique','Lecture seule','Autre'].map(function(r){return'<option>'+r+'</option>';}).join('')
+    +'</select></div>'
+    +'<div class="fg"><label class="fl">Email</label><input id="dgEmail" type="email" placeholder="email@example.com"/></div>'
+    +'<div class="mact"><button class="btn gold full" onclick="APP.createDeleg()">Créer le compte</button><button class="btn ghost full" onclick="APP.closeMod()">Annuler</button></div>';
+};
+MODS.editDeleg=function(d){
+  var deleg=(D.delegations||[]).find(function(x){return x.id===d.id;});if(!deleg)return'';
+  var permsList=[['viewLoges','Voir les loges'],['editLoges','Modifier les loges'],['viewMembres','Voir les frères'],['editMembres','Modifier les frères'],['viewVersements','Voir les versements'],['editVersements','Gérer les versements'],['viewFinances','Voir les finances'],['editFinances','Gérer les finances'],['viewDossiers','Voir les dossiers'],['editDossiers','Valider les dossiers'],['viewDocuments','Voir les documents'],['editDocuments','Gérer les documents'],['viewAudit','Voir l\'audit'],['manageDelegations','Gérer les délégations']];
+  return mhdr('Droits de '+deleg.nom)
+    +'<div class="card" style="margin-bottom:14px">'
+    +'<div style="font-weight:700;font-size:13px;margin-bottom:6px">Matricule : '+ch(deleg.matricule,'cg')+'</div>'
+    +'<div style="font-size:12px;color:#666">'+deleg.role+(deleg.email?' · '+deleg.email:'')+'</div>'
+    +'</div>'
+    +'<div style="font-size:13px;font-weight:700;margin-bottom:8px">Matrice de droits</div>'
+    +'<div style="max-height:280px;overflow-y:auto;border:1.5px solid #e2e8f0;border-radius:8px;padding:8px">'
+    +permsList.map(function(p){
+      var on=!!(deleg.perms&&deleg.perms[p[0]]);
+      return'<label style="display:flex;align-items:center;gap:10px;padding:6px 4px;font-size:13px;cursor:pointer;border-bottom:1px solid #f0f0f0">'
+        +'<input type="checkbox" id="dgPerm_'+p[0]+'"'+(on?' checked':'')+' style="width:auto;margin:0;accent-color:#c9a227"/>'
+        +'<span>'+p[1]+'</span></label>';
+    }).join('')
+    +'</div>'
+    +'<div class="mact"><button class="btn gold full" onclick="APP.saveDelegPerms(\''+d.id+'\')">Enregistrer les droits</button><button class="btn ghost full" onclick="APP.closeMod()">Annuler</button></div>';
+};
+MODS.newAvance=function(d){
+  var v=D.versements.find(function(x){return x.id===d.vid;});if(!v)return'';
+  var l=gLoge(v.lid);
+  var inf=versementInfo(v);
+  return mhdr('Avance / Versement Partiel')
+    +'<div class="card" style="margin-bottom:14px">'
+    +'<div style="font-weight:700">'+(l?l.nom:'—')+'</div>'
+    +'<div style="font-size:12px;color:#666;margin-top:4px">Solde restant : <strong style="color:#b71c1c">'+fmt(inf.solde)+' F</strong></div>'
+    +'</div>'
+    +'<div class="frow"><div class="fg"><label class="fl">Montant (FCFA)</label><input id="avMnt" type="number" min="1" max="'+inf.solde+'" placeholder="0"/></div>'
+    +'<div class="fg"><label class="fl">Date</label><input id="avDate" type="date" value="'+tdStr()+'"/></div></div>'
+    +'<div class="frow"><div class="fg"><label class="fl">Mode</label><select id="avMode"><option>Espèces</option><option>Virement</option><option>Chèque</option><option>Mobile Money</option><option>Autre</option></select></div>'
+    +'<div class="fg"><label class="fl">Référence</label><input id="avRef" placeholder="N° reçu / référence"/></div></div>'
+    +'<div class="mact"><button class="btn gold full" onclick="APP.saveAvanceVersement(\''+d.vid+'\')">Enregistrer l\'avance</button><button class="btn ghost full" onclick="APP.closeMod()">Annuler</button></div>';
+};
+APP.createDeleg=function(){
+  var nom=G('dgNom').value.trim(),mat=G('dgMat').value.trim(),pwd=G('dgPwd').value.trim();
+  if(!nom||!mat||!pwd||pwd.length<4){alert('Nom, matricule et mot de passe (4 car. min) requis.');return;}
+  if((D.delegations||[]).some(function(d){return d.matricule===mat;})||D.membres.some(function(m){return m.matricule===mat;})){alert('Matricule déjà utilisé.');return;}
+  if(!D.delegations)D.delegations=[];
+  D.delegations.push({id:uid(),matricule:mat,nom:nom,role:G('dgRole').value,pwd:pwd,email:G('dgEmail').value.trim(),statut:'actif',perms:{viewLoges:true,viewMembres:true,viewVersements:true,viewFinances:true,viewDossiers:true,viewDocuments:true},dateCreation:tdStr()});
+  saveState();APP.closeMod();
+};
+APP.saveDelegPerms=function(id){
+  var deleg=(D.delegations||[]).find(function(x){return x.id===id;});if(!deleg)return;
+  var keys=['viewLoges','editLoges','viewMembres','editMembres','viewVersements','editVersements','viewFinances','editFinances','viewDossiers','editDossiers','viewDocuments','editDocuments','viewAudit','manageDelegations'];
+  deleg.perms={};
+  keys.forEach(function(k){var el=G('dgPerm_'+k);if(el)deleg.perms[k]=el.checked;});
+  saveState();APP.closeMod();
+};
+APP.deleteDeleg=function(id){
+  if(!confirm('Supprimer ce compte de délégation ?'))return;
+  D.delegations=(D.delegations||[]).filter(function(d){return d.id!==id;});
+  saveState();R();
+};
+APP.saveAvanceVersement=function(vid){
+  var v=D.versements.find(function(x){return x.id===vid;});if(!v)return;
+  var mnt=parseInt(G('avMnt').value)||0;if(mnt<=0)return;
+  if(!v.avances)v.avances=[];
+  v.avances.push({id:uid(),date:G('avDate').value||tdStr(),mnt:mnt,mode:G('avMode').value,ref:G('avRef').value.trim()});
+  var inf=versementInfo(v);
+  if(inf.solde<=0){v.st='Payé';v.date=tdStr();}
+  saveState();APP.closeMod();
+};
 MODS.newTronc=function(d){
   return mhdr('Tronc de la Veuve — Nouvelle opération')
     +'<div class="frow"><div class="fg"><label class="fl">Type</label><select id="trType"><option>Recette</option><option>Dépense</option></select></div><div class="fg"><label class="fl">Montant (FCFA)</label><input id="trMnt" type="number" min="1" placeholder="0"/></div></div>'
@@ -4557,7 +4704,16 @@ APP.doAssignGO=function(gid){
 };
 APP.revokeGO=function(gid){var g=D.grandOff.find(function(x){return x.id===gid;});if(g)g.mid=null;R();};
 APP.payCap=function(id){var c=D.caps.find(function(x){return x.id===id;});if(c){c.st='Payé';c.date=tdStr();}R();};
-APP.payVL=function(id){var v=D.versements.find(function(x){return x.id===id;});if(v){v.st='Payé';v.date=tdStr();}R();};
+APP.payVL=function(id){
+  var v=D.versements.find(function(x){return x.id===id;});if(!v)return;
+  var inf=versementInfo(v);
+  if(inf.solde>0){
+    if(!v.avances)v.avances=[];
+    v.avances.push({id:uid(),date:tdStr(),mnt:inf.solde,mode:'Solde final',ref:''});
+  }
+  v.st='Payé';v.date=tdStr();
+  saveState();R();
+};
 APP.printRecu=function(id){
   var c=D.caps.find(function(x){return x.id===id;});if(!c)return;
   var m=gMbr(c.mid),loge=gLoge(c.lid),sd=getSolde(c.mid,c.lid);
