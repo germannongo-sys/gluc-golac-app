@@ -486,6 +486,8 @@ function buildData(){
     smsConfig:{provider:'demo',user:'',apiKey:'',mode:'demo'},
     portalConfig:{enabled:true},
     customPerms:null,
+    showDemoAccounts:true,
+    _dataInitAt:new Date().toISOString(),
   };
 }
 
@@ -1628,6 +1630,15 @@ function loadState() {
     var raw = localStorage.getItem(LS_KEY);
     if(raw) {
       var parsed = JSON.parse(raw);
+      // Auto-purge des données de test après 3 jours
+      var initAt=parsed._dataInitAt?new Date(parsed._dataInitAt).getTime():0;
+      if(initAt&&(Date.now()-initAt)>3*24*60*60*1000){
+        localStorage.removeItem(LS_KEY);
+        localStorage.removeItem(LS_LOGO);
+        localStorage.removeItem(LS_LOGE_LOGOS);
+        D=buildData();LOGO=null;
+        return;
+      }
       // Deep merge: keep structure from buildData() for new fields
       var fresh = buildData();
       D = Object.assign(fresh, parsed);
@@ -1869,6 +1880,25 @@ function _vLoginComm(){
     +'</ul>'
     +'</div>';
 }
+function _vDemoAccounts(){
+  var accs=[
+    {role:'Grand Maître',mat:'GLUC-00',pwd:'admin2026',icon:'👑'},
+    {role:'Vénérable Maître',mat:'F-001',pwd:'vm1234',icon:'🏛'},
+    {role:'Officier',mat:'F-002',pwd:'off1234',icon:'⚙'},
+    {role:'Membre Apprenti',mat:'F-003',pwd:'1234',icon:'🔷'},
+    {role:'Super Admin',mat:'SADM-01',pwd:'superadmin2026',icon:'🔑'},
+  ];
+  return '<div style="margin-top:14px;border:1.5px dashed #e2e8f0;border-radius:9px;padding:10px 12px;background:#fffbf0">'
+    +'<div style="font-size:10px;font-weight:700;color:#94a3b8;letter-spacing:.8px;text-transform:uppercase;margin-bottom:8px">⚡ Comptes de démonstration</div>'
+    +accs.map(function(a){
+      return'<button type="button" onclick="APP.fillDemo(\''+a.mat+'\',\''+a.pwd+'\')" style="display:flex;align-items:center;justify-content:space-between;width:100%;background:none;border:none;border-bottom:1px solid #f0e8c0;padding:6px 0;cursor:pointer;font-size:12px;color:#475569;text-align:left;gap:8px;transition:background .1s" onmouseover="this.style.background=\'#fff8e1\'" onmouseout="this.style.background=\'none\'">'
+        +'<span>'+a.icon+' <span style="font-weight:600">'+a.role+'</span></span>'
+        +'<span style="color:#94a3b8;font-family:monospace;font-size:11px">'+a.mat+'</span>'
+        +'</button>';
+    }).join('')
+    +'<div style="font-size:10px;color:#cbd5e1;margin-top:6px;text-align:center">Cliquez pour pré-remplir · données réinitialisées tous les 3 jours</div>'
+    +'</div>';
+}
 function vLogin(){
   var logo=LOGO?'<img src="'+LOGO+'" style="width:72px;height:72px;object-fit:cover;border-radius:50%;"/>':logoImg(72);
   return'<div class="lpg">'+_vBubbles()+_vLoginComm()+'<div class="lbox">'
@@ -1884,6 +1914,7 @@ function vLogin(){
     +'<button class="btn gold lg full" onclick="APP.doLogin()">Se connecter</button>'
     +'<hr class="lsep"/>'
     +'<button class="lforgot" onclick="APP.goForgotPwd()">Mot de passe oublié ?</button>'
+    +(D.showDemoAccounts?_vDemoAccounts():'')
     +'</div></div>';
 }
 
@@ -1976,6 +2007,8 @@ APP.doLogin=function(){
   R();
 };
 APP.logout=function(){S.user=null;S.view='login';S.lid=null;S.tab='membres';R();};
+APP.fillDemo=function(mat,pwd){var m=G('lM'),p=G('lP');if(m)m.value=mat;if(p){p.value=pwd;p.focus();}};
+APP.toggleDemoAccounts=function(){D.showDemoAccounts=!D.showDemoAccounts;saveState();R();};
 APP.changeAtelier=function(){
   if(D.obInfo&&D.obInfo.logeAutonome)return; // pas de sélection pour LA
   S.view='atelierSelect';R();
@@ -2501,7 +2534,21 @@ function tAdmin(){
   var aR=D.caps.filter(function(c){return c.st==='Retard';});
   // Avances loges
   var logeAvances=D.versements.reduce(function(s,v){return s+(v.avances?sumA(v.avances,function(a){return a.mnt;}):0);},0);
+  // Date init données
+  var initAt=D._dataInitAt?new Date(D._dataInitAt):null;
+  var resetIn=initAt?Math.max(0,3-Math.round((Date.now()-initAt.getTime())/(1000*60*60*24))):null;
   var h='<div class="sec">Administration Obédience</div>'
+    +'<div class="card" style="margin-bottom:18px;padding:14px 18px">'
+    +'<div style="font-size:13px;font-weight:900;color:#1e293b;margin-bottom:10px">⚡ Mode Démonstration</div>'
+    +'<div style="display:flex;align-items:center;gap:14px;flex-wrap:wrap">'
+    +'<div style="flex:1">'
+    +'<div style="font-size:13px;font-weight:600">Comptes de démonstration sur la page de connexion</div>'
+    +'<div style="font-size:12px;color:#64748b;margin-top:3px">Affiche les identifiants de test sur l\'écran de login pour faciliter les présentations</div>'
+    +(initAt?'<div style="font-size:11px;color:#94a3b8;margin-top:4px">📅 Données initialisées le '+initAt.toLocaleDateString('fr-FR')+(resetIn!==null?' · ♻ Réinitialisation auto dans <strong style="color:'+(resetIn<=1?'#ef4444':'#c9a227')+'">'+resetIn+' jour(s)</strong>':'')+'</div>':'')
+    +'</div>'
+    +'<button class="toggle'+(D.showDemoAccounts?' on':'')+'" onclick="APP.toggleDemoAccounts()" title="'+(D.showDemoAccounts?'Masquer':'Afficher')+' les comptes démo"></button>'
+    +'</div>'
+    +'</div>'
     +'<div class="g3" style="margin-bottom:20px">'
     +[['Total dû',fmt(tot)+' F'],['Payé intégral',fmt(paid)+' F'],['Avances reçues',fmt(logeAvances)+' F'],['Solde net',fmt(tot-paid-logeAvances)+' F'],['Recouvrement',tot?Math.round((paid+logeAvances)/tot*100)+'%':'0%']].map(function(x){
       return'<div class="sc"><div class="sc-l">'+x[0]+'</div><div class="sc-v">'+x[1]+'</div></div>';}).join('')
