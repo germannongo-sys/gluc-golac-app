@@ -1,0 +1,350 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider  = "postgresql"
+  url       = env("DATABASE_URL")
+  directUrl = env("DIRECT_URL")
+}
+
+// ─── OBÉDIENCE ────────────────────────────────────────────────────────────────
+
+model Obedience {
+  id            String   @id @default(cuid())
+  acronyme      String   @unique
+  nom           String
+  siege         String
+  fondation     String?
+  tauxCap       Int      @default(50000)
+  tauxLoge      Int      @default(200000)
+  typeObedience String   @default("masculine")
+  adresse       String?
+  patente       String?
+  tel           String?
+  email         String?
+  description   String?
+  logoBase64    String?
+  welcomeMsg    String?
+  scrollMsg     String?
+  themeJson     Json?
+  pdfHeaderJson Json?
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  loges            Loge[]
+  membres          Membre[]
+  grandOfficiers   GrandOfficier[]
+  grandeLogeTenues GrandLogeTenue[]
+  convocationsGO   ConvocationGO[]
+  documents        Document[]
+}
+
+// ─── LOGE ─────────────────────────────────────────────────────────────────────
+
+model Loge {
+  id          String   @id @default(cuid())
+  numero      String
+  nom         String
+  ville       String
+  statut      String   @default("active")
+  email       String?
+  tauxCap     Int?
+  logoBase64  String?
+  obedienceId String
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  obedience     Obedience     @relation(fields: [obedienceId], references: [id], onDelete: Cascade)
+  membres       Membre[]      @relation("LogePrimaire")
+  membresSecond Membre[]      @relation("LogeSecondaire")
+  officiers     Officier[]
+  agendas       Agenda[]
+  capitations   Capitation[]
+  avances       Avance[]
+  versements    Versement[]
+  visiteurs     Visiteur[]
+  dossiers      Dossier[]
+  affiliations  Affiliation[]
+  troncVeuve    TroncVeuve[]
+  presences     Presence[]
+
+  @@unique([obedienceId, numero])
+}
+
+// ─── MEMBRE ───────────────────────────────────────────────────────────────────
+
+model Membre {
+  id           String    @id @default(cuid())
+  matricule    String    @unique
+  nom          String
+  grade        String    @default("Apprenti")
+  dateGrade    DateTime?
+  dateInit     DateTime?
+  dateAugm     DateTime?
+  dateExalt    DateTime?
+  role         String    @default("Frère")
+  passwordHash String
+  statut       String    @default("actif")
+  tel          String?
+  email        String?
+  logeId       String?
+  secondLogeId String?
+  obedienceId  String
+  affiliJson   Json?
+  createdAt    DateTime  @default(now())
+  updatedAt    DateTime  @updatedAt
+
+  obedience      Obedience       @relation(fields: [obedienceId], references: [id], onDelete: Cascade)
+  loge           Loge?           @relation("LogePrimaire", fields: [logeId], references: [id], onDelete: SetNull)
+  logeSecond     Loge?           @relation("LogeSecondaire", fields: [secondLogeId], references: [id], onDelete: SetNull)
+  officiers      Officier[]
+  grandOfficiers GrandOfficier[]
+  capitations    Capitation[]
+  avances        Avance[]
+  presences      Presence[]
+  connexionLogs  ConnexionLog[]
+}
+
+// ─── OFFICIER DE LOGE ─────────────────────────────────────────────────────────
+
+model Officier {
+  id       String  @id @default(cuid())
+  titre    String
+  perm     Boolean @default(false)
+  membreId String?
+  logeId   String
+
+  loge   Loge    @relation(fields: [logeId], references: [id], onDelete: Cascade)
+  membre Membre? @relation(fields: [membreId], references: [id], onDelete: SetNull)
+}
+
+// ─── GRAND OFFICIER ───────────────────────────────────────────────────────────
+
+model GrandOfficier {
+  id          String  @id @default(cuid())
+  titre       String
+  membreId    String?
+  obedienceId String
+
+  obedience Obedience @relation(fields: [obedienceId], references: [id], onDelete: Cascade)
+  membre    Membre?   @relation(fields: [membreId], references: [id], onDelete: SetNull)
+}
+
+// ─── AGENDA / TENUE ───────────────────────────────────────────────────────────
+
+model Agenda {
+  id           String   @id @default(cuid())
+  titre        String
+  date         DateTime
+  heure        String
+  type         String
+  planche      String?
+  presentateur String?
+  planStatus   String?
+  logeId       String
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  loge      Loge       @relation(fields: [logeId], references: [id], onDelete: Cascade)
+  presences Presence[]
+}
+
+// ─── PRÉSENCES ────────────────────────────────────────────────────────────────
+
+model Presence {
+  id       String  @id @default(cuid())
+  present  Boolean @default(false)
+  membreId String
+  logeId   String
+  agendaId String
+
+  membre Membre @relation(fields: [membreId], references: [id], onDelete: Cascade)
+  loge   Loge   @relation(fields: [logeId], references: [id], onDelete: Cascade)
+  agenda Agenda @relation(fields: [agendaId], references: [id], onDelete: Cascade)
+
+  @@unique([membreId, agendaId])
+}
+
+// ─── CAPITATIONS ──────────────────────────────────────────────────────────────
+
+model Capitation {
+  id        String    @id @default(cuid())
+  annee     Int
+  mnt       Int
+  statut    String    @default("En attente")
+  date      DateTime?
+  membreId  String
+  logeId    String
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+
+  membre  Membre   @relation(fields: [membreId], references: [id], onDelete: Cascade)
+  loge    Loge     @relation(fields: [logeId], references: [id], onDelete: Cascade)
+  avances Avance[]
+
+  @@unique([membreId, logeId, annee])
+}
+
+// ─── AVANCES (versements partiels de capitation) ──────────────────────────────
+
+model Avance {
+  id           String   @id @default(cuid())
+  mnt          Int
+  note         String?
+  date         DateTime @default(now())
+  membreId     String
+  logeId       String
+  capitationId String?
+
+  membre     Membre      @relation(fields: [membreId], references: [id], onDelete: Cascade)
+  loge       Loge        @relation(fields: [logeId], references: [id], onDelete: Cascade)
+  capitation Capitation? @relation(fields: [capitationId], references: [id], onDelete: SetNull)
+}
+
+// ─── VERSEMENTS LOGE ──────────────────────────────────────────────────────────
+
+model Versement {
+  id        String    @id @default(cuid())
+  annee     Int
+  mnt       Int
+  statut    String    @default("En attente")
+  date      DateTime?
+  desc      String?
+  logeId    String
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+
+  loge Loge @relation(fields: [logeId], references: [id], onDelete: Cascade)
+}
+
+// ─── VISITEURS ────────────────────────────────────────────────────────────────
+
+model Visiteur {
+  id        String   @id @default(cuid())
+  nom       String
+  loge      String
+  grade     String
+  motif     String?
+  date      DateTime
+  logeId    String
+  createdAt DateTime @default(now())
+
+  logeRef Loge @relation(fields: [logeId], references: [id], onDelete: Cascade)
+}
+
+// ─── DOSSIERS CANDIDATS ───────────────────────────────────────────────────────
+
+model Dossier {
+  id       String   @id @default(cuid())
+  nom      String
+  tel      String?
+  email    String?
+  grade    String?
+  note     String?
+  statut   String   @default("Incomplet")
+  docsJson Json
+  date     DateTime @default(now())
+  logeId   String
+
+  loge Loge @relation(fields: [logeId], references: [id], onDelete: Cascade)
+}
+
+// ─── AFFILIATIONS ─────────────────────────────────────────────────────────────
+
+model Affiliation {
+  id         String    @id @default(cuid())
+  nom        String
+  tel        String?
+  email      String?
+  grade      String?
+  logeOrigin String?
+  obOrigin   String?
+  dateAffil  DateTime?
+  statut     String    @default("En attente")
+  note       String?
+  logeId     String
+  createdAt  DateTime  @default(now())
+
+  loge Loge @relation(fields: [logeId], references: [id], onDelete: Cascade)
+}
+
+// ─── TRONC DE LA VEUVE ────────────────────────────────────────────────────────
+
+model TroncVeuve {
+  id        String   @id @default(cuid())
+  type      String
+  mnt       Int
+  desc      String?
+  date      DateTime
+  logeId    String
+  createdAt DateTime @default(now())
+
+  loge Loge @relation(fields: [logeId], references: [id], onDelete: Cascade)
+}
+
+// ─── DOCUMENTS ────────────────────────────────────────────────────────────────
+
+model Document {
+  id          String   @id @default(cuid())
+  titre       String
+  type        String
+  grade       String   @default("Tous")
+  date        DateTime
+  contenu     String?
+  fileUrl     String?
+  fileName    String?
+  fileType    String?
+  obedienceId String
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  obedience Obedience @relation(fields: [obedienceId], references: [id], onDelete: Cascade)
+}
+
+// ─── GRANDE LOGE TENUES ───────────────────────────────────────────────────────
+
+model GrandLogeTenue {
+  id           String   @id @default(cuid())
+  titre        String
+  date         DateTime
+  heure        String
+  type         String
+  lieu         String?
+  compteRendu  String?
+  participants Json
+  obedienceId  String
+  createdAt    DateTime @default(now())
+
+  obedience Obedience @relation(fields: [obedienceId], references: [id], onDelete: Cascade)
+}
+
+// ─── CONVOCATIONS GRANDS OFFICIERS ────────────────────────────────────────────
+
+model ConvocationGO {
+  id          String   @id @default(cuid())
+  date        DateTime
+  heure       String
+  lieu        String?
+  ordreJour   String?
+  statut      String   @default("Planifié")
+  cr          String?
+  obedienceId String
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  obedience Obedience @relation(fields: [obedienceId], references: [id], onDelete: Cascade)
+}
+
+// ─── LOGS DE CONNEXION ────────────────────────────────────────────────────────
+
+model ConnexionLog {
+  id       String   @id @default(cuid())
+  heure    DateTime @default(now())
+  role     String?
+  grade    String?
+  ipAddr   String?
+  membreId String
+
+  membre Membre @relation(fields: [membreId], references: [id], onDelete: Cascade)
+}

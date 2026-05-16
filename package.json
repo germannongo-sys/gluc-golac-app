@@ -1,0 +1,23 @@
+{
+  "name": "gluc-golac-backend",
+  "version": "1.0.0",
+  "type": "module",
+  "engines": { "node": ">=18" },
+  "scripts": {
+    "db:generate": "prisma generate",
+    "db:migrate:dev": "prisma migrate dev",
+    "db:migrate:deploy": "prisma migrate deploy",
+    "db:studio": "prisma studio",
+    "db:seed": "node prisma/seed.mjs",
+    "db:reset": "prisma migrate reset --force && npm run db:seed",
+    "migrate:import": "node scripts/migrate.mjs"
+  },
+  "dependencies": {
+    "@prisma/client": "^5.22.0",
+    "bcryptjs": "^2.4.3",
+    "jose": "^5.9.6"
+  },
+  "devDependencies": {
+    "prisma": "^5.22.0"
+  }
+}

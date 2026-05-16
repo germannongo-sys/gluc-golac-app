@@ -1,6 +1,79 @@
 [build]
   publish = "."
   functions = "netlify/functions"
+  command = "npm run db:generate"
+
+[build.environment]
+  NODE_VERSION = "20"
+
+# ── API Routes → Netlify Functions ─────────────────────────────────────────────
+
+[[redirects]]
+  from = "/api/auth/*"
+  to = "/.netlify/functions/auth"
+  status = 200
+
+[[redirects]]
+  from = "/api/membres"
+  to = "/.netlify/functions/membres"
+  status = 200
+
+[[redirects]]
+  from = "/api/membres/*"
+  to = "/.netlify/functions/membres"
+  status = 200
+
+[[redirects]]
+  from = "/api/loges"
+  to = "/.netlify/functions/loges"
+  status = 200
+
+[[redirects]]
+  from = "/api/loges/*"
+  to = "/.netlify/functions/loges"
+  status = 200
+
+[[redirects]]
+  from = "/api/agenda"
+  to = "/.netlify/functions/agenda"
+  status = 200
+
+[[redirects]]
+  from = "/api/agenda/*"
+  to = "/.netlify/functions/agenda"
+  status = 200
+
+[[redirects]]
+  from = "/api/finances/*"
+  to = "/.netlify/functions/finances"
+  status = 200
+
+[[redirects]]
+  from = "/api/obedience"
+  to = "/.netlify/functions/obedience"
+  status = 200
+
+[[redirects]]
+  from = "/api/obedience/*"
+  to = "/.netlify/functions/obedience"
+  status = 200
+
+[[redirects]]
+  from = "/api/documents"
+  to = "/.netlify/functions/documents"
+  status = 200
+
+[[redirects]]
+  from = "/api/documents/*"
+  to = "/.netlify/functions/documents"
+  status = 200
+
+[[redirects]]
+  from = "/api/dossiers/*"
+  to = "/.netlify/functions/dossiers"
+  status = 200
+
+# ── Frontend Routes ────────────────────────────────────────────────────────────
 
 [[redirects]]
   from = "/"
@@ -17,6 +90,8 @@
   to = "/golac/index.html"
   status = 301
 
+# ── Security Headers ───────────────────────────────────────────────────────────
+
 [[headers]]
   for = "/*"
   [headers.values]
@@ -24,3 +99,8 @@
     X-Frame-Options = "DENY"
     Referrer-Policy = "strict-origin-when-cross-origin"
     Permissions-Policy = "camera=(), microphone=(), geolocation=()"
+
+[[headers]]
+  for = "/api/*"
+  [headers.values]
+    Cache-Control = "no-store"
